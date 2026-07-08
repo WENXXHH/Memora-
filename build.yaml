@@ -1,0 +1,11 @@
+targets:
+  $default:
+    builders:
+      json_serializable:
+        options:
+          # 当字段为显式 null 时，也会包含在输出 JSON 中
+          explicit_to_json: true
+
+      injectable_generator:
+        options:
+          auto_register: true

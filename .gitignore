@@ -43,3 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+Flutter项目规范.md
+暑期考核开发计划.md
+
+.env*

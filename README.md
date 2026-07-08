@@ -1,6 +1,6 @@
 # memora
 
-A new Flutter project.
+暑期考核Flutter单词背诵项目
 
 ## Getting Started
 
