@@ -324,7 +324,7 @@ packages:
     source: hosted
     version: "4.1.2"
   injectable:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: injectable
       sha256: "29559f7e3daebf0084597de86a825ae7f149d9e30264b7fbc71d1069ae82697d"
@@ -491,6 +491,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "4.1.0"
+  retry:
+    dependency: "direct main"
+    description:
+      name: retry
+      sha256: "822e118d5b3aafed083109c72d5f484c6dc66707885e07c0fbcb8b986bba7efc"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "3.1.2"
   riverpod:
     dependency: transitive
     description:
