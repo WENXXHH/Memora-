@@ -44,9 +44,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-Flutter项目规范.md
-暑期考核开发计划.md
-单词数据模型及mock服务相关代码编写.md
-首页设计思路.md
+/相关项目文档/
 
 .env*
