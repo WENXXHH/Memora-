@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:memora/core/dependency_injection.dart';
+import 'package:memora/services/dependency_injection.dart';
 import 'package:memora/app/router.dart';
 
 /// 应用入口函数

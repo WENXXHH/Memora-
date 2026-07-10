@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/word_repository.dart';
 import '../../../data/models/word_model.dart';
-import '../../../core/dependency_injection.dart';
+import '../../../providers/repository_providers.dart';
 
 /// 单词列表状态类
 ///
@@ -139,14 +139,3 @@ final wordListControllerProvider = StateNotifierProvider.family<WordListControll
   ),
 );
 
-/// WordRepository 的 Riverpod Provider
-///
-/// 通过 getIt 获取已注册的 WordRepository 实例
-final wordRepositoryProvider = Provider<WordRepository>((ref) {
-  return ref.read(getItProvider).get<WordRepository>();
-});
-
-/// getIt 实例的 Riverpod Provider
-///
-/// 将 getIt 暴露给 Riverpod 生态系统使用
-final getItProvider = Provider((ref) => getIt);

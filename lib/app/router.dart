@@ -2,7 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/home/pages/home_screen.dart';
 import '../features/vocabulary/pages/word_list_page.dart';
-import '../features/vocabulary/pages/Word_Detail_Page.dart';
+import '../features/vocabulary/pages/word_detail_page.dart';
 import '../components/PlaceholderPage.dart';
 import '../data/models/word_model.dart';
 
