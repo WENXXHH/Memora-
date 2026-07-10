@@ -39,7 +39,7 @@ class QuickActions extends StatelessWidget {
               icon: Icons.refresh,
               label: '复习旧词',
               color: colorScheme.error,
-              onPressed: () => context.push('/review'), // 跳转到复习页
+              onPressed: () => context.push('/learning?mode=review'), // 跳转到学习页（复习模式）
             ),
             const SizedBox(width: 12), // 按钮间距
             // 词库按钮，使用次要色

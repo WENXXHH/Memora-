@@ -5,6 +5,8 @@ import '../features/vocabulary/pages/word_list_page.dart';
 import '../features/vocabulary/pages/word_detail_page.dart';
 import '../components/PlaceholderPage.dart';
 import '../data/models/word_model.dart';
+import '../features/learning/pages/learning_page.dart';
+import '../features/learning/state/learning_state.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -18,7 +20,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/learning',
         name: 'learning',
-        builder: (context, state) => const PlaceholderPage(title: '学习页'),
+        builder: (context, state) {
+          final wordBookId = state.uri.queryParameters['wordBookId'] ?? 'cet6';
+          final mode = state.uri.queryParameters['mode'] == 'review' 
+              ? LearningMode.review 
+              : LearningMode.newWord;
+          return LearningPage(wordBookId: wordBookId, mode: mode);
+        },
       ),
       GoRoute(
         path: '/review',
