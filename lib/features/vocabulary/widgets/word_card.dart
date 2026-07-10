@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../data/models/word_model.dart';
+import '../../../data/models/word_model.dart';
 
 class WordCard extends StatelessWidget {
   final Word word;
