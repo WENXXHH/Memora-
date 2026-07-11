@@ -87,7 +87,7 @@ class _ActionButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: color.withValues(alpha: 0.1), // 浅色背景（10%透明度）
+          backgroundColor: color.withValues(alpha: 0.08), // 浅色背景（8%透明度），更柔和自然
           foregroundColor: color, // 文字和图标使用主题色
           padding: const EdgeInsets.symmetric(vertical: 16), // 垂直内边距
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // 圆角

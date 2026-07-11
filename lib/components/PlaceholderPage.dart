@@ -17,8 +17,8 @@ class PlaceholderPage extends StatelessWidget {
             Text(title),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => context.pop(),
-              child: const Text('返回'),
+              onPressed: () => context.go('/home'),
+              child: const Text('返回首页'),
             ),
           ],
         ),

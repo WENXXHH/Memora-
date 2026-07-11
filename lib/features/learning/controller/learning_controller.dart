@@ -3,15 +3,15 @@ import '../state/learning_state.dart';
 import '../../../providers/repository_providers.dart';
 import '../../../data/repositories/word_repository.dart';
 
-/// Controller for learning state management
+/// 学习状态管理控制器
 /// 
-/// Handles:
-/// - Loading word queue from repository
-/// - Showing/hiding word definitions
-/// - Processing user feedback and advancing to next word
-/// - Resetting learning session
+/// 负责处理：
+/// - 从仓库加载单词队列
+/// - 显示/隐藏单词释义
+/// - 处理用户反馈并跳转到下一个单词
+/// - 重置学习会话
 /// 
-/// Note: Current version is simplified. SM-2 algorithm will be integrated later.
+/// 注意：当前版本为简化版本。SM-2 算法将在后续集成。
 class LearningController extends StateNotifier<LearningState> {
   final WordRepository _wordRepository;
 
@@ -28,9 +28,9 @@ class LearningController extends StateNotifier<LearningState> {
     ),
   );
 
-  /// Start learning session
-  /// [wordBookId]: word book identifier (e.g., 'cet6', 'cet4')
-  /// [mode]: learning mode (default: newWord)
+  /// 开始学习会话
+  /// [wordBookId]: 词书标识符（如 'cet6', 'cet4'）
+  /// [mode]: 学习模式（默认为 newWord）
   Future<void> startLearning(String wordBookId, {LearningMode mode = LearningMode.newWord}) async {
     state = state.copyWith(isLoading: true, hasError: false, mode: mode);
 
@@ -58,15 +58,15 @@ class LearningController extends StateNotifier<LearningState> {
     }
   }
 
-  /// Show word definition and examples
+  /// 显示单词释义和例句
   void showAnswer() {
     state = state.copyWith(isShowingAnswer: true);
   }
 
-  /// Process user feedback and advance to next word
-  /// [type]: feedback type (known/fuzzy/unknown)
+  /// 处理用户反馈并跳转到下一个单词
+  /// [type]: 反馈类型（known/fuzzy/unknown）
   /// 
-  /// Note: SM-2 algorithm will be integrated in Week 2 to calculate review intervals
+  /// 注意：SM-2 算法将在第2周集成，用于计算复习间隔
   void handleFeedback(FeedbackType type) {
     if (state.currentWord == null) return;
 
@@ -85,7 +85,7 @@ class LearningController extends StateNotifier<LearningState> {
     }
   }
 
-  /// Reset learning state to initial
+  /// 重置学习状态到初始状态
   void reset() {
     state = state.copyWith(
       currentWord: null,
@@ -98,9 +98,9 @@ class LearningController extends StateNotifier<LearningState> {
   }
 }
 
-/// Riverpod provider for LearningController (with wordBookId parameter)
+/// Riverpod 提供者：LearningController（带 wordBookId 参数）
 /// 
-/// Usage:
+/// 使用方式：
 /// ```dart
 /// final state = ref.watch(learningControllerProvider('cet6'));
 /// final controller = ref.read(learningControllerProvider('cet6').notifier);

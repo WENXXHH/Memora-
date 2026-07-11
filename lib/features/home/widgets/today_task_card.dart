@@ -25,7 +25,7 @@ class TodayTaskCard extends StatelessWidget {
 
     // 使用 Card 组件实现卡片效果，包含阴影和圆角
     return Card(
-      elevation: 4, // 阴影深度，值越大阴影越明显
+      elevation: 2, // 轻微阴影，更现代感
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16), // 圆角半径
       ),
@@ -34,7 +34,7 @@ class TodayTaskCard extends StatelessWidget {
         child: Column(
           // 垂直布局：标题 → 任务项 → 按钮
           children: [
-            // 卡片标题
+            // 卡片标题，使用黑色更自然
             const Text(
               '今日学习任务',
               style: TextStyle(

@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 
-/// Feedback button widget for word mastery
+/// 单词掌握程度反馈按钮组件
 /// 
-/// Three states supported:
-/// - Known (green/primary color)
-/// - Fuzzy (yellow)
-/// - Unknown (red/error color)
+/// 支持三种状态：
+/// - 认识（绿色/主题色）
+/// - 模糊（黄色）
+/// - 不认识（红色/错误色）
 /// 
-/// Pure presentation component (StatelessWidget), click event handled by parent
+/// 纯展示组件（StatelessWidget），点击事件由父组件处理
 class FeedbackButton extends StatelessWidget {
-  /// Button display text
+  /// 按钮显示文本
   final String label;
 
-  /// Button background color
+  /// 按钮背景颜色
   final Color color;
 
-  /// Click callback
+  /// 点击回调函数
   final VoidCallback onPressed;
 
   const FeedbackButton({

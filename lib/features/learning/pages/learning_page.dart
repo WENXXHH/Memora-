@@ -7,17 +7,17 @@ import '../widgets/feedback_button.dart';
 import '../../../components/loading_view.dart';
 import '../../../components/error_view.dart';
 
-/// Learning page widget
+/// 学习页面组件
 /// 
-/// Integrates controller and widgets:
-/// 1. Creates LearningController for business logic
-/// 2. Uses WordLearningCard to display word info
-/// 3. Uses FeedbackButton for user feedback
-/// 4. Builds page layout structure
+/// 集成控制器和子组件：
+/// 1. 创建 LearningController 处理业务逻辑
+/// 2. 使用 WordLearningCard 显示单词信息
+/// 3. 使用 FeedbackButton 接收用户反馈
+/// 4. 构建页面布局结构
 /// 
-/// Parameters:
-/// - wordBookId: word book identifier (default: 'cet6')
-/// - mode: learning mode (default: newWord)
+/// 参数：
+/// - wordBookId: 词书标识符（默认为 'cet6'）
+/// - mode: 学习模式（默认为 newWord）
 class LearningPage extends ConsumerStatefulWidget {
   final String wordBookId;
   final LearningMode mode;
@@ -32,15 +32,15 @@ class LearningPage extends ConsumerStatefulWidget {
   ConsumerState<LearningPage> createState() => _LearningPageState();
 }
 
-/// State class for LearningPage
+/// LearningPage 的状态类
 /// 
-/// Handles initialization and state listening via Riverpod ref
+/// 通过 Riverpod ref 处理初始化和状态监听
 class _LearningPageState extends ConsumerState<LearningPage> {
   @override
   void initState() {
     super.initState();
-    // Use Future.microtask to avoid state modification during build
-    // This is Riverpod best practice to prevent "State modification during build" error
+    // 使用 Future.microtask 避免在 build 过程中修改状态
+    // 这是 Riverpod 的最佳实践，防止 "State modification during build" 错误
     Future.microtask(() {
       ref.read(learningControllerProvider(widget.wordBookId).notifier).startLearning(
         widget.wordBookId,
@@ -51,7 +51,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Watch learning state, rebuild when state changes
+    // 监听学习状态，状态变化时自动重建
     final learningState = ref.watch(learningControllerProvider(widget.wordBookId));
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -65,7 +65,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      // Conditional rendering based on state
+      // 根据状态条件渲染不同内容
       body: learningState.isLoading
           ? const LoadingView()
           : learningState.hasError
@@ -82,7 +82,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
     );
   }
 
-  /// Build complete screen
+  /// 构建学习完成页面
   Widget _buildComplete() {
     return Center(
       child: Column(
@@ -108,9 +108,9 @@ class _LearningPageState extends ConsumerState<LearningPage> {
     );
   }
 
-  /// Build learning content screen
-  /// [state]: current learning state
-  /// [colorScheme]: theme color scheme
+  /// 构建学习内容页面
+  /// [state]: 当前学习状态
+  /// [colorScheme]: 主题颜色方案
   Widget _buildContent(LearningState state, ColorScheme colorScheme) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -120,7 +120,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
           const SizedBox(height: 24),
           WordLearningCard(word: state.currentWord!),
           const SizedBox(height: 24),
-          // Show feedback buttons or "Show Definition" button
+          // 根据状态显示反馈按钮或"查看释义"按钮
           if (state.isShowingAnswer) ...[
             _buildFeedbackButtons(state, colorScheme),
           ] else ...[
@@ -134,8 +134,8 @@ class _LearningPageState extends ConsumerState<LearningPage> {
     );
   }
 
-  /// Build progress indicator
-  /// [state]: current learning state
+  /// 构建进度指示器
+  /// [state]: 当前学习状态
   Widget _buildProgress(LearningState state) {
     return Column(
       children: [
@@ -154,9 +154,9 @@ class _LearningPageState extends ConsumerState<LearningPage> {
     );
   }
 
-  /// Build feedback buttons row
-  /// [state]: current learning state
-  /// [colorScheme]: theme color scheme
+  /// 构建反馈按钮行
+  /// [state]: 当前学习状态
+  /// [colorScheme]: 主题颜色方案
   Widget _buildFeedbackButtons(LearningState state, ColorScheme colorScheme) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/word_model.dart';
 
-/// Word learning card widget
+/// 单词学习卡片组件
 /// 
-/// Displays word details including:
-/// - Word spelling (large, bold)
-/// - Phonetic (italic, gray)
-/// - Multi-part-of-speech definitions
-/// - Example sentences (italic, gray)
+/// 显示单词详细信息，包括：
+/// - 单词拼写（大号加粗）
+/// - 音标（斜体灰色）
+/// - 多词性释义
+/// - 例句（斜体灰色）
 /// 
-/// Pure presentation component (StatelessWidget), no business logic
+/// 纯展示组件（StatelessWidget），不含业务逻辑
 class WordLearningCard extends StatelessWidget {
   final Word word;
 
@@ -30,7 +30,7 @@ class WordLearningCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Word + Phonetic
+            // 单词 + 音标
             Row(
               children: [
                 Text(
@@ -53,9 +53,9 @@ class WordLearningCard extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // Definitions section
+            // 释义区域
             const Text(
-              'Definition',
+              '释义',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
@@ -70,11 +70,11 @@ class WordLearningCard extends StatelessWidget {
                   ),
                 )),
 
-            // Examples section (if available)
+            // 例句区域（如果有）
             if (word.example.isNotEmpty) ...[
               const SizedBox(height: 16),
               const Text(
-                'Examples',
+                '例句',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
