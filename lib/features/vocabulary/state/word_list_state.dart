@@ -1,5 +1,6 @@
 import '../../../data/models/word_model.dart';
 
+//词库列表状态类
 class WordListState {
   final List<Word> words;
   final List<Word> filteredWords;

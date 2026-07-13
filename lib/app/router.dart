@@ -10,9 +10,8 @@ import '../components/PlaceholderPage.dart';
 import '../data/models/word_model.dart';
 
 /// 路由配置Provider
-///
 /// 使用 StatefulShellRoute 实现底部Tab导航，支持页面状态保持
-/// 遵循《Flutter项目规范v1.0》中路由规范要求
+
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/home',

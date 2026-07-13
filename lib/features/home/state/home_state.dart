@@ -1,3 +1,5 @@
+//首页数据状态
+
 class HomeState {
   final int reviewCount;
   final int learnedCount;

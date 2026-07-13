@@ -3,6 +3,7 @@ import '../../../data/repositories/word_repository.dart';
 import '../state/word_list_state.dart';
 import '../../../providers/repository_providers.dart';
 
+
 class WordListController extends StateNotifier<WordListState> {
   final WordRepository _wordRepository;
 

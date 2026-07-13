@@ -2,7 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 
 import 'dependency_injection.config.dart';
-
+//注入依赖
 final getIt = GetIt.instance;
 
 @InjectableInit(

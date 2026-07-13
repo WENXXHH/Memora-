@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/home_state.dart';
 
+// 首页数据控制器
 class HomeController extends StateNotifier<HomeState> {
   HomeController() : super(
     HomeState(

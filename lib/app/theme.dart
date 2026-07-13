@@ -3,12 +3,9 @@ import 'package:flutter/material.dart';
 /// 全局主题配置
 ///
 /// 基于 Material 3 设计语言，统一管理应用的颜色、字体、间距等视觉要素
-/// 遵循《Flutter项目规范v1.0》中 UI规范章节要求
 class AppTheme {
   /// 主色种子
-  ///
-  /// 选择紫色系，传达记忆、智慧和专注的品牌核心价值
-  /// 紫色与"Memora"（Memory）名字语义契合度最高，在背单词App市场中具有独特性
+  /// 选择紫色系
   static const Color seedColor = Color(0xFF7C3AED);
 
   /// 亮色主题
@@ -69,9 +66,9 @@ class AppTheme {
     ),
   );
 
-  /// 暗色主题（预留，第8周UI优化阶段完善）
+  /// 暗色主题（预留，计划第8周UI优化阶段完善）
   ///
-  /// 与亮色主题共享主色种子，保证品牌一致性
+  /// 与亮色主题共享主色种子
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
