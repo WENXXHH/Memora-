@@ -1,6 +1,7 @@
 import '../data/models/word_review_model.dart';
 import '../features/learning/state/learning_state.dart';
 
+//定义纯函数工具
 class SM2Algorithm {
   static int _qualityFromFeedback(FeedbackType feedback) {
     switch (feedback) {
@@ -13,6 +14,7 @@ class SM2Algorithm {
     }
   }
 
+  //定义计算的逻辑，返回newInterval, newEF, newRepetition
   static (int, double, int) _calculate(
       int quality,
       int currentRepetition,
@@ -42,10 +44,13 @@ class SM2Algorithm {
     return (newInterval, newEF, newRepetition);
   }
 
+  // 间隔重复系统的核心计算逻辑
   static WordReview updateReview(WordReview currentReview, FeedbackType feedback) {
+    //转换为评分质量
     final quality = _qualityFromFeedback(feedback);
     final now = DateTime.now();
 
+    //运用_calculate返回复习间隔，EF，需要复习的次数三个复习参数
     final (newInterval, newEF, newRepetition) = _calculate(
       quality,
       currentReview.repetitionCount,
@@ -53,26 +58,31 @@ class SM2Algorithm {
       currentReview.interval,
     );
 
+    //掌握度
     final newMastery = _calculateMastery(newRepetition, newEF);
+    //是否脱离新词阶段
     final newLearned = newRepetition >= 3 && newEF >= 2.3;
 
+    //返回生成更新后的复习记录
     return currentReview.copyWith(
       repetitionCount: newRepetition,
       easinessFactor: newEF,
       interval: newInterval,
-      nextReviewDate: now.add(Duration(days: newInterval)),
+      nextReviewDate: now.add(Duration(days: newInterval)),//下次复习时间 = 今天 + 新间隔天数
       lastReviewDate: now,
       learned: newLearned,
       mastery: newMastery,
     );
   }
 
+  //判断下次复习日期是否 ≤ 今天
   static bool isDueToday(WordReview review) {
     final today = DateTime.now();
     return review.nextReviewDate.isBefore(today) ||
         review.nextReviewDate.isAtSameMomentAs(today);
   }
 
+  // 计算掌握度的函数
   static double _calculateMastery(int repetition, double ef) {
     final base = repetition * 0.15;
     final efBonus = (ef - 2.5) * 0.1;

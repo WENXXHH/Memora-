@@ -54,27 +54,33 @@ class LearningState {
   });
 
   /// 创建一个副本，更新指定字段
+  /// 
+  /// 使用 sentinel 模式区分"未传参"和"显式传 null"，
+  /// 避免 Dart `??` 将 null 回退为旧值的问题。
   LearningState copyWith({
     List<Word>? wordQueue,
-    Word? currentWord,
+    Object? currentWord = _sentinel,
     int? currentIndex,
     int? totalCount,
     bool? isShowingAnswer,
     bool? isLoading,
     bool? hasError,
-    String? errorMessage,
+    Object? errorMessage = _sentinel,
     LearningMode? mode,
   }) {
     return LearningState(
       wordQueue: wordQueue ?? this.wordQueue,
-      currentWord: currentWord ?? this.currentWord,
+      currentWord: identical(currentWord, _sentinel) ? this.currentWord : currentWord as Word?,
       currentIndex: currentIndex ?? this.currentIndex,
       totalCount: totalCount ?? this.totalCount,
       isShowingAnswer: isShowingAnswer ?? this.isShowingAnswer,
       isLoading: isLoading ?? this.isLoading,
       hasError: hasError ?? this.hasError,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: identical(errorMessage, _sentinel) ? this.errorMessage : errorMessage as String?,
       mode: mode ?? this.mode,
     );
   }
 }
+
+/// sentinel 值用于 copyWith 区分"未传参"与"显式传 null"
+const Object _sentinel = Object();

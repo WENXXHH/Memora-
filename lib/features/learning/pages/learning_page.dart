@@ -6,6 +6,7 @@ import '../widgets/word_learning_card.dart';
 import '../widgets/feedback_button.dart';
 import '../../../components/loading_view.dart';
 import '../../../components/error_view.dart';
+import '../../home/controller/home_controller.dart';
 
 /// 学习页面组件
 /// 
@@ -55,30 +56,43 @@ class _LearningPageState extends ConsumerState<LearningPage> {
     final learningState = ref.watch(learningControllerProvider(widget.wordBookId));
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.mode == LearningMode.newWord ? '新词学习' : '单词复习'),
-        centerTitle: true,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+    // PopScope 拦截系统返回键，返回前触发首页数据刷新
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) {
+          ref.read(homeControllerProvider.notifier).loadData();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(widget.mode == LearningMode.newWord ? '新词学习' : '单词复习'),
+          centerTitle: true,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              // 返回前刷新首页数据
+              ref.read(homeControllerProvider.notifier).loadData();
+              Navigator.of(context).pop();
+            },
+          ),
         ),
+        // 根据状态条件渲染不同内容
+        body: learningState.isLoading
+            ? const LoadingView()
+            : learningState.hasError
+                ? ErrorView(
+                    message: learningState.errorMessage,
+                    onRetry: () => ref.read(learningControllerProvider(widget.wordBookId).notifier).startLearning(
+                      widget.wordBookId,
+                      mode: widget.mode,
+                    ),
+                  )
+                : learningState.currentWord == null
+                    ? _buildComplete()
+                    : _buildContent(learningState, colorScheme),
       ),
-      // 根据状态条件渲染不同内容
-      body: learningState.isLoading
-          ? const LoadingView()
-          : learningState.hasError
-              ? ErrorView(
-                  message: learningState.errorMessage,
-                  onRetry: () => ref.read(learningControllerProvider(widget.wordBookId).notifier).startLearning(
-                    widget.wordBookId,
-                    mode: widget.mode,
-                  ),
-                )
-              : learningState.currentWord == null
-                  ? _buildComplete()
-                  : _buildContent(learningState, colorScheme),
     );
   }
 
@@ -100,7 +114,11 @@ class _LearningPageState extends ConsumerState<LearningPage> {
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              // 返回前刷新首页数据
+              ref.read(homeControllerProvider.notifier).loadData();
+              Navigator.of(context).pop();
+            },
             child: const Text('返回首页'),
           ),
         ],
@@ -165,6 +183,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
           label: '不认识',
           color: colorScheme.error,
           onPressed: () => ref.read(learningControllerProvider(widget.wordBookId).notifier).handleFeedback(
+            widget.wordBookId,
             FeedbackType.unknown,
           ),
         ),
@@ -173,6 +192,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
           label: '模糊',
           color: Colors.amber,
           onPressed: () => ref.read(learningControllerProvider(widget.wordBookId).notifier).handleFeedback(
+            widget.wordBookId,
             FeedbackType.fuzzy,
           ),
         ),
@@ -181,6 +201,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
           label: '认识',
           color: colorScheme.primary,
           onPressed: () => ref.read(learningControllerProvider(widget.wordBookId).notifier).handleFeedback(
+            widget.wordBookId,
             FeedbackType.known,
           ),
         ),
