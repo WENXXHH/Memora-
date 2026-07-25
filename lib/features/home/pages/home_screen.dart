@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../controller/home_controller.dart';
+import '../providers/home_providers.dart';
 import '../widgets/today_task_card.dart';
 import '../widgets/quick_actions.dart';
 import '../widgets/statistics_card.dart';

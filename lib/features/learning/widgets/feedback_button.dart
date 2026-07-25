@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+//发聩按钮组件
 class FeedbackButton extends StatefulWidget {
   final String label;
   final Color color;

@@ -1,13 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/home_state.dart';
-import '../../../providers/repository_providers.dart';
 import '../../../data/repositories/word_repository.dart';
+import '../../../data/repositories/review_repository.dart';
 
 // 首页数据控制器
 class HomeController extends StateNotifier<HomeState> {
   final WordRepository _wordRepository;
+  final ReviewRepository _reviewRepository;
 
-  HomeController(this._wordRepository) : super(
+  HomeController(this._wordRepository, this._reviewRepository) : super(
     HomeState(
       reviewCount: 0,
       learnedCount: 0,
@@ -18,14 +19,15 @@ class HomeController extends StateNotifier<HomeState> {
     ),
   );
 
+  //加载卡片数据
   Future<void> loadData() async {
     state = state.copyWith(isLoading: true);
     
     try {
       final totalWords = await _wordRepository.getWordCount('cet6');
-      final dueReviews = await _wordRepository.getDueReviews('cet6');
-      final reviewedCount = await _wordRepository.getReviewedCount('cet6');
-      final masteredCount = await _wordRepository.getMasteredCount('cet6');
+      final dueReviews = await _reviewRepository.getDueReviews('cet6');
+      final reviewedCount = await _reviewRepository.getReviewedCount('cet6');
+      final masteredCount = await _reviewRepository.getMasteredCount('cet6');
       
       state = state.copyWith(
         reviewCount: dueReviews.length,
@@ -49,9 +51,3 @@ class HomeController extends StateNotifier<HomeState> {
     }
   }
 }
-
-final homeControllerProvider = StateNotifierProvider<HomeController, HomeState>(
-  (ref) => HomeController(
-    ref.read(wordRepositoryProvider),
-  ),
-);

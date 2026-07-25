@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/word_repository.dart';
 import '../state/word_list_state.dart';
-import '../../../providers/repository_providers.dart';
-
 
 class WordListController extends StateNotifier<WordListState> {
   final WordRepository _wordRepository;
@@ -60,9 +58,3 @@ class WordListController extends StateNotifier<WordListState> {
     );
   }
 }
-
-final wordListControllerProvider = StateNotifierProvider.family<WordListController, WordListState, String>(
-  (ref, wordBookId) => WordListController(
-    ref.read(wordRepositoryProvider),
-  ),
-);

@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../controller/learning_controller.dart';
+import '../providers/learning_providers.dart';
 import '../state/learning_state.dart';
 import '../widgets/word_learning_card.dart';
-import '../widgets/feedback_button.dart';
+import '../widgets/feedback_button_row.dart';
+import '../widgets/learning_progress_bar.dart';
+import '../widgets/learning_complete_view.dart';
 import '../../../components/loading_view.dart';
 import '../../../components/error_view.dart';
-import '../../home/controller/home_controller.dart';
+import '../../../domain/enums/learning_enums.dart';
+import '../../home/providers/home_providers.dart';
 
+//学习页组件
 class LearningPage extends ConsumerStatefulWidget {
   final String wordBookId;
   final LearningMode mode;
@@ -34,6 +38,42 @@ class _LearningPageState extends ConsumerState<LearningPage> {
     });
   }
 
+  void _onPop() {
+    ref.read(homeControllerProvider.notifier).loadData();
+    Navigator.of(context).pop();
+  }
+
+  Widget _buildEmpty() {
+    final isReview = widget.mode == LearningMode.review;
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            isReview ? Icons.check_circle_outline : Icons.school_outlined,
+            size: 64,
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            isReview ? '暂无单词需要复习' : '暂无新词需要学习',
+            style: const TextStyle(fontSize: 18, color: Colors.grey),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isReview ? '所有单词都在记忆周期中，稍后再来看看' : '所有单词都已学过，请等待复习周期',
+            style: const TextStyle(fontSize: 14, color: Colors.grey),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: _onPop,
+            child: const Text('返回首页'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final learningState = ref.watch(learningControllerProvider(widget.wordBookId));
@@ -53,10 +93,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              ref.read(homeControllerProvider.notifier).loadData();
-              Navigator.of(context).pop();
-            },
+            onPressed: _onPop,
           ),
         ),
         body: learningState.isLoading
@@ -69,37 +106,11 @@ class _LearningPageState extends ConsumerState<LearningPage> {
                       mode: widget.mode,
                     ),
                   )
-                : learningState.currentWord == null
-                    ? _buildComplete()
-                    : _buildContent(learningState, colorScheme),
-      ),
-    );
-  }
-
-  Widget _buildComplete() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.check_circle,
-            size: 64,
-            color: Colors.green,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            '学习完成！',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              ref.read(homeControllerProvider.notifier).loadData();
-              Navigator.of(context).pop();
-            },
-            child: const Text('返回首页'),
-          ),
-        ],
+                : learningState.totalCount == 0
+                    ? _buildEmpty()
+                    : learningState.currentWord == null
+                        ? LearningCompleteView(onBackToHome: _onPop)
+                        : _buildContent(learningState, colorScheme),
       ),
     );
   }
@@ -109,7 +120,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          _buildProgress(state),
+          LearningProgressBar(state: state),
           const SizedBox(height: 24),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 250),
@@ -137,7 +148,12 @@ class _LearningPageState extends ConsumerState<LearningPage> {
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
             child: state.isShowingAnswer
-                ? _buildFeedbackButtons(state, colorScheme)
+                ? FeedbackButtonRow(
+                    key: const ValueKey('feedbackRow'),
+                    wordBookId: widget.wordBookId,
+                    colorScheme: colorScheme,
+                    onCompleted: _onPop,
+                  )
                 : ElevatedButton(
                     key: const ValueKey('showAnswer'),
                     onPressed: () => ref.read(learningControllerProvider(widget.wordBookId).notifier).showAnswer(),
@@ -146,92 +162,6 @@ class _LearningPageState extends ConsumerState<LearningPage> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildProgress(LearningState state) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: Text(
-                '${state.currentIndex + 1}/${state.totalCount}',
-                key: ValueKey(state.currentIndex),
-              ),
-            ),
-            Text(state.mode == LearningMode.newWord ? '新词' : '复习'),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Container(
-          height: 6,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(3),
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          ),
-          child: TweenAnimationBuilder<double>(
-            tween: Tween<double>(
-              begin: state.totalCount > 0
-                  ? state.currentIndex / state.totalCount
-                  : 0,
-              end: state.totalCount > 0
-                  ? (state.currentIndex + 1) / state.totalCount
-                  : 0,
-            ),
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-            builder: (context, value, child) {
-              return FractionallySizedBox(
-                widthFactor: value,
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(3),
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFeedbackButtons(LearningState state, ColorScheme colorScheme) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        FeedbackButton(
-          label: '不认识',
-          color: colorScheme.error,
-          onPressed: () => ref.read(learningControllerProvider(widget.wordBookId).notifier).handleFeedback(
-            widget.wordBookId,
-            FeedbackType.unknown,
-          ),
-        ),
-        const SizedBox(width: 16),
-        FeedbackButton(
-          label: '模糊',
-          color: Colors.amber,
-          onPressed: () => ref.read(learningControllerProvider(widget.wordBookId).notifier).handleFeedback(
-            widget.wordBookId,
-            FeedbackType.fuzzy,
-          ),
-        ),
-        const SizedBox(width: 16),
-        FeedbackButton(
-          label: '认识',
-          color: colorScheme.primary,
-          onPressed: () => ref.read(learningControllerProvider(widget.wordBookId).notifier).handleFeedback(
-            widget.wordBookId,
-            FeedbackType.known,
-          ),
-        ),
-      ],
     );
   }
 }

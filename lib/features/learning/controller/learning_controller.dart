@@ -1,10 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/learning_state.dart';
-import '../../../providers/repository_providers.dart';
 import '../../../data/repositories/word_repository.dart';
-import '../../../data/models/word_review_model.dart';
-import '../../../utils/sm2_algorithm.dart';
+import '../../../data/repositories/review_repository.dart';
 import '../../../data/models/word_model.dart';
+import '../../../domain/enums/learning_enums.dart';
+import '../../../utils/sm2_algorithm.dart';
 
 /// 学习状态管理控制器
 /// 
@@ -15,8 +16,9 @@ import '../../../data/models/word_model.dart';
 /// - 重置学习会话
 class LearningController extends StateNotifier<LearningState> {
   final WordRepository _wordRepository;
+  final ReviewRepository _reviewRepository;
 
-  LearningController(this._wordRepository) : super(
+  LearningController(this._wordRepository, this._reviewRepository) : super(
     LearningState(
       wordQueue: [],
       currentWord: null,
@@ -41,17 +43,13 @@ class LearningController extends StateNotifier<LearningState> {
       List<Word> displayWords;
       if (mode == LearningMode.review) {
         // 复习模式：获取需要复习的单词
-        final dueReviews = await _wordRepository.getDueReviews(wordBookId);
+        final dueReviews = await _reviewRepository.getDueReviews(wordBookId);
         final dueWordIds = dueReviews.map((r) => r.wordId).toSet();
         displayWords = allWords
             .where((w) => dueWordIds.contains(w.id))
             .take(10)
             .toList();
-        
-        // 如果没有待复习的单词，自动切换到新词学习
-        if (displayWords.isEmpty) {
-          displayWords = await _getUnlearnedWords(allWords, wordBookId);
-        }
+        // 没有待复习单词时直接返回空队列，由页面层展示提示信息
       } else {
         // 新词模式：过滤掉已学过的单词
         displayWords = await _getUnlearnedWords(allWords, wordBookId);
@@ -77,7 +75,7 @@ class LearningController extends StateNotifier<LearningState> {
   /// 获取未学过的单词（前20个）
   /// 只要有复习记录（不限到期时间），就从新词队列中排除
   Future<List<Word>> _getUnlearnedWords(List<Word> allWords, String wordBookId) async {
-    final reviewedIds = await _wordRepository.getAllReviewIds(wordBookId);
+    final reviewedIds = await _reviewRepository.getAllReviewIds(wordBookId);
     return allWords
         .where((w) => !reviewedIds.contains(w.id))
         .take(20)
@@ -92,14 +90,16 @@ class LearningController extends StateNotifier<LearningState> {
   /// 处理用户反馈：集成 SM-2 算法更新复习状态
   /// [wordBookId]: 词书标识符
   /// [type]: 反馈类型（known/fuzzy/unknown）
-  Future<void> handleFeedback(String wordBookId, FeedbackType type) async {
+  /// [onCompleted]: 学习完成时的回调（可选，由页面层注入）
+  Future<void> handleFeedback(String wordBookId, FeedbackType type,
+      {VoidCallback? onCompleted}) async {
     if (state.currentWord == null) return;
 
-    // 获取或创建复习状态
-    var review = await _wordRepository.getWordReview(
+    // 获取或创建复习状态（使用 SM2Algorithm 工厂方法创建初始状态）
+    var review = await _reviewRepository.getWordReview(
       state.currentWord!.id,
       wordBookId,
-    ) ?? WordReview.newReview(
+    ) ?? SM2Algorithm.createInitialReview(
       state.currentWord!.id,
       wordBookId,
     );
@@ -108,7 +108,7 @@ class LearningController extends StateNotifier<LearningState> {
     final updatedReview = SM2Algorithm.updateReview(review, type);
 
     // 保存到内存缓存（内部自动打印日志）
-    await _wordRepository.saveWordReview(updatedReview);
+    await _reviewRepository.saveWordReview(updatedReview);
 
     // 跳转到下一个单词
     if (state.currentIndex < state.totalCount - 1) {
@@ -123,6 +123,7 @@ class LearningController extends StateNotifier<LearningState> {
         currentWord: null,
         isShowingAnswer: false,
       );
+      onCompleted?.call();
     }
   }
 
@@ -138,16 +139,3 @@ class LearningController extends StateNotifier<LearningState> {
     );
   }
 }
-
-/// Riverpod 提供者：LearningController（带 wordBookId 参数）
-/// 
-/// 使用方式：
-/// ```dart
-/// final state = ref.watch(learningControllerProvider('cet6'));
-/// final controller = ref.read(learningControllerProvider('cet6').notifier);
-/// ```
-final learningControllerProvider = StateNotifierProvider.family<LearningController, LearningState, String>(
-  (ref, wordBookId) => LearningController(
-    ref.read(wordRepositoryProvider),
-  ),
-);

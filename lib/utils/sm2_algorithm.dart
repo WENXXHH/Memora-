@@ -1,5 +1,5 @@
 import '../data/models/word_review_model.dart';
-import '../features/learning/state/learning_state.dart';
+import '../domain/enums/learning_enums.dart';
 
 //定义纯函数工具
 class SM2Algorithm {
@@ -75,11 +75,34 @@ class SM2Algorithm {
     );
   }
 
-  //判断下次复习日期是否 ≤ 今天
+  //判断下次复习日期是否 ≤ 今天（仅比较日期部分，忽略时分秒）
   static bool isDueToday(WordReview review) {
     final today = DateTime.now();
-    return review.nextReviewDate.isBefore(today) ||
-        review.nextReviewDate.isAtSameMomentAs(today);
+    final nextDateOnly = DateTime(
+      review.nextReviewDate.year,
+      review.nextReviewDate.month,
+      review.nextReviewDate.day,
+    );
+    final todayOnly = DateTime(today.year, today.month, today.day);
+    return !nextDateOnly.isAfter(todayOnly);
+  }
+
+  /// 创建单词的初始复习状态
+  ///
+  /// 工厂方法从 WordReview 模型移至此处，因为 SM-2 算法默认值
+  /// 是算法关注点，非数据结构定义。
+  static WordReview createInitialReview(String wordId, String wordBookId) {
+    return WordReview(
+      wordId: wordId,
+      wordBookId: wordBookId,
+      repetitionCount: 0,
+      easinessFactor: 2.5,
+      interval: 0,
+      nextReviewDate: DateTime.now(),
+      lastReviewDate: null,
+      learned: false,
+      mastery: 0.0,
+    );
   }
 
   // 计算掌握度的函数

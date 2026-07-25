@@ -17,20 +17,6 @@ class WordReview with _$WordReview {
     required double mastery,
   }) = _WordReview;
 
-  factory WordReview.newReview(String wordId, String wordBookId) {
-    return WordReview(
-      wordId: wordId,
-      wordBookId: wordBookId,
-      repetitionCount: 0,
-      easinessFactor: 2.5,
-      interval: 0,
-      nextReviewDate: DateTime.now(),
-      lastReviewDate: null,
-      learned: false,
-      mastery: 0.0,
-    );
-  }
-
   factory WordReview.fromJson(Map<String, dynamic> json) =>
       _$WordReviewFromJson(json);
 }
