@@ -1,18 +1,17 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/home/pages/home_screen.dart';
 import '../features/vocabulary/pages/word_list_page.dart';
 import '../features/vocabulary/pages/word_detail_page.dart';
 import '../features/learning/pages/learning_page.dart';
-import '../features/learning/state/learning_state.dart';
 import '../components/PlaceholderPage.dart';
+import '../components/bottom_navigation_shell.dart';
+import '../domain/enums/learning_enums.dart';
 import '../data/models/word_model.dart';
 
 /// 路由配置Provider
-///
 /// 使用 StatefulShellRoute 实现底部Tab导航，支持页面状态保持
-/// 遵循《Flutter项目规范v1.0》中路由规范要求
+
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/home',
@@ -54,7 +53,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       /// 包含两个分支：首页和我的
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
-          return _BottomNavigationShell(navigationShell: navigationShell);
+          return BottomNavigationShell(navigationShell: navigationShell);
         },
         branches: [
           /// 首页分支
@@ -82,50 +81,3 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
-
-/// 底部导航壳组件
-///
-/// 封装 StatefulNavigationShell，提供统一的底部Tab栏
-/// 使用 Material 3 NavigationBar 组件
-class _BottomNavigationShell extends StatelessWidget {
-  const _BottomNavigationShell({
-    required this.navigationShell,
-  });
-
-  /// StatefulNavigationShell 实例，用于管理底部导航状态
-  final StatefulNavigationShell navigationShell;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      // 页面内容区域
-      body: navigationShell,
-      // 底部导航栏
-      bottomNavigationBar: NavigationBar(
-        // 当前选中的Tab索引
-        selectedIndex: navigationShell.currentIndex,
-        // Tab切换回调
-        onDestinationSelected: (index) {
-          navigationShell.goBranch(
-            index,
-            // 如果点击当前Tab，则刷新页面
-            initialLocation: index == navigationShell.currentIndex,
-          );
-        },
-        // 导航目标（首页和我的）
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: '首页',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outlined),
-            selectedIcon: Icon(Icons.person),
-            label: '我的',
-          ),
-        ],
-      ),
-    );
-  }
-}

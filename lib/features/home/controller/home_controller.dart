@@ -1,8 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/home_state.dart';
+import '../../../data/repositories/word_repository.dart';
+import '../../../data/repositories/review_repository.dart';
 
+// 首页数据控制器
 class HomeController extends StateNotifier<HomeState> {
-  HomeController() : super(
+  final WordRepository _wordRepository;
+  final ReviewRepository _reviewRepository;
+
+  HomeController(this._wordRepository, this._reviewRepository) : super(
     HomeState(
       reviewCount: 0,
       learnedCount: 0,
@@ -13,20 +19,35 @@ class HomeController extends StateNotifier<HomeState> {
     ),
   );
 
+  //加载卡片数据
   Future<void> loadData() async {
-    await Future.delayed(const Duration(milliseconds: 800));
+    state = state.copyWith(isLoading: true);
     
-    state = state.copyWith(
-      reviewCount: 15,
-      learnedCount: 5,
-      totalWords: 200,
-      masteredWords: 45,
-      streakDays: 7,
-      isLoading: false,
-    );
+    try {
+      final totalWords = await _wordRepository.getWordCount('cet6');
+      final dueReviews = await _reviewRepository.getDueReviews('cet6');
+      final reviewedCount = await _reviewRepository.getReviewedCount('cet6');
+      final masteredCount = await _reviewRepository.getMasteredCount('cet6');
+      
+      state = state.copyWith(
+        reviewCount: dueReviews.length,
+        learnedCount: reviewedCount,
+        totalWords: totalWords,
+        masteredWords: masteredCount,
+        streakDays: 0,
+        isLoading: false,
+      );
+    } catch (e) {
+      // 数据获取失败时降级为默认值
+      print('[HomeController] loadData error: $e');
+      state = state.copyWith(
+        reviewCount: 0,
+        learnedCount: 0,
+        totalWords: 200,
+        masteredWords: 0,
+        streakDays: 0,
+        isLoading: false,
+      );
+    }
   }
 }
-
-final homeControllerProvider = StateNotifierProvider<HomeController, HomeState>(
-  (ref) => HomeController(),
-);

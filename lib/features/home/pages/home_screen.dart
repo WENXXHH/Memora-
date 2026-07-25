@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../controller/home_controller.dart';
+import '../providers/home_providers.dart';
 import '../widgets/today_task_card.dart';
 import '../widgets/quick_actions.dart';
 import '../widgets/statistics_card.dart';
@@ -23,10 +23,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // 在页面初始化时调用控制器的 loadData 方法
-    // 通过 ref.read 获取控制器实例并调用方法
-    // 注意：此处使用 read 而非 watch，因为只需要调用一次，不需要监听变化
-    ref.read(homeControllerProvider.notifier).loadData();
+    // 使用 Future.microtask 确保在 build 完成后异步加载数据
+    _loadData();
+  }
+
+  /// 异步加载首页数据
+  void _loadData() {
+    Future.microtask(() {
+      ref.read(homeControllerProvider.notifier).loadData();
+    });
   }
 
   @override

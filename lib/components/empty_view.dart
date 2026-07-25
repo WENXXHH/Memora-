@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// 结果返回提示‘暂无数据’组件
 class EmptyView extends StatelessWidget {
   final String? message;
 

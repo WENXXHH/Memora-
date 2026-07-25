@@ -1,3 +1,5 @@
+/// 环境配置中心
+
 enum Environment { development, staging, production }
 
 class Env {

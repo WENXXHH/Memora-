@@ -1,22 +1,5 @@
 import '../../../data/models/word_model.dart';
-
-/// 用户对单词掌握程度的反馈类型
-/// - known: 用户认识该单词
-/// - fuzzy: 用户对单词记忆模糊
-/// - unknown: 用户不认识该单词
-enum FeedbackType {
-  known,
-  fuzzy,
-  unknown,
-}
-
-/// 学习模式
-/// - newWord: 学习新词（每次20个单词）
-/// - review: 复习已学单词（每次10个单词）
-enum LearningMode {
-  newWord,
-  review,
-}
+import '../../../domain/enums/learning_enums.dart';
 
 /// 学习状态类（不可变）
 /// 
@@ -54,27 +37,33 @@ class LearningState {
   });
 
   /// 创建一个副本，更新指定字段
+  /// 
+  /// 使用 sentinel 模式区分"未传参"和"显式传 null"，
+  /// 避免 Dart `??` 将 null 回退为旧值的问题。
   LearningState copyWith({
     List<Word>? wordQueue,
-    Word? currentWord,
+    Object? currentWord = _sentinel,
     int? currentIndex,
     int? totalCount,
     bool? isShowingAnswer,
     bool? isLoading,
     bool? hasError,
-    String? errorMessage,
+    Object? errorMessage = _sentinel,
     LearningMode? mode,
   }) {
     return LearningState(
       wordQueue: wordQueue ?? this.wordQueue,
-      currentWord: currentWord ?? this.currentWord,
+      currentWord: identical(currentWord, _sentinel) ? this.currentWord : currentWord as Word?,
       currentIndex: currentIndex ?? this.currentIndex,
       totalCount: totalCount ?? this.totalCount,
       isShowingAnswer: isShowingAnswer ?? this.isShowingAnswer,
       isLoading: isLoading ?? this.isLoading,
       hasError: hasError ?? this.hasError,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: identical(errorMessage, _sentinel) ? this.errorMessage : errorMessage as String?,
       mode: mode ?? this.mode,
     );
   }
 }
+
+/// sentinel 值用于 copyWith 区分"未传参"与"显式传 null"
+const Object _sentinel = Object();

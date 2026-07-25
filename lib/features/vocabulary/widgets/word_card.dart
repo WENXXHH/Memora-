@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../data/models/word_model.dart';
 
+//单一单词显示卡片
 class WordCard extends StatelessWidget {
   final Word word;
 

@@ -1,13 +1,14 @@
 import 'package:injectable/injectable.dart';
-import '../sources/local/mock_word_source.dart';
+import '../sources/word_data_source.dart';
 import '../models/word_model.dart';
 
 /// 单词仓库
 ///
 /// 职责：
-/// 1. 封装数据源调用，面向业务层提供统一接口
-/// 2. 处理业务逻辑（如词库过滤、数据转换）
-/// 3. 实现数据与业务的解耦
+/// 1. 封装单词数据源调用，面向业务层提供统一接口
+/// 2. 处理单词检索与过滤
+///
+/// 复习状态管理已拆分至 ReviewRepository
 ///
 /// 分层单向依赖：features → repositories → sources → Hive/JSON
 @injectable
