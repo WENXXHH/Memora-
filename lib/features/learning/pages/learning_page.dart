@@ -122,26 +122,32 @@ class _LearningPageState extends ConsumerState<LearningPage> {
         children: [
           LearningProgressBar(state: state),
           const SizedBox(height: 24),
-          AnimatedSwitcher(
+          AnimatedSize(
             duration: const Duration(milliseconds: 250),
-            switchInCurve: Curves.easeOut,
-            switchOutCurve: Curves.easeIn,
-            transitionBuilder: (Widget child, Animation<double> animation) {
-              return FadeTransition(
-                opacity: animation,
-                child: ScaleTransition(
-                  scale: animation.drive(
-                    Tween<double>(begin: 0.95, end: 1.0).chain(
-                      CurveTween(curve: Curves.easeOut),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 250),
+              switchInCurve: Curves.easeOut,
+              switchOutCurve: Curves.easeIn,
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: ScaleTransition(
+                    scale: animation.drive(
+                      Tween<double>(begin: 0.95, end: 1.0).chain(
+                        CurveTween(curve: Curves.easeOut),
+                      ),
                     ),
+                    child: child,
                   ),
-                  child: child,
-                ),
-              );
-            },
-            child: WordLearningCard(
-              key: ValueKey(state.currentWord!.id),
-              word: state.currentWord!,
+                );
+              },
+              child: WordLearningCard(
+                key: ValueKey(state.currentWord!.id),
+                word: state.currentWord!,
+                showMeaning: state.isShowingAnswer,
+              ),
             ),
           ),
           const SizedBox(height: 24),

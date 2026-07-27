@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 /// 今日任务卡片组件
 ///
-/// 展示今日待复习和已学习的单词数量，提供开始学习按钮
-/// 通过构造函数接收数据，实现数据驱动的 UI
+/// 纯信息展示组件：展示今日待复习和已学习的单词数量
+/// 学习/复习入口由 QuickActions 统一提供
 class TodayTaskCard extends StatelessWidget {
   /// 待复习单词数量
   final int reviewCount;
@@ -62,21 +61,6 @@ class TodayTaskCard extends StatelessWidget {
                   color: colorScheme.primary,
                 ),
               ],
-            ),
-            const SizedBox(height: 20), // 间距
-            // 开始学习按钮，宽度占满卡片
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => context.push('/learning'), // 跳转到学习页
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16), // 垂直内边距
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12), // 圆角
-                  ),
-                ),
-                child: const Text('开始学习', style: TextStyle(fontSize: 16)),
-              ),
             ),
           ],
         ),
