@@ -38,15 +38,11 @@ class HomeController extends StateNotifier<HomeState> {
         isLoading: false,
       );
     } catch (e) {
-      // 数据获取失败时降级为默认值
-      print('[HomeController] loadData error: $e');
+      // 数据获取失败时标记错误状态，由 UI 层展示重试入口
       state = state.copyWith(
-        reviewCount: 0,
-        learnedCount: 0,
-        totalWords: 200,
-        masteredWords: 0,
-        streakDays: 0,
         isLoading: false,
+        hasError: true,
+        errorMessage: e.toString(),
       );
     }
   }
