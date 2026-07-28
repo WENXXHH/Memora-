@@ -15,8 +15,7 @@ class ReviewLocalDataSource {
   final Box<Map<dynamic, dynamic>> _box;
 
   /// 统一 key 格式：wordBookId:wordId
-  String _buildKey(String wordBookId, String wordId) =>
-      '$wordBookId:$wordId';
+  String _buildKey(String wordBookId, String wordId) => '$wordBookId:$wordId';
 
   // ---------------------------------------------------------------------------
   // 单条读写
@@ -70,8 +69,7 @@ class ReviewLocalDataSource {
   // ---------------------------------------------------------------------------
 
   /// 已有复习记录总数（已学数量）。
-  int getReviewedCount(String wordBookId) =>
-      _getAllReviews(wordBookId).length;
+  int getReviewedCount(String wordBookId) => _getAllReviews(wordBookId).length;
 
   /// 已学会数量（learned == true）。
   int getLearnedCount(String wordBookId) =>

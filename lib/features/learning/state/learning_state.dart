@@ -2,7 +2,7 @@ import '../../../data/models/word_model.dart';
 import '../../../domain/enums/learning_enums.dart';
 
 /// 学习状态类（不可变）
-/// 
+///
 /// 字段说明：
 /// - wordQueue: 当前学习会话的单词队列
 /// - currentWord: 当前正在学习的单词
@@ -37,7 +37,7 @@ class LearningState {
   });
 
   /// 创建一个副本，更新指定字段
-  /// 
+  ///
   /// 使用 sentinel 模式区分"未传参"和"显式传 null"，
   /// 避免 Dart `??` 将 null 回退为旧值的问题。
   LearningState copyWith({
@@ -53,13 +53,17 @@ class LearningState {
   }) {
     return LearningState(
       wordQueue: wordQueue ?? this.wordQueue,
-      currentWord: identical(currentWord, _sentinel) ? this.currentWord : currentWord as Word?,
+      currentWord: identical(currentWord, _sentinel)
+          ? this.currentWord
+          : currentWord as Word?,
       currentIndex: currentIndex ?? this.currentIndex,
       totalCount: totalCount ?? this.totalCount,
       isShowingAnswer: isShowingAnswer ?? this.isShowingAnswer,
       isLoading: isLoading ?? this.isLoading,
       hasError: hasError ?? this.hasError,
-      errorMessage: identical(errorMessage, _sentinel) ? this.errorMessage : errorMessage as String?,
+      errorMessage: identical(errorMessage, _sentinel)
+          ? this.errorMessage
+          : errorMessage as String?,
       mode: mode ?? this.mode,
     );
   }

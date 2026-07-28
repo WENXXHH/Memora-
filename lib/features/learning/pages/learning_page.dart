@@ -31,10 +31,9 @@ class _LearningPageState extends ConsumerState<LearningPage> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      ref.read(learningControllerProvider(widget.wordBookId).notifier).startLearning(
-        widget.wordBookId,
-        mode: widget.mode,
-      );
+      ref
+          .read(learningControllerProvider(widget.wordBookId).notifier)
+          .startLearning(widget.wordBookId, mode: widget.mode);
     });
   }
 
@@ -65,10 +64,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
             style: const TextStyle(fontSize: 14, color: Colors.grey),
           ),
           const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: _onPop,
-            child: const Text('返回首页'),
-          ),
+          ElevatedButton(onPressed: _onPop, child: const Text('返回首页')),
         ],
       ),
     );
@@ -76,7 +72,9 @@ class _LearningPageState extends ConsumerState<LearningPage> {
 
   @override
   Widget build(BuildContext context) {
-    final learningState = ref.watch(learningControllerProvider(widget.wordBookId));
+    final learningState = ref.watch(
+      learningControllerProvider(widget.wordBookId),
+    );
     final colorScheme = Theme.of(context).colorScheme;
 
     return PopScope(
@@ -99,18 +97,19 @@ class _LearningPageState extends ConsumerState<LearningPage> {
         body: learningState.isLoading
             ? const LoadingView()
             : learningState.hasError
-                ? ErrorView(
-                    message: learningState.errorMessage,
-                    onRetry: () => ref.read(learningControllerProvider(widget.wordBookId).notifier).startLearning(
-                      widget.wordBookId,
-                      mode: widget.mode,
-                    ),
-                  )
-                : learningState.totalCount == 0
-                    ? _buildEmpty()
-                    : learningState.currentWord == null
-                        ? LearningCompleteView(onBackToHome: _onPop)
-                        : _buildContent(learningState, colorScheme),
+            ? ErrorView(
+                message: learningState.errorMessage,
+                onRetry: () => ref
+                    .read(
+                      learningControllerProvider(widget.wordBookId).notifier,
+                    )
+                    .startLearning(widget.wordBookId, mode: widget.mode),
+              )
+            : learningState.totalCount == 0
+            ? _buildEmpty()
+            : learningState.currentWord == null
+            ? LearningCompleteView(onBackToHome: _onPop)
+            : _buildContent(learningState, colorScheme),
       ),
     );
   }
@@ -135,9 +134,10 @@ class _LearningPageState extends ConsumerState<LearningPage> {
                   opacity: animation,
                   child: ScaleTransition(
                     scale: animation.drive(
-                      Tween<double>(begin: 0.95, end: 1.0).chain(
-                        CurveTween(curve: Curves.easeOut),
-                      ),
+                      Tween<double>(
+                        begin: 0.95,
+                        end: 1.0,
+                      ).chain(CurveTween(curve: Curves.easeOut)),
                     ),
                     child: child,
                   ),
@@ -162,7 +162,13 @@ class _LearningPageState extends ConsumerState<LearningPage> {
                   )
                 : ElevatedButton(
                     key: const ValueKey('showAnswer'),
-                    onPressed: () => ref.read(learningControllerProvider(widget.wordBookId).notifier).showAnswer(),
+                    onPressed: () => ref
+                        .read(
+                          learningControllerProvider(
+                            widget.wordBookId,
+                          ).notifier,
+                        )
+                        .showAnswer(),
                     child: const Text('查看释义'),
                   ),
           ),

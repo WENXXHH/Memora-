@@ -25,6 +25,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return WordDetailPage(word: word);
         },
       ),
+
       /// 学习页（全屏覆盖，无底部导航）
       GoRoute(
         path: '/learning',
@@ -37,6 +38,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return LearningPage(wordBookId: wordBookId, mode: mode);
         },
       ),
+
       /// 词库页（全屏覆盖，无底部导航）
       GoRoute(
         path: '/vocabulary',
@@ -47,6 +49,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return WordListPage(wordBookId: wordBookId, title: title);
         },
       ),
+
       /// 底部Tab导航壳路由
       ///
       /// 使用 StatefulShellRoute.indexedStack 保持页面状态
@@ -66,6 +69,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
+
           /// 我的分支（占位，第5周完善）
           StatefulShellBranch(
             routes: [

@@ -29,7 +29,9 @@ class StatisticsCard extends StatelessWidget {
     // 使用 Card 组件实现卡片效果
     return Card(
       elevation: 2, // 轻微阴影，比今日任务卡片浅
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), // 圆角
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ), // 圆角
       child: Padding(
         padding: const EdgeInsets.all(20), // 内边距
         child: Column(
@@ -84,7 +86,11 @@ class _StatItem extends StatelessWidget {
         // 数值文字，大字号加粗，使用主题颜色
         Text(
           value,
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color),
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
         ),
         const SizedBox(height: 4), // 间距
         // 标签文字，小字号灰色，与数值形成对比

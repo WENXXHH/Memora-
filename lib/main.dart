@@ -46,8 +46,7 @@ Future<void> main() async {
                 const SizedBox(height: 16),
                 const Text('本地数据初始化失败'),
                 const SizedBox(height: 8),
-                const Text('请尝试重新启动应用',
-                    style: TextStyle(color: Colors.grey)),
+                const Text('请尝试重新启动应用', style: TextStyle(color: Colors.grey)),
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: () => main(),

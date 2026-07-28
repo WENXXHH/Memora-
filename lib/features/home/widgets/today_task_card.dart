@@ -36,10 +36,7 @@ class TodayTaskCard extends StatelessWidget {
             // 卡片标题，使用黑色更自然
             const Text(
               '今日学习任务',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 20), // 间距
             // 任务项横向排列，使用 spaceEvenly 均匀分布

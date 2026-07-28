@@ -16,18 +16,20 @@ class SM2Algorithm {
 
   //定义计算的逻辑，返回newInterval, newEF, newRepetition
   static (int, double, int) _calculate(
-      int quality,
-      int currentRepetition,
-      double currentEF,
-      int currentInterval,
-      ) {
+    int quality,
+    int currentRepetition,
+    double currentEF,
+    int currentInterval,
+  ) {
     final clampedQuality = quality.clamp(0, 5);
 
     if (clampedQuality < 3) {
       return (1, currentEF, 0);
     }
 
-    double newEF = currentEF + (0.1 - (5 - clampedQuality) * (0.08 + (5 - clampedQuality) * 0.02));
+    double newEF =
+        currentEF +
+        (0.1 - (5 - clampedQuality) * (0.08 + (5 - clampedQuality) * 0.02));
     newEF = newEF.clamp(1.3, 5.0);
 
     final newRepetition = currentRepetition + 1;
@@ -45,7 +47,10 @@ class SM2Algorithm {
   }
 
   // 间隔重复系统的核心计算逻辑
-  static WordReview updateReview(WordReview currentReview, FeedbackType feedback) {
+  static WordReview updateReview(
+    WordReview currentReview,
+    FeedbackType feedback,
+  ) {
     //转换为评分质量
     final quality = _qualityFromFeedback(feedback);
     final now = DateTime.now();
@@ -68,7 +73,9 @@ class SM2Algorithm {
       repetitionCount: newRepetition,
       easinessFactor: newEF,
       interval: newInterval,
-      nextReviewDate: now.add(Duration(days: newInterval)),//下次复习时间 = 今天 + 新间隔天数
+      nextReviewDate: now.add(
+        Duration(days: newInterval),
+      ), //下次复习时间 = 今天 + 新间隔天数
       lastReviewDate: now,
       learned: newLearned,
       mastery: newMastery,

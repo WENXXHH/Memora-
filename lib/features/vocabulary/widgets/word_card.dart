@@ -6,10 +6,7 @@ import '../../../data/models/word_model.dart';
 class WordCard extends StatelessWidget {
   final Word word;
 
-  const WordCard({
-    super.key,
-    required this.word,
-  });
+  const WordCard({super.key, required this.word});
 
   @override
   Widget build(BuildContext context) {
@@ -17,9 +14,7 @@ class WordCard extends StatelessWidget {
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: InkWell(
         onTap: () => context.push('/detail', extra: word),
@@ -49,10 +44,7 @@ class WordCard extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  Icon(
-                    Icons.chevron_right,
-                    color: colorScheme.outline,
-                  ),
+                  Icon(Icons.chevron_right, color: colorScheme.outline),
                 ],
               ),
               const SizedBox(height: 8),

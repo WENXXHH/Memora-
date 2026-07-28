@@ -122,18 +122,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       padding: const EdgeInsets.symmetric(vertical: 20),
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+        color: Theme.of(
+          context,
+        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(12),
       ),
       child: const Column(
         children: [
           Icon(Icons.auto_stories, size: 40, color: Colors.grey),
           SizedBox(height: 8),
-          Text('还没有学习记录',
-              style: TextStyle(fontSize: 16, color: Colors.grey)),
+          Text('还没有学习记录', style: TextStyle(fontSize: 16, color: Colors.grey)),
           SizedBox(height: 4),
-          Text('开始学习第一个单词吧',
-              style: TextStyle(fontSize: 13, color: Colors.grey)),
+          Text(
+            '开始学习第一个单词吧',
+            style: TextStyle(fontSize: 13, color: Colors.grey),
+          ),
         ],
       ),
     );

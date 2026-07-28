@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import '../../../data/models/word_model.dart';
 
 /// 单词学习卡片组件
-/// 
+///
 /// 显示单词详细信息：
 /// - 单词拼写（大号加粗）+ 音标（始终可见）
 /// - 多词性释义（由 showMeaning 控制显隐）
 /// - 例句（由 showMeaning 控制显隐）
-/// 
+///
 /// 纯展示组件（StatelessWidget），不含业务逻辑
 class WordLearningCard extends StatelessWidget {
   final Word word;
@@ -56,41 +56,39 @@ class WordLearningCard extends StatelessWidget {
 
             // 释义区域（仅在 showMeaning 为 true 时显示）
             if (showMeaning) ...[
-              const Text(
-                '释义',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+              const Text('释义', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              ...word.meaning.map((meaning) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Text(
-                      '${meaning.pos} ${meaning.definitions.join('、')}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+              ...word.meaning.map(
+                (meaning) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Text(
+                    '${meaning.pos} ${meaning.definitions.join('、')}',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: colorScheme.onSurfaceVariant,
                     ),
-                  )),
+                  ),
+                ),
+              ),
 
               // 例句区域（如果有）
               if (word.example.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                const Text(
-                  '例句',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
+                const Text('例句', style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
-                ...word.example.map((example) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Text(
-                        example,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: colorScheme.onSurfaceVariant,
-                          fontStyle: FontStyle.italic,
-                        ),
+                ...word.example.map(
+                  (example) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Text(
+                      example,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: colorScheme.onSurfaceVariant,
+                        fontStyle: FontStyle.italic,
                       ),
-                    )),
+                    ),
+                  ),
+                ),
               ],
             ],
           ],
