@@ -8,10 +8,7 @@ import '../../../domain/enums/learning_enums.dart';
 class LearningProgressBar extends StatelessWidget {
   final LearningState state;
 
-  const LearningProgressBar({
-    super.key,
-    required this.state,
-  });
+  const LearningProgressBar({super.key, required this.state});
 
   @override
   Widget build(BuildContext context) {

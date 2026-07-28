@@ -11,11 +11,7 @@ class WordListPage extends ConsumerStatefulWidget {
   final String wordBookId;
   final String title;
 
-  const WordListPage({
-    super.key,
-    this.wordBookId = 'cet6',
-    this.title = '词库',
-  });
+  const WordListPage({super.key, this.wordBookId = 'cet6', this.title = '词库'});
 
   @override
   ConsumerState<WordListPage> createState() => _WordListPageState();
@@ -28,7 +24,9 @@ class _WordListPageState extends ConsumerState<WordListPage> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      ref.read(wordListControllerProvider(widget.wordBookId).notifier).loadWords(widget.wordBookId);
+      ref
+          .read(wordListControllerProvider(widget.wordBookId).notifier)
+          .loadWords(widget.wordBookId);
     });
   }
 
@@ -40,7 +38,9 @@ class _WordListPageState extends ConsumerState<WordListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final wordListState = ref.watch(wordListControllerProvider(widget.wordBookId));
+    final wordListState = ref.watch(
+      wordListControllerProvider(widget.wordBookId),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -51,15 +51,19 @@ class _WordListPageState extends ConsumerState<WordListPage> {
       body: wordListState.isLoading
           ? const LoadingView()
           : wordListState.hasError
-              ? ErrorView(
-                  message: wordListState.errorMessage,
-                  onRetry: () => ref.read(wordListControllerProvider(widget.wordBookId).notifier).loadWords(widget.wordBookId),
-                )
-              : wordListState.filteredWords.isEmpty
-                  ? EmptyView(
-                      message: wordListState.searchQuery.isNotEmpty ? '未找到匹配的单词' : '暂无单词数据',
-                    )
-                  : _buildContent(wordListState),
+          ? ErrorView(
+              message: wordListState.errorMessage,
+              onRetry: () => ref
+                  .read(wordListControllerProvider(widget.wordBookId).notifier)
+                  .loadWords(widget.wordBookId),
+            )
+          : wordListState.filteredWords.isEmpty
+          ? EmptyView(
+              message: wordListState.searchQuery.isNotEmpty
+                  ? '未找到匹配的单词'
+                  : '暂无单词数据',
+            )
+          : _buildContent(wordListState),
     );
   }
 
@@ -85,19 +89,25 @@ class _WordListPageState extends ConsumerState<WordListPage> {
       padding: const EdgeInsets.all(16),
       child: TextField(
         controller: _searchController,
-        onChanged: (value) => ref.read(wordListControllerProvider(widget.wordBookId).notifier).search(value),
+        onChanged: (value) => ref
+            .read(wordListControllerProvider(widget.wordBookId).notifier)
+            .search(value),
         decoration: InputDecoration(
           hintText: '搜索单词或释义',
           prefixIcon: const Icon(Icons.search),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           suffixIcon: currentQuery.isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.clear),
                   onPressed: () {
                     _searchController.clear();
-                    ref.read(wordListControllerProvider(widget.wordBookId).notifier).search('');
+                    ref
+                        .read(
+                          wordListControllerProvider(
+                            widget.wordBookId,
+                          ).notifier,
+                        )
+                        .search('');
                   },
                 )
               : null,

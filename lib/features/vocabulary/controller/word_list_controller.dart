@@ -5,19 +5,20 @@ import '../state/word_list_state.dart';
 class WordListController extends StateNotifier<WordListState> {
   final WordRepository _wordRepository;
 
-  WordListController(this._wordRepository) : super(
-    WordListState(
-      words: [],
-      filteredWords: [],
-      searchQuery: '',
-      isLoading: true,
-      hasError: false,
-    ),
-  );
+  WordListController(this._wordRepository)
+    : super(
+        WordListState(
+          words: [],
+          filteredWords: [],
+          searchQuery: '',
+          isLoading: true,
+          hasError: false,
+        ),
+      );
 
   Future<void> loadWords(String wordBookId) async {
     state = state.copyWith(isLoading: true, hasError: false);
-    
+
     try {
       final words = await _wordRepository.getWords(wordBookId);
       state = state.copyWith(
@@ -36,25 +37,22 @@ class WordListController extends StateNotifier<WordListState> {
 
   void search(String query) {
     final lowerQuery = query.toLowerCase().trim();
-    
+
     if (lowerQuery.isEmpty) {
-      state = state.copyWith(
-        searchQuery: query,
-        filteredWords: state.words,
-      );
+      state = state.copyWith(searchQuery: query, filteredWords: state.words);
       return;
     }
 
-    final filtered = state.words.where((word) => 
-      word.word.toLowerCase().contains(lowerQuery) ||
-      word.meaning.any((m) => m.definitions.any(
-        (d) => d.contains(lowerQuery),
-      ))
-    ).toList();
+    final filtered = state.words
+        .where(
+          (word) =>
+              word.word.toLowerCase().contains(lowerQuery) ||
+              word.meaning.any(
+                (m) => m.definitions.any((d) => d.contains(lowerQuery)),
+              ),
+        )
+        .toList();
 
-    state = state.copyWith(
-      searchQuery: query,
-      filteredWords: filtered,
-    );
+    state = state.copyWith(searchQuery: query, filteredWords: filtered);
   }
 }

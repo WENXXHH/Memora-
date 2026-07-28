@@ -39,7 +39,8 @@ class QuickActions extends StatelessWidget {
               icon: Icons.refresh,
               label: '复习旧词',
               color: colorScheme.error,
-              onPressed: () => context.push('/learning?mode=review'), // 跳转到学习页（复习模式）
+              onPressed: () =>
+                  context.push('/learning?mode=review'), // 跳转到学习页（复习模式）
             ),
             const SizedBox(width: 12), // 按钮间距
             // 词库按钮，使用次要色
@@ -90,7 +91,9 @@ class _ActionButton extends StatelessWidget {
           backgroundColor: color.withValues(alpha: 0.08), // 浅色背景（8%透明度），更柔和自然
           foregroundColor: color, // 文字和图标使用主题色
           padding: const EdgeInsets.symmetric(vertical: 16), // 垂直内边距
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // 圆角
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ), // 圆角
           elevation: 0, // 无阴影，扁平风格
         ),
         child: Column(

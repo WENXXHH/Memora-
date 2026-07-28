@@ -23,35 +23,45 @@ class FeedbackButtonRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        FeedbackButton(
-          label: '不认识',
-          color: colorScheme.error,
-          onPressed: () => ref.read(learningControllerProvider(wordBookId).notifier).handleFeedback(
-            wordBookId,
-            FeedbackType.unknown,
-            onCompleted: onCompleted,
+        Flexible(
+          child: FeedbackButton(
+            label: '不认识',
+            color: colorScheme.error,
+            onPressed: () => ref
+                .read(learningControllerProvider(wordBookId).notifier)
+                .handleFeedback(
+                  wordBookId,
+                  FeedbackType.unknown,
+                  onCompleted: onCompleted,
+                ),
           ),
         ),
-        const SizedBox(width: 16),
-        FeedbackButton(
-          label: '模糊',
-          color: Colors.amber,
-          onPressed: () => ref.read(learningControllerProvider(wordBookId).notifier).handleFeedback(
-            wordBookId,
-            FeedbackType.fuzzy,
-            onCompleted: onCompleted,
+        Flexible(
+          child: FeedbackButton(
+            label: '模糊',
+            color: Colors.amber,
+            onPressed: () => ref
+                .read(learningControllerProvider(wordBookId).notifier)
+                .handleFeedback(
+                  wordBookId,
+                  FeedbackType.fuzzy,
+                  onCompleted: onCompleted,
+                ),
           ),
         ),
-        const SizedBox(width: 16),
-        FeedbackButton(
-          label: '认识',
-          color: colorScheme.primary,
-          onPressed: () => ref.read(learningControllerProvider(wordBookId).notifier).handleFeedback(
-            wordBookId,
-            FeedbackType.known,
-            onCompleted: onCompleted,
+        Flexible(
+          child: FeedbackButton(
+            label: '认识',
+            color: colorScheme.primary,
+            onPressed: () => ref
+                .read(learningControllerProvider(wordBookId).notifier)
+                .handleFeedback(
+                  wordBookId,
+                  FeedbackType.known,
+                  onCompleted: onCompleted,
+                ),
           ),
         ),
       ],

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:memora/app/router.dart';
 import 'package:memora/app/theme.dart';
 
-
 /// 应用根组件
 ///
 /// 使用 ConsumerWidget 监听路由配置，通过 MaterialApp.router 配置路由

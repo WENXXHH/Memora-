@@ -26,16 +26,20 @@ class WordDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             const Text('释义:', style: TextStyle(fontWeight: FontWeight.bold)),
-            ...word.meaning.map((m) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Text('${m.pos} ${m.definitions.join('、')}'),
-                )),
+            ...word.meaning.map(
+              (m) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Text('${m.pos} ${m.definitions.join('、')}'),
+              ),
+            ),
             const SizedBox(height: 16),
             const Text('例句:', style: TextStyle(fontWeight: FontWeight.bold)),
-            ...word.example.map((e) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Text(e),
-                )),
+            ...word.example.map(
+              (e) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Text(e),
+              ),
+            ),
           ],
         ),
       ),

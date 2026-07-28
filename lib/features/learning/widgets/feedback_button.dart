@@ -56,7 +56,7 @@ class _FeedbackButtonState extends State<FeedbackButton> {
             borderRadius: BorderRadius.circular(24),
             onTap: _isPressed ? null : _handlePressed,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               child: Text(
                 widget.label,
                 style: const TextStyle(

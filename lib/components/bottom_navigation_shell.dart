@@ -6,10 +6,7 @@ import 'package:go_router/go_router.dart';
 /// 封装 StatefulNavigationShell，提供统一的底部Tab栏
 /// 使用 Material 3 NavigationBar 组件
 class BottomNavigationShell extends StatelessWidget {
-  const BottomNavigationShell({
-    super.key,
-    required this.navigationShell,
-  });
+  const BottomNavigationShell({super.key, required this.navigationShell});
 
   /// StatefulNavigationShell 实例，用于管理底部导航状态
   final StatefulNavigationShell navigationShell;

@@ -7,10 +7,7 @@ import 'package:flutter/material.dart';
 class LearningCompleteView extends StatelessWidget {
   final VoidCallback onBackToHome;
 
-  const LearningCompleteView({
-    super.key,
-    required this.onBackToHome,
-  });
+  const LearningCompleteView({super.key, required this.onBackToHome});
 
   @override
   Widget build(BuildContext context) {
@@ -18,21 +15,14 @@ class LearningCompleteView extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.check_circle,
-            size: 64,
-            color: Colors.green,
-          ),
+          const Icon(Icons.check_circle, size: 64, color: Colors.green),
           const SizedBox(height: 16),
           const Text(
             '学习完成！',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: onBackToHome,
-            child: const Text('返回首页'),
-          ),
+          ElevatedButton(onPressed: onBackToHome, child: const Text('返回首页')),
         ],
       ),
     );
