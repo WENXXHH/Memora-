@@ -1,0 +1,17 @@
+[project]
+name = "memora-backend"
+version = "0.1.0"
+description = "Memora 单词背诵 App 后端 API（FastAPI + SQLAlchemy + SQLite）"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "sqlalchemy>=2.0.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "httpx>=0.28.0",
+]
