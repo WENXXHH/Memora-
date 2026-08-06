@@ -14,21 +14,16 @@ class BottomNavigationShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // 页面内容区域
       body: navigationShell,
-      // 底部导航栏
       bottomNavigationBar: NavigationBar(
-        // 当前选中的Tab索引
         selectedIndex: navigationShell.currentIndex,
-        // Tab切换回调
         onDestinationSelected: (index) {
           navigationShell.goBranch(
             index,
-            // 如果点击当前Tab，则刷新页面
+            // 若点击当前Tab则刷新页面
             initialLocation: index == navigationShell.currentIndex,
           );
         },
-        // 导航目标（首页和我的）
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),

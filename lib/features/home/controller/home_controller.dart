@@ -3,7 +3,10 @@ import '../state/home_state.dart';
 import '../../../data/repositories/word_repository.dart';
 import '../../../data/repositories/review_repository.dart';
 
-// 首页数据控制器
+/// 首页数据控制器
+///
+/// 负责从 Repository 加载首页所需的统计数据（复习数量、学习进度、掌握情况等）。
+/// 加载失败时标记错误状态，由 UI 层展示重试入口。
 class HomeController extends StateNotifier<HomeState> {
   final WordRepository _wordRepository;
   final ReviewRepository _reviewRepository;
@@ -20,7 +23,7 @@ class HomeController extends StateNotifier<HomeState> {
         ),
       );
 
-  //加载卡片数据
+  /// 加载首页统计数据
   Future<void> loadData() async {
     state = state.copyWith(isLoading: true);
 

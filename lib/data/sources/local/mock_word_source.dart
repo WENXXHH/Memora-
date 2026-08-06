@@ -13,16 +13,11 @@ class MockWordSource implements WordDataSource {
   @override
   Future<List<Word>> getWords(String wordBookId) async {
     try {
-      // 从本地资源文件加载 JSON 数据
       final jsonString = await rootBundle.loadString('assets/data/cet-6.json');
-      // 解析 JSON 数组
       final jsonList = json.decode(jsonString) as List<dynamic>;
-      // 转换为 Word 对象列表
       final words = jsonList.map((e) => Word.fromJson(e)).toList();
-      // 根据词库ID过滤单词
       return words.where((word) => word.wordBookId == wordBookId).toList();
     } catch (e) {
-      // 统一异常处理，向上抛出包含详细信息的异常
       throw Exception('Failed to load words: $e');
     }
   }

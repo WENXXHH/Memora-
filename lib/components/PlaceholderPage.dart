@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-// 占位页组件，用于前期简单开发
+/// 占位页组件，用于前期快速开发阶段
 class PlaceholderPage extends StatelessWidget {
   final String title;
 

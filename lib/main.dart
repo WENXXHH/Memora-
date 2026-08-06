@@ -5,6 +5,7 @@ import 'package:hive_ce/hive_ce.dart';
 import 'app/MyApp.dart';
 import 'services/dependency_injection.dart';
 import 'services/hive_initializer.dart';
+import 'services/tts_service.dart';
 
 /// 应用入口函数
 ///
@@ -31,7 +32,11 @@ Future<void> main() async {
     // 3. 初始化依赖注入（injectable 扫描）
     configureDependencies();
 
-    // 4. 启动应用，ProviderScope 提供 Riverpod 状态管理能力
+    // 4. 预初始化 TTS 引擎（设置语言、语速等默认参数）
+    //    不等待完成，避免阻塞启动；首次发音时会自动完成初始化
+    getIt.get<TtsService>().initialize();
+
+    // 5. 启动应用，ProviderScope 提供 Riverpod 状态管理能力
     runApp(const ProviderScope(child: MyApp()));
   } catch (error, stackTrace) {
     debugPrint('[Hive] 初始化失败: $error\n$stackTrace');

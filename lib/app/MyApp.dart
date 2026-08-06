@@ -12,16 +12,12 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 监听路由配置变化
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
       title: 'Memora',
-      // 使用全局主题配置中的亮色主题
       theme: AppTheme.lightTheme,
-      // 使用 GoRouter 配置路由
       routerConfig: router,
-      // 隐藏调试横幅
       debugShowCheckedModeBanner: false,
     );
   }
