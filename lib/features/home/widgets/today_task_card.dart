@@ -19,38 +19,31 @@ class TodayTaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 获取当前主题的颜色方案，用于动态配色
     final colorScheme = Theme.of(context).colorScheme;
 
-    // 使用 Card 组件实现卡片效果，包含阴影和圆角
     return Card(
-      elevation: 2, // 轻微阴影，更现代感
+      elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16), // 圆角半径
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20), // 内边距
+        padding: const EdgeInsets.all(20),
         child: Column(
-          // 垂直布局：标题 → 任务项 → 按钮
           children: [
-            // 卡片标题，使用黑色更自然
             const Text(
               '今日学习任务',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
-            const SizedBox(height: 20), // 间距
-            // 任务项横向排列，使用 spaceEvenly 均匀分布
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                // 待复习任务项，使用红色系
                 _TaskItem(
                   icon: Icons.refresh,
                   label: '待复习',
                   count: reviewCount,
                   color: colorScheme.error,
                 ),
-                // 已学习任务项，使用主题色系
                 _TaskItem(
                   icon: Icons.menu_book,
                   label: '已学习',
@@ -93,15 +86,11 @@ class _TaskItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      // 垂直排列：图标 → 标签 → 数量
       children: [
-        // 图标，使用指定颜色
         Icon(icon, size: 32, color: color),
-        const SizedBox(height: 8), // 间距
-        // 标签文字，使用默认颜色
+        const SizedBox(height: 8),
         Text(label, style: const TextStyle(fontSize: 14)),
-        const SizedBox(height: 4), // 间距
-        // 数量文字，加粗并使用主题颜色突出显示
+        const SizedBox(height: 4),
         Text(
           '$count',
           style: TextStyle(

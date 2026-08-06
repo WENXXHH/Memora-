@@ -11,7 +11,10 @@ import '../../../components/error_view.dart';
 import '../../../domain/enums/learning_enums.dart';
 import '../../home/providers/home_providers.dart';
 
-//学习页组件
+/// 学习页组件
+///
+/// 支持新词学习和单词复习模式。页面加载时自动启动学习会话，
+/// 返回首页时刷新首页数据。
 class LearningPage extends ConsumerStatefulWidget {
   final String wordBookId;
   final LearningMode mode;

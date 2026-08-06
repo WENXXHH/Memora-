@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-//发聩按钮组件
+/// 反馈按钮组件
+///
+/// 支持按下缩放动画和颜色变化，防止重复点击。
 class FeedbackButton extends StatefulWidget {
   final String label;
   final Color color;

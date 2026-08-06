@@ -37,7 +37,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 使用 ref.watch 监听首页状态变化
     final homeState = ref.watch(homeControllerProvider);
 
     return Scaffold(
@@ -89,22 +88,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 欢迎语
           _buildGreeting(),
           const SizedBox(height: 24),
-          // 状态 3：空数据提示（首次启动无复习记录）
           if (homeState.reviewCount == 0 && homeState.learnedCount == 0)
             _buildEmptyTip(),
-          // 今日任务卡片
           TodayTaskCard(
             reviewCount: homeState.reviewCount,
             learnedCount: homeState.learnedCount,
           ),
           const SizedBox(height: 24),
-          // 快速入口：空数据时也能点击"学习新词"
           const QuickActions(),
           const SizedBox(height: 24),
-          // 学习统计卡片
           StatisticsCard(
             totalWords: homeState.totalWords,
             masteredWords: homeState.masteredWords,

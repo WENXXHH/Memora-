@@ -1,6 +1,6 @@
 import '../../../data/models/word_model.dart';
 
-//词库列表状态类
+/// 词库列表状态，包含原始词库、过滤结果与搜索/加载/错误状态
 class WordListState {
   final List<Word> words;
   final List<Word> filteredWords;

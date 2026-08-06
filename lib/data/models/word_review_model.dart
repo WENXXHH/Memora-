@@ -3,6 +3,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'word_review_model.freezed.dart';
 part 'word_review_model.g.dart';
 
+/// 单词复习状态模型
+///
+/// 存储 SM-2 间隔重复算法所需的各项参数，
+/// 用于跟踪每个单词的学习进度与掌握程度。
 @freezed
 class WordReview with _$WordReview {
   const factory WordReview({

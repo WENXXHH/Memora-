@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-// 返回加载数据失败组件
+/// 错误状态组件，展示错误信息并提供重试按钮
 class ErrorView extends StatelessWidget {
   final String? message;
   final VoidCallback? onRetry;

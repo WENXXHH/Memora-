@@ -14,7 +14,7 @@ from fastapi import FastAPI
 from app.core.config import API_TITLE, API_VERSION, API_DESCRIPTION
 from app.db.base import Base
 from app.db.session import engine
-from app.routers import auth, words, records
+from app.routers import auth, words, records, ai
 
 # 建表（第四周：SQLite 文件创建时自动执行）
 # 注意：表结构变更后需先删除 memora.db 再重启
@@ -30,6 +30,7 @@ app = FastAPI(
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(words.router, prefix="/api/v1")
 app.include_router(records.router, prefix="/api/v1")
+app.include_router(ai.router, prefix="/api/v1")
 
 
 @app.get("/health")

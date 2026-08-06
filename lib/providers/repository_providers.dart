@@ -3,10 +3,10 @@ import '../services/dependency_injection.dart';
 import '../data/repositories/word_repository.dart';
 import '../data/repositories/review_repository.dart';
 
-// 全局 Provider：DI 容器
+/// 全局 Provider：DI 容器
 final getItProvider = Provider((ref) => getIt);
 
-// 全局 Provider：单词仓库
+/// 全局 Provider：单词仓库
 final wordRepositoryProvider = Provider<WordRepository>((ref) {
   return ref.read(getItProvider).get<WordRepository>();
 });
