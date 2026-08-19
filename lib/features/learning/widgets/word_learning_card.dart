@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../data/models/word_model.dart';
+import '../../../data/dto/word_model.dart';
 
 /// 单词学习卡片组件
 ///

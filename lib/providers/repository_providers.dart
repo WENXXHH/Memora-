@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../services/dependency_injection.dart';
+import '../app/dependency_injection.dart';
 import '../data/repositories/word_repository.dart';
 import '../data/repositories/review_repository.dart';
 

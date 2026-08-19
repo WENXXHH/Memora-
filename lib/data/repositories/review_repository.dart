@@ -1,5 +1,5 @@
 import 'package:injectable/injectable.dart';
-import '../models/word_review_model.dart';
+import '../dto/word_review_model.dart';
 import '../sources/local/review_local_source.dart';
 
 /// 管理用户复习记录的持久化存取。

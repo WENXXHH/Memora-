@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../data/models/word_model.dart';
+import '../../../data/dto/word_model.dart';
 
 /// 单词卡片组件，展示单词基本信息，点击可跳转详情页
 class WordCard extends StatelessWidget {

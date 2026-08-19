@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/word_detail_state.dart';
 import '../../../domain/enums/tts_enums.dart';
-import '../../../services/tts_service.dart';
+import '../../../core/services/tts/tts_service.dart';
 
 /// 单词详情页 TTS 发音控制器
 ///

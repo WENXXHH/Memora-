@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/learning_state.dart';
 import '../../../data/repositories/word_repository.dart';
 import '../../../data/repositories/review_repository.dart';
-import '../../../data/models/word_model.dart';
+import '../../../data/dto/word_model.dart';
 import '../../../domain/enums/learning_enums.dart';
-import '../../../utils/sm2_algorithm.dart';
+import '../../../core/utils/sm2_algorithm.dart';
 
 /// 学习状态管理控制器
 ///

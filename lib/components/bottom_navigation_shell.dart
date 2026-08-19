@@ -20,7 +20,7 @@ class BottomNavigationShell extends StatelessWidget {
         onDestinationSelected: (index) {
           navigationShell.goBranch(
             index,
-            // 若点击当前Tab则刷新页面
+            // 如果用户再次点击当前已经选中的 Tab，就回到这个 branch 的初始路由。
             initialLocation: index == navigationShell.currentIndex,
           );
         },

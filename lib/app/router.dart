@@ -7,7 +7,7 @@ import '../features/learning/pages/learning_page.dart';
 import '../components/PlaceholderPage.dart';
 import '../components/bottom_navigation_shell.dart';
 import '../domain/enums/learning_enums.dart';
-import '../data/models/word_model.dart';
+import '../data/dto/word_model.dart';
 
 /// 路由配置Provider
 /// 使用 StatefulShellRoute 实现底部Tab导航，支持页面状态保持
@@ -70,7 +70,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          /// 我的分支（占位，第5周完善）
+          /// 我的分支
           StatefulShellBranch(
             routes: [
               GoRoute(

@@ -1,8 +1,8 @@
 import 'package:hive_ce/hive_ce.dart';
 import 'package:injectable/injectable.dart';
 
-import '../../models/word_review_model.dart';
-import '../../../utils/sm2_algorithm.dart';
+import '../../dto/word_review_model.dart';
+import '../../../core/utils/sm2_algorithm.dart';
 
 /// 复习记录本地持久化数据源。
 ///
