@@ -51,4 +51,6 @@ app.*.map.json
 # 但保留重要的文档
 !README.md
 !目录说明.md
-.env*
+.env
+.env.local
+!.env.example
