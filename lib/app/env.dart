@@ -5,6 +5,8 @@
 /// 严禁直接访问 `String.fromEnvironment`。
 library;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 import 'app_environment.dart';
 
 /// 全局环境配置。
@@ -17,25 +19,37 @@ import 'app_environment.dart';
 ///    staging / production 必须显式传入，否则 fail fast。
 /// 3. 不混入 `isDebug` 这种与构建模式相关的概念，
 ///    需要判断构建模式时使用 `kDebugMode`（来自 foundation）。
+/// 4. Web 平台不支持 `String.fromEnvironment`（Dart Web 限制），
+///    通过 `kIsWeb` 在 const 上下文中跳过，Web 端一律使用默认值（development）。
 class Env {
   Env._();
+
+  // ---- 原始值（const 上下文，Web 端 kIsWeb=true 时编译器跳过 fromEnvironment） ----
+
+  /// APP_ENV 原始字符串。Web 端恒为空，等价于默认 development。
+  static const String _appEnvRaw = kIsWeb
+      ? ''
+      : String.fromEnvironment('APP_ENV');
+
+  /// API_BASE_URL 原始字符串。Web 端恒为空，走 development 默认路径。
+  static const String _apiBaseUrlRaw = kIsWeb
+      ? ''
+      : String.fromEnvironment('API_BASE_URL');
+
+  // ---- 解析后的公开 API ----
 
   /// 当前环境。
   ///
   /// 通过 `--dart-define=APP_ENV=xxx` 注入；缺省时为 development。
-  static final Environment current = Environment.fromName(
-    String.fromEnvironment('APP_ENV'),
-  );
+  /// Web 端始终为 development（不支持 --dart-define）。
+  static final Environment current = Environment.fromName(_appEnvRaw);
 
   /// API 基地址。
   ///
   /// 优先使用 `--dart-define=API_BASE_URL=xxx`；
   /// 缺省时只有 development 允许回退到本机地址，
   /// staging / production 缺值会在 [_resolveApiBaseUrl] 中抛异常。
-  static final String apiBaseUrl = _resolveApiBaseUrl(
-    String.fromEnvironment('API_BASE_URL'),
-    current,
-  );
+  static final String apiBaseUrl = _resolveApiBaseUrl(_apiBaseUrlRaw, current);
 
   /// 语义化环境判断，取代旧的 `isDebug`,减少歧义。
   static final bool isDevelopment = current == Environment.development;
@@ -52,7 +66,8 @@ class Env {
 
     switch (env) {
       case Environment.development:
-        // Android 模拟器内 10.0.2.2 映射到宿主机 localhost
+        // 真机测试：使用电脑局域网 IP（同 WiFi 下）  http://192.168.2.43:8000/api
+        // 模拟器：10.0.2.2 映射到宿主机 localhost  http://10.0.2.2:8000/api
         return 'http://10.0.2.2:8000/api';
       case Environment.staging:
         throw StateError(
@@ -67,5 +82,6 @@ class Env {
     }
   }
 }
+
 //打包时
 //flutter build apk --flavor production --release --split-per-abi --dart-define=APP_ENV=production --dart-define=API_BASE_URL=https://api.memora.app/api

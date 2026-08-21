@@ -13,7 +13,7 @@ import '../features/vocabulary/pages/word_list_page.dart';
 import '../features/vocabulary/pages/word_detail_page.dart';
 import '../features/learning/pages/learning_page.dart';
 import '../features/multiple_choice/pages/multiple_choice_page.dart';
-import '../components/PlaceholderPage.dart';
+import '../features/profile/pages/profile_page.dart';
 import '../components/bottom_navigation_shell.dart';
 import '../domain/enums/learning_enums.dart';
 import '../data/dto/word_model.dart';
@@ -57,9 +57,9 @@ final routerProvider = Provider<GoRouter>((ref) {
           return matchedLocation == isSplashRoute ? null : '/splash';
 
         case AuthStatus.unauthenticated:
-          // 未认证：在登录页停留，其他页面重定向到登录
-          if (isLoginRoute) return null;
-          // 注册成功后状态也回到 unauthenticated，自动跳到登录页
+          // 未认证：允许在登录页和注册页停留
+          if (isLoginRoute || isRegisterRoute) return null;
+          // 注册成功后状态回到 unauthenticated，自动跳到登录页
           return '/login';
 
         case AuthStatus.authenticated:
@@ -171,7 +171,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/profile',
                 name: 'profile',
-                builder: (context, state) => const PlaceholderPage(title: '我的'),
+                builder: (context, state) => const ProfilePage(),
               ),
             ],
           ),

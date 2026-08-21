@@ -38,7 +38,7 @@ class SM2Algorithm {
     int newInterval;
 
     if (newRepetition == 1) {
-      newInterval = 1;
+      newInterval = 0; // 第一次学习后立即可复习，符合「学完即测」流程
     } else if (newRepetition == 2) {
       newInterval = 6;
     } else {

@@ -13,6 +13,7 @@ import '../../../data/dto/multiple_choice_question.dart';
 /// - [isCorrect]：本次作答是否正确（未作答为 null）
 /// - [correctCount] / [wrongCount]：累计统计
 /// - [isCompleted]：全部题目答完
+/// - [hasSaveError]：SM-2 保存是否失败（第五天：保存失败反馈）
 ///
 /// 状态不变量：
 /// ```
@@ -33,6 +34,7 @@ class MultipleChoiceState {
   final int correctCount;
   final int wrongCount;
   final bool isCompleted;
+  final bool hasSaveError;
 
   const MultipleChoiceState({
     required this.isLoading,
@@ -47,6 +49,7 @@ class MultipleChoiceState {
     required this.correctCount,
     required this.wrongCount,
     required this.isCompleted,
+    this.hasSaveError = false,
   });
 
   /// 创建一个副本，更新指定字段。
@@ -66,6 +69,7 @@ class MultipleChoiceState {
     int? correctCount,
     int? wrongCount,
     bool? isCompleted,
+    bool? hasSaveError,
   }) {
     return MultipleChoiceState(
       isLoading: isLoading ?? this.isLoading,
@@ -88,6 +92,7 @@ class MultipleChoiceState {
       correctCount: correctCount ?? this.correctCount,
       wrongCount: wrongCount ?? this.wrongCount,
       isCompleted: isCompleted ?? this.isCompleted,
+      hasSaveError: hasSaveError ?? this.hasSaveError,
     );
   }
 }

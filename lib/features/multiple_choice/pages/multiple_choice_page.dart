@@ -16,14 +16,10 @@ import '../../home/providers/home_providers.dart';
 class MultipleChoicePage extends ConsumerStatefulWidget {
   final String wordBookId;
 
-  const MultipleChoicePage({
-    super.key,
-    this.wordBookId = 'cet6',
-  });
+  const MultipleChoicePage({super.key, this.wordBookId = 'cet6'});
 
   @override
-  ConsumerState<MultipleChoicePage> createState() =>
-      _MultipleChoicePageState();
+  ConsumerState<MultipleChoicePage> createState() => _MultipleChoicePageState();
 }
 
 class _MultipleChoicePageState extends ConsumerState<MultipleChoicePage> {
@@ -64,10 +60,7 @@ class _MultipleChoicePageState extends ConsumerState<MultipleChoicePage> {
             style: TextStyle(fontSize: 14, color: Colors.grey),
           ),
           const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: _onPop,
-            child: const Text('返回首页'),
-          ),
+          ElevatedButton(onPressed: _onPop, child: const Text('返回首页')),
         ],
       ),
     );
@@ -101,10 +94,7 @@ class _MultipleChoicePageState extends ConsumerState<MultipleChoicePage> {
             ],
           ),
           const SizedBox(height: 32),
-          ElevatedButton(
-            onPressed: _onPop,
-            child: const Text('返回首页'),
-          ),
+          ElevatedButton(onPressed: _onPop, child: const Text('返回首页')),
         ],
       ),
     );
@@ -213,10 +203,7 @@ class _MultipleChoicePageState extends ConsumerState<MultipleChoicePage> {
             const SizedBox(height: 16),
             Text(
               word.word,
-              style: const TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
@@ -254,9 +241,7 @@ class _MultipleChoicePageState extends ConsumerState<MultipleChoicePage> {
             hasAnswered: state.hasAnswered,
             onTap: () => ref
                 .read(
-                  multipleChoiceControllerProvider(
-                    widget.wordBookId,
-                  ).notifier,
+                  multipleChoiceControllerProvider(widget.wordBookId).notifier,
                 )
                 .selectOption(index),
           ),
@@ -269,6 +254,21 @@ class _MultipleChoicePageState extends ConsumerState<MultipleChoicePage> {
   Widget build(BuildContext context) {
     final state = ref.watch(
       multipleChoiceControllerProvider(widget.wordBookId),
+    );
+
+    // 第五天：保存失败反馈 — 通过 SnackBar 通知用户
+    ref.listen<MultipleChoiceState>(
+      multipleChoiceControllerProvider(widget.wordBookId),
+      (previous, next) {
+        if (next.hasSaveError && !(previous?.hasSaveError ?? false)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('复习记录保存失败，进度可能未同步'),
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      },
     );
 
     return PopScope(

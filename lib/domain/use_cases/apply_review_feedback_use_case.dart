@@ -28,10 +28,7 @@ class ApplyReviewFeedbackUseCase {
     required String wordId,
     required FeedbackType feedback,
   }) async {
-    final existing = await _reviewRepository.getWordReview(
-      wordId,
-      wordBookId,
-    );
+    final existing = await _reviewRepository.getWordReview(wordId, wordBookId);
     final review =
         existing ?? SM2Algorithm.createInitialReview(wordId, wordBookId);
     final updated = SM2Algorithm.updateReview(review, feedback);

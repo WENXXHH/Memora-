@@ -35,9 +35,12 @@ class AuthInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final token = authBox.get(kAccessTokenKey);
-    // 登录/注册接口本身不需要 Token，跳过避免后端 401 误判
-    final isAuthEndpoint = options.path.contains('/auth/');
-    if (token != null && token.isNotEmpty && !isAuthEndpoint) {
+    // 只有登录/注册端点是公开的，不需要 Token
+    // /auth/me 需要 Token，不能跳过（用于启动恢复会话）
+    final isPublicAuthEndpoint =
+        options.path.contains('/auth/login') ||
+        options.path.contains('/auth/register');
+    if (token != null && token.isNotEmpty && !isPublicAuthEndpoint) {
       options.headers['Authorization'] = 'Bearer $token';
     }
     handler.next(options);
@@ -47,12 +50,12 @@ class AuthInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     final mapped = mapDioException(err);
     if (mapped.type == NetworkErrorType.unauthorized) {
-      // 登录/注册接口返回 401 = 凭证错误，不是会话过期
-      // 不触发登出回调，避免在登录页上反复重定向（Bug 5 防御）
-      final isAuthEndpoint = err.requestOptions.path.contains('/auth/');
-      if (!isAuthEndpoint) {
-        // Token 失效：清空本地凭证并通知上层跳登录
-        // 忽略删除失败的错误，下次启动会自然跳登录
+      // 只有登录/注册的 401 是凭证错误，不触发登出
+      // /auth/me 的 401 是 Token 过期，需要清除本地凭证
+      final isPublicAuthEndpoint =
+          err.requestOptions.path.contains('/auth/login') ||
+          err.requestOptions.path.contains('/auth/register');
+      if (!isPublicAuthEndpoint) {
         authBox.delete(kAccessTokenKey);
         onUnauthorized?.call();
       }

@@ -25,22 +25,32 @@ class WordCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
                 children: [
-                  Text(
-                    word.word,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
+                  Expanded(
+                    child: Text(
+                      word.word,
+                      maxLines: 1,
+                      overflow: TextOverflow.fade,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Text(
-                    word.phonetic,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: colorScheme.onSurfaceVariant,
-                      fontStyle: FontStyle.italic,
+                  Flexible(
+                    child: Text(
+                      word.phonetic,
+                      maxLines: 1,
+                      overflow: TextOverflow.fade,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: colorScheme.onSurfaceVariant,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
                   ),
                   const Spacer(),

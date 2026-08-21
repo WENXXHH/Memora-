@@ -131,6 +131,7 @@ class MultipleChoiceController extends StateNotifier<MultipleChoiceState> {
   ///
   /// 防重复提交（Bug 9/10）：已作答时直接返回。
   /// SM-2 映射（约束 16）：正确→fuzzy，错误→unknown。
+  /// 保存失败（第五天）：设置 hasSaveError，不阻断答题流程。
   Future<void> selectOption(int index) async {
     // Bug 9：hasAnswered 立即检查，防止重复提交
     if (state.hasAnswered) return;
@@ -151,7 +152,8 @@ class MultipleChoiceController extends StateNotifier<MultipleChoiceState> {
     final feedback = isCorrect ? FeedbackType.fuzzy : FeedbackType.unknown;
 
     // 调用 UseCase 保存到 Hive（本地写入毫秒级，不显示 isSubmitting）
-    // 如果保存失败，不阻断答题流程，用户仍可继续下一题
+    // 保存失败不阻断答题流程，通过 hasSaveError 通知 UI 展示反馈
+    bool saveFailed = false;
     try {
       await _useCase.execute(
         wordBookId: _wordBookId!,
@@ -159,15 +161,15 @@ class MultipleChoiceController extends StateNotifier<MultipleChoiceState> {
         feedback: feedback,
       );
     } catch (_) {
-      // Hive 写入失败不阻断 UI，下次启动会重新加载
+      saveFailed = true;
     }
 
-    // 更新统计（保存成功后）
-    if (isCorrect) {
-      state = state.copyWith(correctCount: state.correctCount + 1);
-    } else {
-      state = state.copyWith(wrongCount: state.wrongCount + 1);
-    }
+    // 更新统计 + 保存错误标志（用户答案有效，不受保存成败影响）
+    state = state.copyWith(
+      correctCount: isCorrect ? state.correctCount + 1 : state.correctCount,
+      wrongCount: !isCorrect ? state.wrongCount + 1 : state.wrongCount,
+      hasSaveError: saveFailed,
+    );
   }
 
   /// 跳到下一题。
@@ -185,13 +187,11 @@ class MultipleChoiceController extends StateNotifier<MultipleChoiceState> {
         selectedIndex: null,
         hasAnswered: false,
         isCorrect: null,
+        hasSaveError: false,
       );
     } else {
       // 全部题目答完
-      state = state.copyWith(
-        currentQuestion: null,
-        isCompleted: true,
-      );
+      state = state.copyWith(currentQuestion: null, isCompleted: true);
     }
   }
 

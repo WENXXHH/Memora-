@@ -20,8 +20,8 @@ final reviewRepositoryProvider = Provider<ReviewRepository>((ref) {
 /// 全局 Provider：复习反馈 UseCase
 ///
 /// 共享给 LearningController 和 MultipleChoiceController（原则 16）。
-final applyReviewFeedbackUseCaseProvider = Provider<ApplyReviewFeedbackUseCase>((
-  ref,
-) {
-  return ApplyReviewFeedbackUseCase(ref.read(reviewRepositoryProvider));
-});
+final applyReviewFeedbackUseCaseProvider = Provider<ApplyReviewFeedbackUseCase>(
+  (ref) {
+    return ApplyReviewFeedbackUseCase(ref.read(reviewRepositoryProvider));
+  },
+);

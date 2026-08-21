@@ -40,10 +40,7 @@ class AuthController extends StateNotifier<AuthState> {
     } on NetworkException catch (e) {
       // 网络错误（超时/断网）：不删 Token，显示错误让用户重试
       // Token 仍保留在本地，下次恢复时可再次尝试验证
-      state = AuthState(
-        status: AuthStatus.error,
-        errorMessage: e.message,
-      );
+      state = AuthState(status: AuthStatus.error, errorMessage: e.message);
     }
   }
 
@@ -66,10 +63,9 @@ class AuthController extends StateNotifier<AuthState> {
       );
       state = AuthState.authenticated(user);
     } on NetworkException catch (e) {
-      state = AuthState(
-        status: AuthStatus.error,
-        errorMessage: e.message,
-      );
+      // 登录接口的 401 是「密码错误」，不是「Token 过期」
+      final message = e.statusCode == 401 ? '用户名或密码错误，请重新输入' : e.message;
+      state = AuthState(status: AuthStatus.error, errorMessage: message);
     }
   }
 
@@ -97,10 +93,7 @@ class AuthController extends StateNotifier<AuthState> {
       // 注册成功：回到未认证态，路由守卫会将 /register 重定向到 /login
       state = const AuthState.unauthenticated();
     } on NetworkException catch (e) {
-      state = AuthState(
-        status: AuthStatus.error,
-        errorMessage: e.message,
-      );
+      state = AuthState(status: AuthStatus.error, errorMessage: e.message);
     }
   }
 
