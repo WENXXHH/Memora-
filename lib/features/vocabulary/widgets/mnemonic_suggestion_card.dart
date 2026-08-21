@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/enums/ai_enums.dart';
 import '../state/ai_suggestion_state.dart';
 import '../providers/vocabulary_providers.dart';
-import '../../../data/models/ai_suggestion_request.dart';
+import '../../../domain/entities/ai_suggestion_request.dart';
 
 /// AI 助记建议卡片 — 展示流式生成的助记内容
 ///

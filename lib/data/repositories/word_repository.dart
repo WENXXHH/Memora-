@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 import '../sources/word_data_source.dart';
-import '../models/word_model.dart';
+import '../dto/word_model.dart';
 
 /// 单词仓库
 ///

@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.memora"
+    namespace = "com.wen.memora"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -20,20 +20,39 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.memora"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        // applicationId 由各 flavor 覆盖，这里保留默认值仅为 Gradle 配置完整性
+        applicationId = "com.wen.memora"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
+    // 三套环境与 APP_ENV 字符串保持一致
+    // 命名：development / staging / production
+    flavorDimensions += "environment"
+    productFlavors {
+        create("development") {
+            dimension = "environment"
+            applicationId = "com.wen.memora.dev"
+            resValue("string", "app_name", "Memora Dev")
+        }
+        create("staging") {
+            dimension = "environment"
+            applicationId = "com.wen.memora.staging"
+            resValue("string", "app_name", "Memora Staging")
+        }
+        create("production") {
+            dimension = "environment"
+            applicationId = "com.wen.memora"
+            resValue("string", "app_name", "Memora")
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // TODO(wen): 接入正式 keystore，避免长期使用 debug 签名
+            // 目前临时使用 debug 签名，保证 flutter run --release 可用
             signingConfig = signingConfigs.getByName("debug")
         }
     }

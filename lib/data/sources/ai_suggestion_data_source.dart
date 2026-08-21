@@ -1,4 +1,4 @@
-import '../../data/models/ai_suggestion_request.dart';
+import '../../domain/entities/ai_suggestion_request.dart';
 
 /// AI 助记内容数据源抽象接口
 ///

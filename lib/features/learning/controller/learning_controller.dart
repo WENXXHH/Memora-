@@ -3,23 +3,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/learning_state.dart';
 import '../../../data/repositories/word_repository.dart';
 import '../../../data/repositories/review_repository.dart';
-import '../../../data/models/word_model.dart';
+import '../../../data/dto/word_model.dart';
 import '../../../domain/enums/learning_enums.dart';
-import '../../../utils/sm2_algorithm.dart';
+import '../../../domain/use_cases/apply_review_feedback_use_case.dart';
 
 /// 学习状态管理控制器
 ///
 /// 负责处理：
 /// - 从仓库加载单词队列（新词/复习模式）
 /// - 显示/隐藏单词释义
-/// - 处理用户反馈并调用 SM-2 算法更新复习状态
+/// - 处理用户反馈并调用共享 [ApplyReviewFeedbackUseCase] 更新复习状态
 /// - 重置学习会话
 class LearningController extends StateNotifier<LearningState> {
   final WordRepository _wordRepository;
   final ReviewRepository _reviewRepository;
+  final ApplyReviewFeedbackUseCase _useCase;
 
-  LearningController(this._wordRepository, this._reviewRepository)
-    : super(
+  LearningController(
+    this._wordRepository,
+    this._reviewRepository,
+    this._useCase,
+  ) : super(
         LearningState(
           wordQueue: [],
           currentWord: null,
@@ -91,7 +95,7 @@ class LearningController extends StateNotifier<LearningState> {
     state = state.copyWith(isShowingAnswer: true);
   }
 
-  /// 处理用户反馈：集成 SM-2 算法更新复习状态
+  /// 处理用户反馈：通过共享 [ApplyReviewFeedbackUseCase] 更新复习状态
   /// [wordBookId]: 词书标识符
   /// [type]: 反馈类型（known/fuzzy/unknown）
   /// [onCompleted]: 学习完成时的回调（可选，由页面层注入）
@@ -102,19 +106,12 @@ class LearningController extends StateNotifier<LearningState> {
   }) async {
     if (state.currentWord == null) return;
 
-    // 获取或创建复习状态（使用 SM2Algorithm 工厂方法创建初始状态）
-    var review =
-        await _reviewRepository.getWordReview(
-          state.currentWord!.id,
-          wordBookId,
-        ) ??
-        SM2Algorithm.createInitialReview(state.currentWord!.id, wordBookId);
-
-    // SM-2 算法更新
-    final updatedReview = SM2Algorithm.updateReview(review, type);
-
-    // 保存到内存缓存（内部自动打印日志）
-    await _reviewRepository.saveWordReview(updatedReview);
+    // 原则 16：复用共享 UseCase（获取/创建 → SM-2 更新 → 保存）
+    await _useCase.execute(
+      wordBookId: wordBookId,
+      wordId: state.currentWord!.id,
+      feedback: type,
+    );
 
     // 跳转到下一个单词
     if (state.currentIndex < state.totalCount - 1) {

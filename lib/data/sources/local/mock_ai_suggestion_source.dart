@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 import '../../../domain/enums/learning_enums.dart';
-import '../../models/ai_suggestion_request.dart';
+import '../../../domain/entities/ai_suggestion_request.dart';
 import '../ai_suggestion_data_source.dart';
 
 /// Mock AI 助记数据源 — 模拟 AI 流式返回

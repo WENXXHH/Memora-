@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../data/models/word_model.dart';
+import '../../../data/dto/word_model.dart';
 
 /// 单词学习卡片组件
 ///
@@ -33,21 +33,32 @@ class WordLearningCard extends StatelessWidget {
           children: [
             // 单词 + 音标
             Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
               children: [
-                Text(
-                  word.word,
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    word.word,
+                    maxLines: 1,
+                    overflow: TextOverflow.fade,
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  word.phonetic,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontStyle: FontStyle.italic,
-                    color: colorScheme.onSurfaceVariant,
+                Flexible(
+                  flex: 2,
+                  child: Text(
+                    word.phonetic,
+                    maxLines: 1,
+                    overflow: TextOverflow.fade,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontStyle: FontStyle.italic,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ],

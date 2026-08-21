@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 import '../sources/ai_suggestion_data_source.dart';
-import '../models/ai_suggestion_request.dart';
+import '../../domain/entities/ai_suggestion_request.dart';
 
 /// AI 助记仓库
 ///

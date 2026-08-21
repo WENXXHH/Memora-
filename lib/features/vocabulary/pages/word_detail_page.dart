@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../data/models/word_model.dart';
-import '../../../data/models/ai_suggestion_request.dart';
+import '../../../data/dto/word_model.dart';
+import '../../../domain/entities/ai_suggestion_request.dart';
 import '../../../domain/enums/tts_enums.dart';
 import '../../../domain/enums/learning_enums.dart';
 import '../state/word_detail_state.dart';

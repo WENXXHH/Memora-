@@ -1,0 +1,35 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Memora (dev)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flavor": "development",
+      "toolArgs": ["--dart-define=APP_ENV=development"]
+    },
+    {
+      "name": "Memora (staging)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flavor": "staging",
+      "toolArgs": [
+        "--dart-define=APP_ENV=staging",
+        "--dart-define=API_BASE_URL=https://staging-api.memora.app/api"
+      ]
+    },
+    {
+      "name": "Memora (production)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flavor": "production",
+      "toolArgs": [
+        "--dart-define=APP_ENV=production",
+        "--dart-define=API_BASE_URL=https://api.memora.app/api"
+      ]
+    }
+  ]
+}

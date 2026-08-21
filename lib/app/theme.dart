@@ -59,7 +59,7 @@ class AppTheme {
     ),
   );
 
-  /// 暗色主题（预留，计划第8周UI优化阶段完善）
+  /// 暗色主题（预留，后续完善）
   ///
   /// 与亮色主题共享主色种子
   static ThemeData darkTheme = ThemeData(

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:injectable/injectable.dart';
-import '../../models/word_model.dart';
+import '../../dto/word_model.dart';
 import '../word_data_source.dart';
 
 /// Mock单词数据源实现

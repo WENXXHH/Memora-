@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/ai_suggestion_state.dart';
 import '../../../data/repositories/ai_suggestion_repository.dart';
-import '../../../data/models/ai_suggestion_request.dart';
+import '../../../domain/entities/ai_suggestion_request.dart';
 import '../../../domain/enums/ai_enums.dart';
 
 /// AI 助记生成控制器

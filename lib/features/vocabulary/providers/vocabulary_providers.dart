@@ -6,7 +6,7 @@ import '../state/word_list_state.dart';
 import '../state/word_detail_state.dart';
 import '../state/ai_suggestion_state.dart';
 import '../../../providers/repository_providers.dart';
-import '../../../services/tts_service.dart';
+import '../../../core/services/tts/tts_service.dart';
 import '../../../data/repositories/ai_suggestion_repository.dart';
 
 /// 词库单词列表 Provider

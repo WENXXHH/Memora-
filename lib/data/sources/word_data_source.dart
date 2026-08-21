@@ -1,4 +1,4 @@
-import '../models/word_model.dart';
+import '../dto/word_model.dart';
 
 /// 单词数据源抽象接口
 ///
