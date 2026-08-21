@@ -3,8 +3,8 @@ import 'package:go_router/go_router.dart';
 
 /// 快速入口组件
 ///
-/// 提供三个核心功能入口：学习新词、复习旧词、查看词库
-/// 使用等宽按钮布局，支持路由跳转
+/// 提供四个核心功能入口：学习新词、复习旧词、选择题复习、查看词库
+/// 使用 2×2 等宽按钮布局，支持路由跳转
 class QuickActions extends StatelessWidget {
   const QuickActions({super.key});
 
@@ -33,8 +33,18 @@ class QuickActions extends StatelessWidget {
               icon: Icons.refresh,
               label: '复习旧词',
               color: colorScheme.error,
-              onPressed: () =>
-                  context.push('/learning?mode=review'),
+              onPressed: () => context.push('/learning?mode=review'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            _ActionButton(
+              icon: Icons.quiz,
+              label: '选择题复习',
+              color: colorScheme.tertiary,
+              onPressed: () => context.push('/choice'),
             ),
             const SizedBox(width: 12),
             _ActionButton(

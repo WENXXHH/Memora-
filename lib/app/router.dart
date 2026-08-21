@@ -12,6 +12,7 @@ import '../features/home/pages/home_screen.dart';
 import '../features/vocabulary/pages/word_list_page.dart';
 import '../features/vocabulary/pages/word_detail_page.dart';
 import '../features/learning/pages/learning_page.dart';
+import '../features/multiple_choice/pages/multiple_choice_page.dart';
 import '../components/PlaceholderPage.dart';
 import '../components/bottom_navigation_shell.dart';
 import '../domain/enums/learning_enums.dart';
@@ -119,6 +120,17 @@ final routerProvider = Provider<GoRouter>((ref) {
               ? LearningMode.review
               : LearningMode.newWord;
           return LearningPage(wordBookId: wordBookId, mode: mode);
+        },
+      ),
+
+      /// 选择题复习页（全屏覆盖，无底部导航）
+      /// §5.3：独立 GoRoute，不混入底部 Tab
+      GoRoute(
+        path: '/choice',
+        name: 'choice',
+        builder: (context, state) {
+          final wordBookId = state.uri.queryParameters['wordBookId'] ?? 'cet6';
+          return MultipleChoicePage(wordBookId: wordBookId);
         },
       ),
 
