@@ -47,10 +47,15 @@ class AuthInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     final mapped = mapDioException(err);
     if (mapped.type == NetworkErrorType.unauthorized) {
-      // Token 失效：清空本地凭证并通知上层跳登录
-      // 忽略删除失败的错误，下次启动会自然跳登录
-      authBox.delete(kAccessTokenKey);
-      onUnauthorized?.call();
+      // 登录/注册接口返回 401 = 凭证错误，不是会话过期
+      // 不触发登出回调，避免在登录页上反复重定向（Bug 5 防御）
+      final isAuthEndpoint = err.requestOptions.path.contains('/auth/');
+      if (!isAuthEndpoint) {
+        // Token 失效：清空本地凭证并通知上层跳登录
+        // 忽略删除失败的错误，下次启动会自然跳登录
+        authBox.delete(kAccessTokenKey);
+        onUnauthorized?.call();
+      }
     }
     handler.next(err);
   }
