@@ -30,6 +30,7 @@ mixin _$WordReview {
   DateTime? get lastReviewDate => throw _privateConstructorUsedError;
   bool get learned => throw _privateConstructorUsedError;
   double get mastery => throw _privateConstructorUsedError;
+  DateTime? get clientUpdatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this WordReview to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -58,6 +59,7 @@ abstract class $WordReviewCopyWith<$Res> {
     DateTime? lastReviewDate,
     bool learned,
     double mastery,
+    DateTime? clientUpdatedAt,
   });
 }
 
@@ -85,6 +87,7 @@ class _$WordReviewCopyWithImpl<$Res, $Val extends WordReview>
     Object? lastReviewDate = freezed,
     Object? learned = null,
     Object? mastery = null,
+    Object? clientUpdatedAt = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -124,6 +127,10 @@ class _$WordReviewCopyWithImpl<$Res, $Val extends WordReview>
                 ? _value.mastery
                 : mastery // ignore: cast_nullable_to_non_nullable
                       as double,
+            clientUpdatedAt: freezed == clientUpdatedAt
+                ? _value.clientUpdatedAt
+                : clientUpdatedAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
           )
           as $Val,
     );
@@ -149,6 +156,7 @@ abstract class _$$WordReviewImplCopyWith<$Res>
     DateTime? lastReviewDate,
     bool learned,
     double mastery,
+    DateTime? clientUpdatedAt,
   });
 }
 
@@ -175,6 +183,7 @@ class __$$WordReviewImplCopyWithImpl<$Res>
     Object? lastReviewDate = freezed,
     Object? learned = null,
     Object? mastery = null,
+    Object? clientUpdatedAt = freezed,
   }) {
     return _then(
       _$WordReviewImpl(
@@ -214,6 +223,10 @@ class __$$WordReviewImplCopyWithImpl<$Res>
             ? _value.mastery
             : mastery // ignore: cast_nullable_to_non_nullable
                   as double,
+        clientUpdatedAt: freezed == clientUpdatedAt
+            ? _value.clientUpdatedAt
+            : clientUpdatedAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
       ),
     );
   }
@@ -232,6 +245,7 @@ class _$WordReviewImpl implements _WordReview {
     required this.lastReviewDate,
     required this.learned,
     required this.mastery,
+    this.clientUpdatedAt,
   });
 
   factory _$WordReviewImpl.fromJson(Map<String, dynamic> json) =>
@@ -255,10 +269,12 @@ class _$WordReviewImpl implements _WordReview {
   final bool learned;
   @override
   final double mastery;
+  @override
+  final DateTime? clientUpdatedAt;
 
   @override
   String toString() {
-    return 'WordReview(wordId: $wordId, wordBookId: $wordBookId, repetitionCount: $repetitionCount, easinessFactor: $easinessFactor, interval: $interval, nextReviewDate: $nextReviewDate, lastReviewDate: $lastReviewDate, learned: $learned, mastery: $mastery)';
+    return 'WordReview(wordId: $wordId, wordBookId: $wordBookId, repetitionCount: $repetitionCount, easinessFactor: $easinessFactor, interval: $interval, nextReviewDate: $nextReviewDate, lastReviewDate: $lastReviewDate, learned: $learned, mastery: $mastery, clientUpdatedAt: $clientUpdatedAt)';
   }
 
   @override
@@ -280,7 +296,9 @@ class _$WordReviewImpl implements _WordReview {
             (identical(other.lastReviewDate, lastReviewDate) ||
                 other.lastReviewDate == lastReviewDate) &&
             (identical(other.learned, learned) || other.learned == learned) &&
-            (identical(other.mastery, mastery) || other.mastery == mastery));
+            (identical(other.mastery, mastery) || other.mastery == mastery) &&
+            (identical(other.clientUpdatedAt, clientUpdatedAt) ||
+                other.clientUpdatedAt == clientUpdatedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -296,6 +314,7 @@ class _$WordReviewImpl implements _WordReview {
     lastReviewDate,
     learned,
     mastery,
+    clientUpdatedAt,
   );
 
   /// Create a copy of WordReview
@@ -323,6 +342,7 @@ abstract class _WordReview implements WordReview {
     required final DateTime? lastReviewDate,
     required final bool learned,
     required final double mastery,
+    final DateTime? clientUpdatedAt,
   }) = _$WordReviewImpl;
 
   factory _WordReview.fromJson(Map<String, dynamic> json) =
@@ -346,6 +366,8 @@ abstract class _WordReview implements WordReview {
   bool get learned;
   @override
   double get mastery;
+  @override
+  DateTime? get clientUpdatedAt;
 
   /// Create a copy of WordReview
   /// with the given fields replaced by the non-null parameter values.

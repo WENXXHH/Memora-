@@ -7,6 +7,8 @@ part 'word_review_model.g.dart';
 ///
 /// 存储 SM-2 间隔重复算法所需的各项参数，
 /// 用于跟踪每个单词的学习进度与掌握程度。
+/// [clientUpdatedAt] 记录最后一次本地修改的 UTC 时间，
+/// 用于多设备同步冲突解决（Last Write Wins）。
 @freezed
 class WordReview with _$WordReview {
   const factory WordReview({
@@ -19,6 +21,7 @@ class WordReview with _$WordReview {
     required DateTime? lastReviewDate,
     required bool learned,
     required double mastery,
+    DateTime? clientUpdatedAt,
   }) = _WordReview;
 
   factory WordReview.fromJson(Map<String, dynamic> json) =>

@@ -321,6 +321,18 @@ class FakeReviewRepository implements ReviewRepository {
   Future<Set<String>> getAllReviewIds(String wordBookId) async => {};
 
   @override
+  Future<List<WordReview>> getAllReviews(String wordBookId) async {
+    return _store.values.where((r) => r.wordBookId == wordBookId).toList();
+  }
+
+  @override
+  Future<void> saveWordReviews(Iterable<WordReview> reviews) async {
+    for (final review in reviews) {
+      _store['${review.wordBookId}:${review.wordId}'] = review;
+    }
+  }
+
+  @override
   Future<int> getReviewedCount(String wordBookId) async => 0;
 }
 

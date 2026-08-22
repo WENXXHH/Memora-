@@ -19,6 +19,9 @@ _$WordReviewImpl _$$WordReviewImplFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['lastReviewDate'] as String),
       learned: json['learned'] as bool,
       mastery: (json['mastery'] as num).toDouble(),
+      clientUpdatedAt: json['clientUpdatedAt'] == null
+          ? null
+          : DateTime.parse(json['clientUpdatedAt'] as String),
     );
 
 Map<String, dynamic> _$$WordReviewImplToJson(_$WordReviewImpl instance) =>
@@ -32,4 +35,5 @@ Map<String, dynamic> _$$WordReviewImplToJson(_$WordReviewImpl instance) =>
       'lastReviewDate': instance.lastReviewDate?.toIso8601String(),
       'learned': instance.learned,
       'mastery': instance.mastery,
+      'clientUpdatedAt': instance.clientUpdatedAt?.toIso8601String(),
     };
