@@ -22,8 +22,15 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
   Future<void> _handleLogout() async {
     setState(() => _isLoggingOut = true);
+    // 登出前先重置 SyncState（lastSyncedAt / 统计），防止：
+    // - 上一个账号的同步成功信息泄漏到下个账号（显示"5 分钟前同步过"）
+    // - user 变更后 syncIfNeeded 被错误 dedupe 跳过
+    ref.read(syncControllerProvider.notifier).reset();
     await ref.read(authControllerProvider.notifier).logout();
     // 状态变为 unauthenticated 后路由守卫自动跳转 /login，无需手动导航
+    if (mounted) {
+      setState(() => _isLoggingOut = false);
+    }
   }
 
   Future<void> _handleSync() async {
