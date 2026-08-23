@@ -43,6 +43,16 @@ class ReviewRepository {
     return _localDataSource.getAllReviewIds(wordBookId);
   }
 
+  /// 获取指定词库的全部复习记录（同步层使用）。
+  Future<List<WordReview>> getAllReviews(String wordBookId) async {
+    return _localDataSource.getAllReviews(wordBookId);
+  }
+
+  /// 批量保存复习记录（同步写入用）。
+  Future<void> saveWordReviews(Iterable<WordReview> reviews) async {
+    await _localDataSource.saveWordReviews(reviews);
+  }
+
   /// 统计已有复习记录的单词总数（首次复习即计入，不限 learned 字段）
   Future<int> getReviewedCount(String wordBookId) async {
     return _localDataSource.getReviewedCount(wordBookId);

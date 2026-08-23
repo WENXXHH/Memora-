@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:memora/core/services/listening_audio/fake_listening_audio_service.dart';
 import 'package:memora/core/utils/question_generator.dart';
 import 'package:memora/data/dto/word_model.dart';
 import 'package:memora/data/dto/word_review_model.dart';
@@ -8,28 +9,33 @@ import 'package:memora/data/repositories/review_repository.dart';
 import 'package:memora/data/repositories/word_repository.dart';
 import 'package:memora/domain/enums/learning_enums.dart';
 import 'package:memora/domain/use_cases/apply_review_feedback_use_case.dart';
-import 'package:memora/features/multiple_choice/controller/multiple_choice_controller.dart';
+import 'package:memora/features/listening_quiz/controller/listening_quiz_controller.dart';
 
-/// MultipleChoiceController 单元测试。
+/// ListeningQuizController 单元测试（doc 32 全部 12 项）。
 ///
 /// 测试覆盖：
-/// 1. Bug 9：防重复提交（已作答再点选项无效）
-/// 2. 约束 16/19：正确→fuzzy，错误→unknown
-/// 3. Bug 10：nextQuestion 不保存 SM-2
-/// 4. 约束 19：nextQuestion 需先作答
-/// 5. 保存失败：hasSaveError 反馈
-/// 6. 状态转换：最后一题 → isCompleted
+/// 1. startQuiz 能产生第一题
+/// 2. 第一题准备后调用一次 play
+/// 3. replay 不改变 currentIndex
+/// 4. replay 不改变成绩
+/// 5. 正确答案 → fuzzy
+/// 6. 错误答案 → unknown
+/// 7. 每题只保存一次
+/// 8. 重复点击答案无效
+/// 9. nextQuestion 只前进一次
+/// 10. nextQuestion 自动播放新题
+/// 11. 播放失败不保存 Review
+/// 12. dispose 停止音频
 ///
-/// 使用 `implements` 关键字创建 fake 仓库，无需调用真实构造函数。
+/// 音频测试不真的调用扬声器，使用 [FakeListeningAudioService] 记录
+/// playCalls / stopCalls / lastPlayedWord。
 void main() {
   Word makeWord(String id, String word, String definition) {
     return Word(
       id: id,
       word: word,
       phonetic: '/test/',
-      meaning: [
-        MeaningEntry(pos: 'v.', definitions: [definition]),
-      ],
+      meaning: [MeaningEntry(pos: 'v.', definitions: [definition])],
       example: ['Test sentence.'],
       audio: '',
       wordBookId: 'test',
@@ -40,7 +46,8 @@ void main() {
   late FakeWordRepository wordRepo;
   late FakeReviewRepository reviewRepo;
   late FakeApplyReviewFeedbackUseCase useCase;
-  late MultipleChoiceController controller;
+  late FakeListeningAudioService audioService;
+  late ListeningQuizController controller;
 
   setUp(() {
     testWords = [
@@ -54,18 +61,19 @@ void main() {
     wordRepo = FakeWordRepository(testWords);
     reviewRepo = FakeReviewRepository();
     useCase = FakeApplyReviewFeedbackUseCase();
+    audioService = FakeListeningAudioService();
 
-    controller = MultipleChoiceController(
+    controller = ListeningQuizController(
       wordRepo,
       reviewRepo,
       useCase,
+      audioService,
       questionGenerator: QuestionGenerator(Random(42)),
     );
   });
 
-  group('startQuiz — 加载题目', () {
-    test('成功加载题目后状态正确', () async {
-      // 让所有单词都标记为"到期复习"
+  group('startQuiz — 加载题目 + 播放（doc 32 #1, #2）', () {
+    test('#1 startQuiz 能产生第一题', () async {
       for (final w in testWords) {
         reviewRepo.addDueReview(w.id);
       }
@@ -81,27 +89,71 @@ void main() {
       expect(controller.state.isCompleted, false);
     });
 
-    test('无到期复习词 → 空队列 + isCompleted', () async {
+    test('#2 第一题准备后调用一次 play', () async {
+      for (final w in testWords) {
+        reviewRepo.addDueReview(w.id);
+      }
+
       await controller.startQuiz('test');
 
-      expect(controller.state.isLoading, false);
+      final firstWord = controller.state.currentQuestion!.correctWord.word;
+      expect(audioService.playCalls, [firstWord]);
+      expect(audioService.lastPlayedWord, firstWord);
+      expect(controller.state.isPlaying, false);
+      expect(controller.state.hasAudioError, false);
+    });
+
+    test('无到期复习词 → 空队列 + isCompleted + 不播放', () async {
+      await controller.startQuiz('test');
+
       expect(controller.state.questions, isEmpty);
       expect(controller.state.isCompleted, true);
-    });
-
-    test('词库太小 → 空队列', () async {
-      // 只有 2 个到期词，不足以生成 4 选项
-      reviewRepo.addDueReview('w1');
-      reviewRepo.addDueReview('w2');
-      // 但词库有 5 个词，干扰项足够
-      // 实际上 2 个到期词 × 5 词库 = 可以生成 2 道题
-      await controller.startQuiz('test');
-
-      expect(controller.state.questions.length, 2);
+      expect(audioService.playCalls, isEmpty);
     });
   });
 
-  group('selectOption — 防重复提交（Bug 9）', () {
+  group('replay — 重播（doc 32 #3, #4）', () {
+    setUp(() async {
+      for (final w in testWords) {
+        reviewRepo.addDueReview(w.id);
+      }
+      await controller.startQuiz('test');
+      audioService.playCalls.clear();
+    });
+
+    test('#3 replay 不改变 currentIndex', () async {
+      final indexBefore = controller.state.currentIndex;
+
+      await controller.replay();
+
+      expect(controller.state.currentIndex, indexBefore);
+    });
+
+    test('#4 replay 不改变成绩', () async {
+      // 先答对一题建立成绩，再跳到下一题
+      final correctIndex = controller.state.currentQuestion!.correctIndex;
+      await controller.selectOption(correctIndex);
+      await controller.nextQuestion();
+      final correctBefore = controller.state.correctCount;
+      final wrongBefore = controller.state.wrongCount;
+
+      await controller.replay();
+
+      expect(controller.state.correctCount, correctBefore);
+      expect(controller.state.wrongCount, wrongBefore);
+    });
+
+    test('replay 先 stop 再 play 当前词', () async {
+      final currentWord = controller.state.currentQuestion!.correctWord.word;
+
+      await controller.replay();
+
+      expect(audioService.stopCalls, greaterThanOrEqualTo(1));
+      expect(audioService.playCalls, [currentWord]);
+    });
+  });
+
+  group('selectOption — 作答 + SM-2 映射（doc 32 #5, #6, #7, #8）', () {
     setUp(() async {
       for (final w in testWords) {
         reviewRepo.addDueReview(w.id);
@@ -109,67 +161,52 @@ void main() {
       await controller.startQuiz('test');
     });
 
-    test('第一次点击选项 → 正常作答', () async {
+    test('#5 正确答案 → feedback = fuzzy（不是 known）', () async {
       final correctIndex = controller.state.currentQuestion!.correctIndex;
-      await controller.selectOption(correctIndex);
 
-      expect(controller.state.hasAnswered, true);
-      expect(controller.state.selectedIndex, correctIndex);
-      expect(controller.state.isCorrect, true);
-      expect(controller.state.correctCount, 1);
-    });
-
-    test('已作答后再次点击 → 无效（Bug 9）', () async {
-      final correctIndex = controller.state.currentQuestion!.correctIndex;
-      await controller.selectOption(correctIndex);
-
-      // 再次点击不同选项
-      final otherIndex = (correctIndex + 1) % 4;
-      await controller.selectOption(otherIndex);
-
-      // 状态不变
-      expect(controller.state.selectedIndex, correctIndex);
-      expect(controller.state.correctCount, 1);
-      expect(controller.state.wrongCount, 0);
-    });
-
-    test('选错选项 → isCorrect=false + wrongCount+1', () async {
-      final correctIndex = controller.state.currentQuestion!.correctIndex;
-      final wrongIndex = (correctIndex + 1) % 4;
-      await controller.selectOption(wrongIndex);
-
-      expect(controller.state.isCorrect, false);
-      expect(controller.state.wrongCount, 1);
-      expect(controller.state.correctCount, 0);
-    });
-  });
-
-  group('selectOption — SM-2 映射（约束 16/Bug 11）', () {
-    setUp(() async {
-      for (final w in testWords) {
-        reviewRepo.addDueReview(w.id);
-      }
-      await controller.startQuiz('test');
-    });
-
-    test('正确答案 → feedback = fuzzy（不是 known）', () async {
-      final correctIndex = controller.state.currentQuestion!.correctIndex;
       await controller.selectOption(correctIndex);
 
       expect(useCase.lastFeedback, FeedbackType.fuzzy);
       expect(useCase.lastFeedback, isNot(FeedbackType.known));
+      expect(controller.state.isCorrect, true);
+      expect(controller.state.correctCount, 1);
     });
 
-    test('错误答案 → feedback = unknown', () async {
+    test('#6 错误答案 → feedback = unknown', () async {
       final correctIndex = controller.state.currentQuestion!.correctIndex;
       final wrongIndex = (correctIndex + 1) % 4;
+
       await controller.selectOption(wrongIndex);
 
       expect(useCase.lastFeedback, FeedbackType.unknown);
+      expect(controller.state.isCorrect, false);
+      expect(controller.state.wrongCount, 1);
+    });
+
+    test('#7 每题只保存一次（UseCase callCount == 1）', () async {
+      final correctIndex = controller.state.currentQuestion!.correctIndex;
+
+      await controller.selectOption(correctIndex);
+
+      expect(useCase.callCount, 1);
+    });
+
+    test('#8 重复点击答案无效', () async {
+      final correctIndex = controller.state.currentQuestion!.correctIndex;
+
+      await controller.selectOption(correctIndex);
+      // 再次点击不同选项
+      final otherIndex = (correctIndex + 1) % 4;
+      await controller.selectOption(otherIndex);
+
+      expect(useCase.callCount, 1);
+      expect(controller.state.selectedIndex, correctIndex);
+      expect(controller.state.correctCount, 1);
+      expect(controller.state.wrongCount, 0);
     });
   });
 
-  group('nextQuestion — 状态推进', () {
+  group('nextQuestion — 推进 + 自动播放（doc 32 #9, #10）', () {
     setUp(() async {
       for (final w in testWords) {
         reviewRepo.addDueReview(w.id);
@@ -177,80 +214,119 @@ void main() {
       await controller.startQuiz('test');
     });
 
-    test('未作答时 nextQuestion → 无效（约束 19）', () {
-      final initialIndex = controller.state.currentIndex;
-      controller.nextQuestion();
-
-      expect(controller.state.currentIndex, initialIndex);
-      expect(controller.state.hasAnswered, false);
-    });
-
-    test('作答后 nextQuestion → 推进到下一题 + 重置作答状态', () async {
+    test('#9 nextQuestion 只前进一次', () async {
       final correctIndex = controller.state.currentQuestion!.correctIndex;
       await controller.selectOption(correctIndex);
+      final indexBefore = controller.state.currentIndex;
 
-      controller.nextQuestion();
+      await controller.nextQuestion();
 
-      expect(controller.state.currentIndex, 1);
-      expect(controller.state.currentQuestion, isNotNull);
+      expect(controller.state.currentIndex, indexBefore + 1);
       expect(controller.state.hasAnswered, false);
       expect(controller.state.selectedIndex, isNull);
       expect(controller.state.isCorrect, isNull);
-      expect(controller.state.hasSaveError, false);
     });
 
-    test('最后一题 nextQuestion → isCompleted + currentQuestion=null', () async {
+    test('#10 nextQuestion 自动播放新题', () async {
+      final correctIndex = controller.state.currentQuestion!.correctIndex;
+      await controller.selectOption(correctIndex);
+      audioService.playCalls.clear();
+      audioService.stopCalls = 0;
+
+      await controller.nextQuestion();
+
+      final newWord = controller.state.currentQuestion!.correctWord.word;
+      expect(audioService.stopCalls, greaterThanOrEqualTo(1));
+      expect(audioService.playCalls, [newWord]);
+      expect(controller.state.lastPlayedWord, newWord);
+    });
+
+    test('未作答时 nextQuestion 无效', () async {
+      final indexBefore = controller.state.currentIndex;
+
+      await controller.nextQuestion();
+
+      expect(controller.state.currentIndex, indexBefore);
+    });
+
+    test('最后一题 nextQuestion → isCompleted + 停止音频', () async {
       final totalQuestions = controller.state.questions.length;
 
       for (var i = 0; i < totalQuestions; i++) {
         final correctIndex = controller.state.currentQuestion!.correctIndex;
         await controller.selectOption(correctIndex);
-        controller.nextQuestion();
+        await controller.nextQuestion();
       }
 
       expect(controller.state.isCompleted, true);
       expect(controller.state.currentQuestion, isNull);
+      // 完成时也调用 stop（doc 31 末态停止音频）
+      expect(audioService.stopCalls, greaterThanOrEqualTo(1));
     });
 
-    test('nextQuestion 不调用 UseCase（Bug 10）', () async {
+    test('nextQuestion 不调用 UseCase（与选择题 Bug 10 一致）', () async {
       final correctIndex = controller.state.currentQuestion!.correctIndex;
       await controller.selectOption(correctIndex);
-
       useCase.callCount = 0;
-      controller.nextQuestion();
+
+      await controller.nextQuestion();
 
       expect(useCase.callCount, 0);
     });
   });
 
-  group('selectOption — 保存失败反馈', () {
+  group('音频错误隔离（doc 32 #11 / doc 30 / Bug 11）', () {
     setUp(() async {
       for (final w in testWords) {
         reviewRepo.addDueReview(w.id);
       }
+      audioService.playException = Exception('TTS engine unavailable');
+    });
+
+    test('#11 播放失败不保存 Review（hasAudioError + useCase 未调用）', () async {
       await controller.startQuiz('test');
+
+      expect(controller.state.hasAudioError, true);
+      expect(controller.state.audioErrorMessage, isNotNull);
+      expect(useCase.callCount, 0);
     });
 
-    test('UseCase 抛异常 → hasSaveError=true', () async {
-      useCase.shouldThrow = true;
+    test('hasAudioError 时 selectOption 不保存', () async {
+      await controller.startQuiz('test');
+      // 播放失败状态
+      expect(controller.state.hasAudioError, true);
 
       final correctIndex = controller.state.currentQuestion!.correctIndex;
       await controller.selectOption(correctIndex);
 
-      expect(controller.state.hasSaveError, true);
-      // 答题统计仍然更新（用户答案有效，不受保存成败影响）
-      expect(controller.state.correctCount, 1);
+      expect(useCase.callCount, 0);
+      expect(controller.state.hasAnswered, false);
     });
 
-    test('保存失败后 nextQuestion → hasSaveError 重置', () async {
-      useCase.shouldThrow = true;
-      final correctIndex = controller.state.currentQuestion!.correctIndex;
-      await controller.selectOption(correctIndex);
+    test('replay 成功后清除 hasAudioError 恢复正常', () async {
+      await controller.startQuiz('test');
+      expect(controller.state.hasAudioError, true);
 
-      expect(controller.state.hasSaveError, true);
+      // 修复播放
+      audioService.playException = null;
+      await controller.replay();
 
-      controller.nextQuestion();
-      expect(controller.state.hasSaveError, false);
+      expect(controller.state.hasAudioError, false);
+      expect(controller.state.audioErrorMessage, isNull);
+    });
+  });
+
+  group('dispose — 停止音频（doc 32 #12 / doc 31）', () {
+    test('#12 dispose 停止音频', () async {
+      for (final w in testWords) {
+        reviewRepo.addDueReview(w.id);
+      }
+      await controller.startQuiz('test');
+      final stopsBefore = audioService.stopCalls;
+
+      await controller.dispose();
+
+      expect(audioService.stopCalls, greaterThan(stopsBefore));
     });
   });
 }

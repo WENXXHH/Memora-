@@ -3,7 +3,10 @@
 覆盖关键场景：
 - Bug 6 防御：用户 A 读不到用户 B 的记录
 - Bug 7 防御：重复上传不创建重复行
-- upsert：不存在 INSERT / 已存在覆盖
+- upsert：不存在 INSERT / 已存在按时间戳保护
+  - 新记录能覆盖旧记录
+  - 旧记录不能覆盖新记录
+  - 相同时间戳不覆盖
 - user_id 由 Token 决定，不由请求体决定
 """
 
@@ -78,9 +81,10 @@ def _make_record_item(
     interval: int = 1,
     learned: bool = False,
     mastery: float = 0.0,
+    client_updated_at: str | None = None,
 ) -> dict:
     """构造一条 ReviewRecordSyncItem 字典。"""
-    now = datetime.now(timezone.utc).isoformat()
+    now = client_updated_at or datetime.now(timezone.utc).isoformat()
     return {
         "word_book_id": word_book_id,
         "word_id": word_id,
@@ -93,6 +97,11 @@ def _make_record_item(
         "mastery": mastery,
         "client_updated_at": now,
     }
+
+
+def _ts(year: int, month: int, day: int, hour: int = 12) -> str:
+    """构造一个确定性的 UTC ISO 时间戳，避免测试用 now() 导致非确定性。"""
+    return datetime(year, month, day, hour, tzinfo=timezone.utc).isoformat()
 
 
 # ---- Bug 6 防御：用户隔离 ----
@@ -145,14 +154,17 @@ def test_repeated_upload_does_not_duplicate(client: TestClient) -> None:
     assert len(matching) == 1
 
 
-# ---- upsert：不存在 INSERT / 已存在覆盖 ----
+# ---- upsert：不存在 INSERT / 已存在按时间戳保护 ----
 
 def test_upsert_insert_then_update(client: TestClient) -> None:
-    """第一次 INSERT，第二次覆盖（更新字段值）。"""
+    """第一次 INSERT，第二次（更新时间戳）覆盖。"""
     token = _register_and_login(client, "alice")
 
-    # 第一次：repetition_count=1
-    item_v1 = _make_record_item(word_book_id=1, word_id=1, repetition_count=1, mastery=0.0)
+    # v1: client_updated_at = 8/20
+    item_v1 = _make_record_item(
+        word_book_id=1, word_id=1, repetition_count=1, mastery=0.0,
+        client_updated_at=_ts(2026, 8, 20),
+    )
     r1 = client.post(
         "/api/v1/records/sync",
         headers=_auth_headers(token),
@@ -160,8 +172,79 @@ def test_upsert_insert_then_update(client: TestClient) -> None:
     )
     assert r1.status_code == 200
 
-    # 第二次：repetition_count=3, mastery=0.5（覆盖）
-    item_v2 = _make_record_item(word_book_id=1, word_id=1, repetition_count=3, mastery=0.5)
+    # v2: client_updated_at = 8/21（更新），覆盖 v1
+    item_v2 = _make_record_item(
+        word_book_id=1, word_id=1, repetition_count=3, mastery=0.5,
+        client_updated_at=_ts(2026, 8, 21),
+    )
+    r2 = client.post(
+        "/api/v1/records/sync",
+        headers=_auth_headers(token),
+        json={"records": [item_v2]},
+    )
+    assert r2.status_code == 200
+
+    records = r2.json()["records"]
+    matching = next(r for r in records if r["word_id"] == 1 and r["word_book_id"] == 1)
+    assert matching["repetition_count"] == 3
+    assert matching["mastery"] == 0.5
+
+
+def test_upsert_older_record_does_not_overwrite(client: TestClient) -> None:
+    """旧时间戳的记录不能覆盖新记录（timestamp guard）。"""
+    token = _register_and_login(client, "alice")
+
+    # v1: client_updated_at = 8/21（新）
+    item_v1 = _make_record_item(
+        word_book_id=1, word_id=1, repetition_count=3, mastery=0.5,
+        client_updated_at=_ts(2026, 8, 21),
+    )
+    client.post(
+        "/api/v1/records/sync",
+        headers=_auth_headers(token),
+        json={"records": [item_v1]},
+    )
+
+    # v2: client_updated_at = 8/20（旧），不应覆盖
+    item_v2 = _make_record_item(
+        word_book_id=1, word_id=1, repetition_count=1, mastery=0.0,
+        client_updated_at=_ts(2026, 8, 20),
+    )
+    r2 = client.post(
+        "/api/v1/records/sync",
+        headers=_auth_headers(token),
+        json={"records": [item_v2]},
+    )
+    assert r2.status_code == 200
+
+    records = r2.json()["records"]
+    matching = next(r for r in records if r["word_id"] == 1 and r["word_book_id"] == 1)
+    assert matching["repetition_count"] == 3
+    assert matching["mastery"] == 0.5
+
+
+def test_upsert_same_timestamp_does_not_overwrite(client: TestClient) -> None:
+    """相同时间戳的记录不覆盖（避免同步乒乓）。"""
+    token = _register_and_login(client, "alice")
+
+    ts = _ts(2026, 8, 21)
+
+    # v1
+    item_v1 = _make_record_item(
+        word_book_id=1, word_id=1, repetition_count=3, mastery=0.5,
+        client_updated_at=ts,
+    )
+    client.post(
+        "/api/v1/records/sync",
+        headers=_auth_headers(token),
+        json={"records": [item_v1]},
+    )
+
+    # v2: 同一时间戳但字段不同，不应覆盖
+    item_v2 = _make_record_item(
+        word_book_id=1, word_id=1, repetition_count=1, mastery=0.0,
+        client_updated_at=ts,
+    )
     r2 = client.post(
         "/api/v1/records/sync",
         headers=_auth_headers(token),

@@ -64,6 +64,7 @@ class SM2Algorithm {
       lastReviewDate: null,
       learned: false,
       mastery: 0.0,
+      clientUpdatedAt: now.toUtc(),
     );
   }
 
@@ -101,6 +102,7 @@ class SM2Algorithm {
       lastReviewDate: now,
       learned: newRepetition >= 1 && quality >= 3,
       mastery: newMastery,
+      clientUpdatedAt: now.toUtc(),
     );
   }
 
