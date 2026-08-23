@@ -12,6 +12,7 @@ import '../features/home/pages/home_screen.dart';
 import '../features/vocabulary/pages/word_list_page.dart';
 import '../features/vocabulary/pages/word_detail_page.dart';
 import '../features/learning/pages/learning_page.dart';
+import '../features/listening_quiz/pages/listening_quiz_page.dart';
 import '../features/multiple_choice/pages/multiple_choice_page.dart';
 import '../features/profile/pages/profile_page.dart';
 import '../components/bottom_navigation_shell.dart';
@@ -131,6 +132,17 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final wordBookId = state.uri.queryParameters['wordBookId'] ?? 'cet6';
           return MultipleChoicePage(wordBookId: wordBookId);
+        },
+      ),
+
+      /// 听音辨词复习页（全屏覆盖，无底部导航）
+      /// 独立 GoRoute，与选择题同级；复用同一套 SM-2 + Hive
+      GoRoute(
+        path: '/listening-quiz',
+        name: 'listening-quiz',
+        builder: (context, state) {
+          final wordBookId = state.uri.queryParameters['wordBookId'] ?? 'cet6';
+          return ListeningQuizPage(wordBookId: wordBookId);
         },
       ),
 
