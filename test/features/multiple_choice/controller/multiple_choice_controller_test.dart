@@ -271,6 +271,11 @@ class FakeWordRepository implements WordRepository {
   Future<Word?> getWordById(String wordBookId, String wordId) async {
     return _words.where((w) => w.id == wordId).firstOrNull;
   }
+
+  @override
+  void clearCache() {
+    // Fake 无缓存，无需清理
+  }
 }
 
 /// Fake ReviewRepository — 内存存储，可控制到期复习队列。
