@@ -3,8 +3,9 @@ import 'package:go_router/go_router.dart';
 
 /// 快速入口组件
 ///
-/// 提供五个核心功能入口：学习新词、复习旧词、选择题复习、听音辨词、查看词库
-/// 使用 2×2 + 单行布局，支持路由跳转
+/// 提供六个核心功能入口：学习新词、复习旧词、选择题复习、听音辨词、
+/// 拼写复习、查看词库。
+/// 使用 2×2 网格布局（3 行 × 2 列），支持路由跳转。
 class QuickActions extends StatelessWidget {
   const QuickActions({super.key});
 
@@ -58,6 +59,13 @@ class QuickActions extends StatelessWidget {
         const SizedBox(height: 12),
         Row(
           children: [
+            _ActionButton(
+              icon: Icons.spellcheck,
+              label: '拼写复习',
+              color: colorScheme.primary,
+              onPressed: () => context.push('/spelling-quiz'),
+            ),
+            const SizedBox(width: 12),
             _ActionButton(
               icon: Icons.library_books,
               label: '词库',

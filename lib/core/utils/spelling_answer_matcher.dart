@@ -14,10 +14,7 @@ abstract final class SpellingAnswerMatcher {
   }
 
   /// 判断用户输入是否等于正确答案（规范化后比较）。
-  static bool isCorrect({
-    required String input,
-    required String answer,
-  }) {
+  static bool isCorrect({required String input, required String answer}) {
     return normalize(input) == normalize(answer);
   }
 }

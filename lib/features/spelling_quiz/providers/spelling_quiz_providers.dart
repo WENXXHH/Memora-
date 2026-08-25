@@ -12,14 +12,14 @@ import '../state/spelling_quiz_state.dart';
 ///
 /// 与最新的听音辨词 feature 保持一致（选择题仍是旧的非 autoDispose
 /// StateNotifierProvider.family，历史遗留，TODO 迁移到 autoDispose）。
-final spellingQuizControllerProvider =
-    StateNotifierProvider.autoDispose
-        .family<SpellingQuizController, SpellingQuizState, String>(
-      (ref, wordBookId) {
-        return SpellingQuizController(
-          ref.read(wordRepositoryProvider),
-          ref.read(reviewRepositoryProvider),
-          ref.read(applyReviewFeedbackUseCaseProvider),
-        );
-      },
-    );
+final spellingQuizControllerProvider = StateNotifierProvider.autoDispose
+    .family<SpellingQuizController, SpellingQuizState, String>((
+      ref,
+      wordBookId,
+    ) {
+      return SpellingQuizController(
+        ref.read(wordRepositoryProvider),
+        ref.read(reviewRepositoryProvider),
+        ref.read(applyReviewFeedbackUseCaseProvider),
+      );
+    });

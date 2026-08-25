@@ -26,18 +26,18 @@ class SpellingQuizController extends StateNotifier<SpellingQuizState> {
     this._reviewRepository,
     this._useCase,
   ) : super(
-         const SpellingQuizState(
-           isLoading: true,
-           hasError: false,
-           words: [],
-           currentIndex: 0,
-           hasAnswered: false,
-           isCorrect: null,
-           correctCount: 0,
-           wrongCount: 0,
-           isCompleted: false,
-         ),
-       );
+        const SpellingQuizState(
+          isLoading: true,
+          hasError: false,
+          words: [],
+          currentIndex: 0,
+          hasAnswered: false,
+          isCorrect: null,
+          correctCount: 0,
+          wrongCount: 0,
+          isCompleted: false,
+        ),
+      );
 
   final WordRepository _wordRepository;
   final ReviewRepository _reviewRepository;
