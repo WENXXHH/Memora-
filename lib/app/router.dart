@@ -15,6 +15,7 @@ import '../features/learning/pages/learning_page.dart';
 import '../features/listening_quiz/pages/listening_quiz_page.dart';
 import '../features/multiple_choice/pages/multiple_choice_page.dart';
 import '../features/profile/pages/profile_page.dart';
+import '../features/spelling_quiz/pages/spelling_quiz_page.dart';
 import '../components/bottom_navigation_shell.dart';
 import '../domain/enums/learning_enums.dart';
 import '../data/dto/word_model.dart';
@@ -143,6 +144,17 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final wordBookId = state.uri.queryParameters['wordBookId'] ?? 'cet6';
           return ListeningQuizPage(wordBookId: wordBookId);
+        },
+      ),
+
+      /// 拼写复习页（全屏覆盖，无底部导航）
+      /// 独立 GoRoute，与选择题 / 听音辨词同级；复用同一套 SM-2 + Hive
+      GoRoute(
+        path: '/spelling-quiz',
+        name: 'spelling-quiz',
+        builder: (context, state) {
+          final wordBookId = state.uri.queryParameters['wordBookId'] ?? 'cet6';
+          return SpellingQuizPage(wordBookId: wordBookId);
         },
       ),
 
