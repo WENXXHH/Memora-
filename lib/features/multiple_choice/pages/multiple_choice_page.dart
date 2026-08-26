@@ -7,6 +7,7 @@ import '../providers/multiple_choice_providers.dart';
 import '../state/multiple_choice_state.dart';
 import '../widgets/option_button.dart';
 import '../../home/providers/home_providers.dart';
+import '../../word_book_selection/providers/current_word_book_providers.dart';
 
 /// 选择题复习页。
 ///
@@ -34,7 +35,11 @@ class _MultipleChoicePageState extends ConsumerState<MultipleChoicePage> {
   }
 
   void _onPop() {
-    ref.read(homeControllerProvider.notifier).loadData();
+    ref
+        .read(
+          homeControllerProvider(ref.read(currentWordBookIdProvider)).notifier,
+        )
+        .loadData();
     Navigator.of(context).pop();
   }
 
@@ -275,7 +280,13 @@ class _MultipleChoicePageState extends ConsumerState<MultipleChoicePage> {
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
-          ref.read(homeControllerProvider.notifier).loadData();
+          ref
+              .read(
+                homeControllerProvider(
+                  ref.read(currentWordBookIdProvider),
+                ).notifier,
+              )
+              .loadData();
         }
       },
       child: Scaffold(

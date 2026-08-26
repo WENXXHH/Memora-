@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../components/loading_view.dart';
 import '../../../components/error_view.dart';
 import '../../home/providers/home_providers.dart';
+import '../../word_book_selection/providers/current_word_book_providers.dart';
 import '../../multiple_choice/widgets/option_button.dart';
 import '../providers/listening_quiz_providers.dart';
 import '../state/listening_quiz_state.dart';
@@ -40,7 +41,11 @@ class _ListeningQuizPageState extends ConsumerState<ListeningQuizPage> {
   }
 
   void _onPop() {
-    ref.read(homeControllerProvider.notifier).loadData();
+    ref
+        .read(
+          homeControllerProvider(ref.read(currentWordBookIdProvider)).notifier,
+        )
+        .loadData();
     Navigator.of(context).pop();
   }
 
@@ -221,10 +226,10 @@ class _ListeningQuizPageState extends ConsumerState<ListeningQuizPage> {
             isSelected: isSelected,
             hasAnswered: state.hasAnswered,
             onTap: () => ref
-            .read(
-              listeningQuizControllerProvider(widget.wordBookId).notifier,
-            )
-            .selectOption(index),
+                .read(
+                  listeningQuizControllerProvider(widget.wordBookId).notifier,
+                )
+                .selectOption(index),
           ),
         );
       }).toList(),
@@ -233,9 +238,7 @@ class _ListeningQuizPageState extends ConsumerState<ListeningQuizPage> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(
-      listeningQuizControllerProvider(widget.wordBookId),
-    );
+    final state = ref.watch(listeningQuizControllerProvider(widget.wordBookId));
 
     // 保存失败反馈 — 通过 SnackBar 通知用户（与选择题一致）
     ref.listen<ListeningQuizState>(
@@ -256,7 +259,13 @@ class _ListeningQuizPageState extends ConsumerState<ListeningQuizPage> {
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
-          ref.read(homeControllerProvider.notifier).loadData();
+          ref
+              .read(
+                homeControllerProvider(
+                  ref.read(currentWordBookIdProvider),
+                ).notifier,
+              )
+              .loadData();
         }
       },
       child: Scaffold(

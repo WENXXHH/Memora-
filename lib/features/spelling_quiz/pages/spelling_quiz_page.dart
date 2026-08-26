@@ -5,6 +5,7 @@ import '../../../components/error_view.dart';
 import '../../../components/loading_view.dart';
 import '../../../data/dto/word_model.dart';
 import '../../home/providers/home_providers.dart';
+import '../../word_book_selection/providers/current_word_book_providers.dart';
 import '../providers/spelling_quiz_providers.dart';
 import '../state/spelling_quiz_state.dart';
 
@@ -51,7 +52,11 @@ class _SpellingQuizPageState extends ConsumerState<SpellingQuizPage> {
   }
 
   void _onPop() {
-    ref.read(homeControllerProvider.notifier).loadData();
+    ref
+        .read(
+          homeControllerProvider(ref.read(currentWordBookIdProvider)).notifier,
+        )
+        .loadData();
     Navigator.of(context).pop();
   }
 
@@ -372,7 +377,13 @@ class _SpellingQuizPageState extends ConsumerState<SpellingQuizPage> {
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
-          ref.read(homeControllerProvider.notifier).loadData();
+          ref
+              .read(
+                homeControllerProvider(
+                  ref.read(currentWordBookIdProvider),
+                ).notifier,
+              )
+              .loadData();
         }
       },
       child: Scaffold(

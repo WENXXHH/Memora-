@@ -58,9 +58,7 @@ class ListeningPrompt extends StatelessWidget {
                     child: CircularProgressIndicator(strokeWidth: 3),
                   )
                 : Icon(
-                    hasAudioError
-                        ? Icons.volume_off
-                        : Icons.volume_up,
+                    hasAudioError ? Icons.volume_off : Icons.volume_up,
                     size: 56,
                     color: hasAudioError
                         ? colorScheme.error
@@ -82,10 +80,7 @@ class ListeningPrompt extends StatelessWidget {
             if (hasAudioError) ...[
               Text(
                 audioErrorMessage ?? '播放失败，请重试',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: colorScheme.error,
-                ),
+                style: TextStyle(fontSize: 13, color: colorScheme.error),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
