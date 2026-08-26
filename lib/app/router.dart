@@ -16,6 +16,7 @@ import '../features/listening_quiz/pages/listening_quiz_page.dart';
 import '../features/multiple_choice/pages/multiple_choice_page.dart';
 import '../features/profile/pages/profile_page.dart';
 import '../features/spelling_quiz/pages/spelling_quiz_page.dart';
+import '../features/word_book_selection/pages/word_book_selection_page.dart';
 import '../components/bottom_navigation_shell.dart';
 import '../domain/enums/learning_enums.dart';
 import '../data/dto/word_model.dart';
@@ -156,6 +157,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           final wordBookId = state.uri.queryParameters['wordBookId'] ?? 'cet6';
           return SpellingQuizPage(wordBookId: wordBookId);
         },
+      ),
+
+      /// 词库选择页（全屏覆盖，无底部导航）
+      /// 列表从内置词库 Catalog 渲染，切换后 SnackBar + 返回
+      GoRoute(
+        path: '/word-books',
+        name: 'word-books',
+        builder: (context, state) => const WordBookSelectionPage(),
       ),
 
       /// 词库页（全屏覆盖，无底部导航）

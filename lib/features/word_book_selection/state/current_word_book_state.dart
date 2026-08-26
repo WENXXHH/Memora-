@@ -1,5 +1,3 @@
-import '../../../core/utils/built_in_word_books.dart';
-
 /// 当前词库选择状态（doc 6）。
 ///
 /// 字段说明：

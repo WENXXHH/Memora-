@@ -70,7 +70,7 @@ class QuickActions extends StatelessWidget {
               icon: Icons.library_books,
               label: '词库',
               color: colorScheme.secondary,
-              onPressed: () => context.push('/vocabulary'),
+              onPressed: () => context.push('/word-books'),
             ),
           ],
         ),
