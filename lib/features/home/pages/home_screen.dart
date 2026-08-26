@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../core/utils/built_in_word_books.dart';
+import '../../word_book_selection/providers/current_word_book_providers.dart';
 import '../providers/home_providers.dart';
 import '../state/home_state.dart';
 import '../widgets/today_task_card.dart';
@@ -9,6 +13,9 @@ import '../widgets/statistics_card.dart';
 /// 首页
 ///
 /// 应用主页面，展示学习概览和快速入口。
+/// 数据跟随当前词库（currentWordBookIdProvider）加载与刷新：
+/// - 首次进入按当前词库加载
+/// - 切换词库后自动重新加载（doc 24 / 40）
 /// 支持四种 UI 状态：加载中、正常数据、空数据（首次启动）、错误。
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -24,20 +31,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // 使用 Future.microtask 确保在 build 完成后异步加载数据
-    _loadData();
+    // 首次进入按当前词库加载（Future.microtask 确保 build 完成后异步加载）
+    _loadDataFor(ref.read(currentWordBookIdProvider));
   }
 
-  /// 异步加载首页数据
-  void _loadData() {
+  /// 为指定词库异步加载首页数据
+  void _loadDataFor(String wordBookId) {
     Future.microtask(() {
-      ref.read(homeControllerProvider.notifier).loadData();
+      ref.read(homeControllerProvider(wordBookId).notifier).loadData();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final homeState = ref.watch(homeControllerProvider);
+    final wordBookId = ref.watch(currentWordBookIdProvider);
+    final homeState = ref.watch(homeControllerProvider(wordBookId));
+
+    // 切换词库后刷新统计，避免首页仍显示旧词库数据（doc 24 / 40 / Bug 3）
+    ref.listen(currentWordBookIdProvider, (previous, next) {
+      if (previous != next) _loadDataFor(next);
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -45,12 +58,54 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         centerTitle: true,
         elevation: 0,
       ),
-      body: _buildBody(homeState),
+      body: Column(
+        children: [
+          _buildCurrentWordBookBar(wordBookId),
+          Expanded(child: _buildBody(homeState, wordBookId)),
+        ],
+      ),
+    );
+  }
+
+  /// 当前词库展示（doc 22 最小 UI），点击进入词库选择页。
+  Widget _buildCurrentWordBookBar(String wordBookId) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final name = BuiltInWordBooks.findById(wordBookId)?.name ?? wordBookId;
+
+    return Material(
+      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      child: InkWell(
+        onTap: () => context.push('/word-books'),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            children: [
+              Icon(
+                Icons.bookmark_outline,
+                size: 18,
+                color: colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              const Text('当前词库', style: TextStyle(fontSize: 14)),
+              const Spacer(),
+              Text(
+                name,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.primary,
+                ),
+              ),
+              Icon(Icons.chevron_right, size: 18, color: colorScheme.primary),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
   /// 根据状态构建不同内容
-  Widget _buildBody(HomeState homeState) {
+  Widget _buildBody(HomeState homeState, String wordBookId) {
     // 状态 1：加载中
     if (homeState.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -73,7 +128,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: _loadData,
+              onPressed: () => _loadDataFor(wordBookId),
               icon: const Icon(Icons.refresh),
               label: const Text('重试'),
             ),
@@ -97,7 +152,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             learnedCount: homeState.learnedCount,
           ),
           const SizedBox(height: 24),
-          const QuickActions(),
+          QuickActions(wordBookId: wordBookId),
           const SizedBox(height: 24),
           StatisticsCard(
             totalWords: homeState.totalWords,

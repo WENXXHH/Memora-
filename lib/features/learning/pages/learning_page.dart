@@ -10,6 +10,7 @@ import '../../../components/loading_view.dart';
 import '../../../components/error_view.dart';
 import '../../../domain/enums/learning_enums.dart';
 import '../../home/providers/home_providers.dart';
+import '../../word_book_selection/providers/current_word_book_providers.dart';
 
 /// 学习页组件
 ///
@@ -41,7 +42,11 @@ class _LearningPageState extends ConsumerState<LearningPage> {
   }
 
   void _onPop() {
-    ref.read(homeControllerProvider.notifier).loadData();
+    ref
+        .read(
+          homeControllerProvider(ref.read(currentWordBookIdProvider)).notifier,
+        )
+        .loadData();
     Navigator.of(context).pop();
   }
 
@@ -84,7 +89,13 @@ class _LearningPageState extends ConsumerState<LearningPage> {
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
-          ref.read(homeControllerProvider.notifier).loadData();
+          ref
+              .read(
+                homeControllerProvider(
+                  ref.read(currentWordBookIdProvider),
+                ).notifier,
+              )
+              .loadData();
         }
       },
       child: Scaffold(

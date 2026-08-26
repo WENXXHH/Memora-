@@ -27,15 +27,15 @@ final listeningAudioServiceProvider = Provider<ListeningAudioService>((ref) {
 ///
 /// 复用全局 [applyReviewFeedbackUseCaseProvider] 和 [wordRepositoryProvider] /
 /// [reviewRepositoryProvider]，保证三种学习入口共享同一套 SM-2 + Hive。
-final listeningQuizControllerProvider =
-    StateNotifierProvider.autoDispose
-        .family<ListeningQuizController, ListeningQuizState, String>(
-      (ref, wordBookId) {
-        return ListeningQuizController(
-          ref.read(wordRepositoryProvider),
-          ref.read(reviewRepositoryProvider),
-          ref.read(applyReviewFeedbackUseCaseProvider),
-          ref.read(listeningAudioServiceProvider),
-        );
-      },
-    );
+final listeningQuizControllerProvider = StateNotifierProvider.autoDispose
+    .family<ListeningQuizController, ListeningQuizState, String>((
+      ref,
+      wordBookId,
+    ) {
+      return ListeningQuizController(
+        ref.read(wordRepositoryProvider),
+        ref.read(reviewRepositoryProvider),
+        ref.read(applyReviewFeedbackUseCaseProvider),
+        ref.read(listeningAudioServiceProvider),
+      );
+    });

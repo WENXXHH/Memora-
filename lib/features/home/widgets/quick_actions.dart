@@ -6,8 +6,14 @@ import 'package:go_router/go_router.dart';
 /// 提供六个核心功能入口：学习新词、复习旧词、选择题复习、听音辨词、
 /// 拼写复习、查看词库。
 /// 使用 2×2 网格布局（3 行 × 2 列），支持路由跳转。
+///
+/// 学习类入口统一携带 [wordBookId]（由页面从 currentWordBookIdProvider
+/// 读取后传入，doc 17 / 28），保证四个模式读取同一个当前词库。
 class QuickActions extends StatelessWidget {
-  const QuickActions({super.key});
+  const QuickActions({super.key, required this.wordBookId});
+
+  /// 当前词库 Domain ID，所有学习类入口共享同一来源（doc 35）。
+  final String wordBookId;
 
   @override
   Widget build(BuildContext context) {
@@ -27,14 +33,15 @@ class QuickActions extends StatelessWidget {
               icon: Icons.school,
               label: '学习新词',
               color: colorScheme.primary,
-              onPressed: () => context.push('/learning'),
+              onPressed: () => context.push('/learning?wordBookId=$wordBookId'),
             ),
             const SizedBox(width: 12),
             _ActionButton(
               icon: Icons.refresh,
               label: '复习旧词',
               color: colorScheme.error,
-              onPressed: () => context.push('/learning?mode=review'),
+              onPressed: () =>
+                  context.push('/learning?mode=review&wordBookId=$wordBookId'),
             ),
           ],
         ),
@@ -45,14 +52,15 @@ class QuickActions extends StatelessWidget {
               icon: Icons.quiz,
               label: '选择题复习',
               color: colorScheme.tertiary,
-              onPressed: () => context.push('/choice'),
+              onPressed: () => context.push('/choice?wordBookId=$wordBookId'),
             ),
             const SizedBox(width: 12),
             _ActionButton(
               icon: Icons.headphones,
               label: '听音辨词',
               color: colorScheme.tertiary,
-              onPressed: () => context.push('/listening-quiz'),
+              onPressed: () =>
+                  context.push('/listening-quiz?wordBookId=$wordBookId'),
             ),
           ],
         ),
@@ -63,14 +71,15 @@ class QuickActions extends StatelessWidget {
               icon: Icons.spellcheck,
               label: '拼写复习',
               color: colorScheme.primary,
-              onPressed: () => context.push('/spelling-quiz'),
+              onPressed: () =>
+                  context.push('/spelling-quiz?wordBookId=$wordBookId'),
             ),
             const SizedBox(width: 12),
             _ActionButton(
               icon: Icons.library_books,
               label: '词库',
               color: colorScheme.secondary,
-              onPressed: () => context.push('/vocabulary'),
+              onPressed: () => context.push('/word-books'),
             ),
           ],
         ),
