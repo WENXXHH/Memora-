@@ -23,6 +23,10 @@ Future<void> main() async {
       boxes.auth,
       instanceName: HiveInitializer.authBoxName,
     );
+    getIt.registerSingleton<Box<String>>(
+      boxes.settings,
+      instanceName: HiveInitializer.settingsBoxName,
+    );
 
     // 初始化依赖注入（injectable 扫描）
     configureDependencies();
