@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/utils/built_in_word_books.dart';
 import '../../../data/sources/local/word_book_preference_local_source.dart';
+import '../../../domain/services/word_book_registry.dart';
 import '../state/current_word_book_state.dart';
 
 /// 当前词库选择控制器（doc 12 / 13 / 14 / 54 / 55）。
@@ -12,17 +13,20 @@ import '../state/current_word_book_state.dart';
 ///
 /// 选择顺序（doc 55 / Bug 9 防御）：验证 → 去重 → 先持久化 →
 /// 成功后才更新 state。保存失败时当前选择不变，保证内存与磁盘一致。
+/// 合法词库判定统一走 [WordBookRegistry.exists]（doc 33 / 67），
+/// 内置与自建词库共用一套验证。
 class CurrentWordBookController extends StateNotifier<CurrentWordBookState> {
-  CurrentWordBookController(this._localSource)
+  CurrentWordBookController(this._localSource, this._registry)
     : super(const CurrentWordBookState());
 
   final WordBookPreferenceLocalSource _localSource;
+  final WordBookRegistry _registry;
 
   /// 恢复用户上次的词库选择（doc 10 / 11 / 44）。
   ///
   /// - 无历史选择 → 保持默认 CET-6
-  /// - 历史选择有效 → 恢复
-  /// - 历史选择无效 → fallback CET-6，并顺手修正存储
+  /// - 历史选择有效（含自建词库）→ 恢复（doc 34）
+  /// - 历史选择无效（如已删除的自建词库）→ fallback CET-6，并顺手修正存储
   ///   （避免每次启动都遇到同一个坏数据，doc 11）
   /// - 读取异常 → 降级 CET-6，不阻止 App 使用（doc 44）
   ///
@@ -46,13 +50,25 @@ class CurrentWordBookController extends StateNotifier<CurrentWordBookState> {
       return;
     }
 
-    if (BuiltInWordBooks.contains(savedId)) {
+    final bool exists;
+    try {
+      exists = await _registry.exists(savedId);
+    } catch (_) {
+      // Registry 读取失败降级默认，不阻止 App 使用（doc 44）
+      state = state.copyWith(
+        isInitialized: true,
+        errorMessage: '读取词库偏好失败，已恢复默认',
+      );
+      return;
+    }
+
+    if (exists) {
       state = state.copyWith(currentWordBookId: savedId, isInitialized: true);
       return;
     }
 
-    // 非法历史 ID（如旧版本遗留的 cet5）：回退默认并修正存储。
-    // 修正失败不阻断启动，状态仍回退默认。
+    // 非法历史 ID（如旧版本遗留的 cet5、或已被删除的自建词库）：
+    // 回退默认并修正存储。修正失败不阻断启动，状态仍回退默认。
     try {
       await _localSource.saveCurrentWordBookId(BuiltInWordBooks.cet6.id);
     } catch (_) {
@@ -66,11 +82,21 @@ class CurrentWordBookController extends StateNotifier<CurrentWordBookState> {
 
   /// 主动选择词库（doc 13 / 55）。
   ///
-  /// - 非法 ID：state 不变 + errorMessage（明确失败，不静默 fallback）
+  /// - 非法 ID（Registry 判定，含自建词库）：state 不变 + errorMessage
+  ///   （明确失败，不静默 fallback）
   /// - 与当前相同：no-op，不重复写存储（doc 14 / Bug 8 防御）
   /// - 先持久化，成功后才更新 state（Bug 9 防御）
   Future<void> selectWordBook(String wordBookId) async {
-    if (!BuiltInWordBooks.contains(wordBookId)) {
+    final bool exists;
+    try {
+      exists = await _registry.exists(wordBookId);
+    } catch (_) {
+      // 验证异常按未知词库处理，保持"非法选择 state 不变"契约
+      state = state.copyWith(errorMessage: '未知词库: $wordBookId');
+      return;
+    }
+
+    if (!exists) {
       state = state.copyWith(errorMessage: '未知词库: $wordBookId');
       return;
     }

@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memora/core/utils/built_in_word_books.dart';
 import 'package:memora/data/sources/local/word_book_preference_local_source.dart';
+import 'package:memora/domain/services/word_book_registry.dart';
+import 'package:memora/domain/services/word_book_summary.dart';
 import 'package:memora/features/word_book_selection/controller/current_word_book_controller.dart';
 
 /// CurrentWordBookController 单元测试（doc 46）。
@@ -17,13 +19,16 @@ import 'package:memora/features/word_book_selection/controller/current_word_book
 /// 9. selectWordBook(unknown) → state 不变
 /// 10. 切 cet6 → cet4 → cet6 → 状态正确
 /// 额外：读取异常降级 / 保存失败 state 不变 / resetToDefault
+/// 自建词库（doc 33 / 34）：选择 custom / 恢复 custom / 已删除 custom fallback
 void main() {
   late FakeWordBookPreferenceLocalSource localSource;
+  late _FakeWordBookRegistry registry;
   late CurrentWordBookController controller;
 
   setUp(() {
     localSource = FakeWordBookPreferenceLocalSource();
-    controller = CurrentWordBookController(localSource);
+    registry = _FakeWordBookRegistry();
+    controller = CurrentWordBookController(localSource, registry);
   });
 
   group('initialize（doc 10 / 46）', () {
@@ -149,6 +154,50 @@ void main() {
       expect(localSource.writeCount, 0);
     });
   });
+
+  group('自建词库接入（doc 33 / 34 / 35）', () {
+    test('selectWordBook(custom_abc) → 接受并持久化', () async {
+      registry.customBooks['custom_abc'] = '考研重点';
+      await controller.selectWordBook('custom_abc');
+      expect(controller.state.currentWordBookId, 'custom_abc');
+      expect(controller.state.errorMessage, isNull);
+      expect(localSource.stored, 'custom_abc');
+    });
+
+    test('initialize 恢复自建词库（doc 34）', () async {
+      registry.customBooks['custom_abc'] = '考研重点';
+      localSource.stored = 'custom_abc';
+      await controller.initialize();
+      expect(controller.state.currentWordBookId, 'custom_abc');
+      expect(controller.state.isInitialized, isTrue);
+      expect(controller.state.errorMessage, isNull);
+    });
+
+    test('已删除的自建词库 → fallback cet6 + 修正存储（doc 34）', () async {
+      localSource.stored = 'custom_deleted';
+      await controller.initialize();
+      expect(controller.state.currentWordBookId, BuiltInWordBooks.cet6.id);
+      expect(controller.state.isInitialized, isTrue);
+      expect(controller.state.errorMessage, isNotNull);
+      expect(localSource.stored, BuiltInWordBooks.cet6.id);
+    });
+
+    test('resetToDefault 从自建词库回退 cet6（doc 35）', () async {
+      registry.customBooks['custom_abc'] = '考研重点';
+      await controller.selectWordBook('custom_abc');
+      await controller.resetToDefault();
+      expect(controller.state.currentWordBookId, BuiltInWordBooks.cet6.id);
+      expect(localSource.stored, BuiltInWordBooks.cet6.id);
+    });
+
+    test('Registry 验证异常 → 按未知词库处理，state 不变（doc 33）', () async {
+      registry.throwOnExists = true;
+      await controller.selectWordBook('custom_abc');
+      expect(controller.state.currentWordBookId, BuiltInWordBooks.cet6.id);
+      expect(controller.state.errorMessage, isNotNull);
+      expect(localSource.writeCount, 0);
+    });
+  });
 }
 
 /// 可注入读写异常 / 统计写入次数的 Fake 本地源。
@@ -174,5 +223,57 @@ class FakeWordBookPreferenceLocalSource
     }
     stored = wordBookId;
     writeCount++;
+  }
+}
+
+/// 可配置自建词库的 Fake Registry（内置词库始终视为存在）。
+class _FakeWordBookRegistry implements WordBookRegistry {
+  /// 自建词库集合：id → name。
+  final Map<String, String> customBooks = {};
+
+  /// 置 true 模拟 Registry 读取异常。
+  bool throwOnExists = false;
+
+  @override
+  Future<List<WordBookSummary>> getAll() async {
+    return [
+      for (final config in BuiltInWordBooks.all)
+        WordBookSummary(
+          id: config.id,
+          name: config.name,
+          kind: WordBookKind.builtIn,
+        ),
+      for (final entry in customBooks.entries)
+        WordBookSummary(
+          id: entry.key,
+          name: entry.value,
+          kind: WordBookKind.custom,
+        ),
+    ];
+  }
+
+  @override
+  Future<WordBookSummary?> findById(String id) async {
+    final config = BuiltInWordBooks.findById(id);
+    if (config != null) {
+      return WordBookSummary(
+        id: config.id,
+        name: config.name,
+        kind: WordBookKind.builtIn,
+      );
+    }
+    final name = customBooks[id];
+    if (name != null) {
+      return WordBookSummary(id: id, name: name, kind: WordBookKind.custom);
+    }
+    return null;
+  }
+
+  @override
+  Future<bool> exists(String id) async {
+    if (throwOnExists) {
+      throw Exception('registry failed');
+    }
+    return BuiltInWordBooks.contains(id) || customBooks.containsKey(id);
   }
 }

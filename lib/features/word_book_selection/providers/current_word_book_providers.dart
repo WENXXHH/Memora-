@@ -31,6 +31,7 @@ final currentWordBookControllerProvider =
     StateNotifierProvider<CurrentWordBookController, CurrentWordBookState>(
       (ref) => CurrentWordBookController(
         ref.watch(wordBookPreferenceLocalSourceProvider),
+        ref.watch(wordBookRegistryProvider),
       ),
     );
 

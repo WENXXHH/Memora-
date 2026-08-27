@@ -28,14 +28,13 @@ final customWordBookManagementControllerProvider =
 ///
 /// autoDispose.family(wordBookId)：按词库隔离，离开详情页自动销毁，
 /// 避免跨词库状态串扰（与词库管理控制器全局共享不同）。
-final customWordManagementControllerProvider = StateNotifierProvider.autoDispose
-    .family<CustomWordManagementController, CustomWordManagementState, String>((
-      ref,
-      wordBookId,
-    ) {
-      return CustomWordManagementController(
-        ref.watch(customWordRepositoryProvider),
-        ref.watch(reviewRepositoryProvider),
-        wordBookId,
-      );
-    });
+final customWordManagementControllerProvider =
+    StateNotifierProvider.autoDispose
+        .family<CustomWordManagementController, CustomWordManagementState,
+            String>((ref, wordBookId) {
+          return CustomWordManagementController(
+            ref.watch(customWordRepositoryProvider),
+            ref.watch(reviewRepositoryProvider),
+            wordBookId,
+          );
+        });
