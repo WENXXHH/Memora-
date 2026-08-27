@@ -19,6 +19,8 @@ import '../features/spelling_quiz/pages/spelling_quiz_page.dart';
 import '../features/word_book_selection/pages/word_book_selection_page.dart';
 import '../features/custom_word_book/pages/custom_word_book_manage_page.dart';
 import '../features/custom_word_book/pages/custom_word_book_form_page.dart';
+import '../features/custom_word_book/pages/custom_word_book_detail_page.dart';
+import '../features/custom_word_book/pages/custom_word_form_page.dart';
 import '../components/bottom_navigation_shell.dart';
 import '../domain/enums/learning_enums.dart';
 import '../data/dto/word_model.dart';
@@ -185,6 +187,28 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final id = state.uri.queryParameters['id'];
           return CustomWordBookFormPage(bookId: id);
+        },
+      ),
+
+      /// 自建词库详情页（单词管理，doc 39 / 64）
+      GoRoute(
+        path: '/word-books/detail',
+        name: 'word-books-detail',
+        builder: (context, state) {
+          final id = state.uri.queryParameters['id'] ?? '';
+          return CustomWordBookDetailPage(wordBookId: id);
+        },
+      ),
+
+      /// 自建单词新增 / 编辑表单页（doc 42 / 43）
+      /// wordId 为空 → 新增；否则 → 编辑
+      GoRoute(
+        path: '/word-books/word-form',
+        name: 'word-books-word-form',
+        builder: (context, state) {
+          final wordBookId = state.uri.queryParameters['wordBookId'] ?? '';
+          final wordId = state.uri.queryParameters['wordId'];
+          return CustomWordFormPage(wordBookId: wordBookId, wordId: wordId);
         },
       ),
 

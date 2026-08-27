@@ -413,6 +413,9 @@ class FakeReviewRepository implements ReviewRepository {
 
   @override
   Future<void> deleteReviewsByWordBookId(String wordBookId) async {}
+
+  @override
+  Future<void> deleteReview(String wordBookId, String wordId) async {}
 }
 
 /// Fake ApplyReviewFeedbackUseCase — 记录调用，可模拟失败。

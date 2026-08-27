@@ -2,7 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../providers/repository_providers.dart';
 import '../controller/custom_word_book_management_controller.dart';
+import '../controller/custom_word_management_controller.dart';
 import '../state/custom_word_book_management_state.dart';
+import '../state/custom_word_management_state.dart';
 
 /// 自建词库管理相关 Provider。
 
@@ -19,5 +21,21 @@ final customWordBookManagementControllerProvider =
       return CustomWordBookManagementController(
         ref.watch(customWordBookRepositoryProvider),
         ref.watch(deleteCustomWordBookUseCaseProvider),
+      );
+    });
+
+/// 自建单词管理控制器 Provider（doc 64）。
+///
+/// autoDispose.family(wordBookId)：按词库隔离，离开详情页自动销毁，
+/// 避免跨词库状态串扰（与词库管理控制器全局共享不同）。
+final customWordManagementControllerProvider = StateNotifierProvider.autoDispose
+    .family<CustomWordManagementController, CustomWordManagementState, String>((
+      ref,
+      wordBookId,
+    ) {
+      return CustomWordManagementController(
+        ref.watch(customWordRepositoryProvider),
+        ref.watch(reviewRepositoryProvider),
+        wordBookId,
       );
     });

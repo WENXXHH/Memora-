@@ -177,6 +177,11 @@ class _CustomWordBookManagePageState
     );
   }
 
+  /// 打开词库详情页（单词管理）。
+  void _handleOpenDetail(CustomWordBook book) {
+    context.push('/word-books/detail?id=${book.id}');
+  }
+
   Widget _buildTile(CustomWordBook book, ColorScheme colorScheme) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
@@ -184,6 +189,8 @@ class _CustomWordBookManagePageState
         leading: Icon(Icons.menu_book, color: colorScheme.primary),
         title: Text(book.name),
         subtitle: const Text('自建词库'),
+        // 点击进入详情页管理单词（doc 38 / 39）
+        onTap: () => _handleOpenDetail(book),
         trailing: PopupMenuButton<String>(
           tooltip: '更多操作',
           onSelected: (value) {

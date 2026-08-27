@@ -3,6 +3,7 @@ import '../app/dependency_injection.dart';
 import '../data/repositories/word_repository.dart';
 import '../data/repositories/review_repository.dart';
 import '../data/repositories/custom_word_book_repository.dart';
+import '../data/repositories/custom_word_repository.dart';
 import '../domain/use_cases/apply_review_feedback_use_case.dart';
 import '../domain/use_cases/delete_custom_word_book_use_case.dart';
 
@@ -35,13 +36,19 @@ final customWordBookRepositoryProvider = Provider<CustomWordBookRepository>((
   return ref.read(getItProvider).get<CustomWordBookRepository>();
 });
 
+/// 全局 Provider：自建单词仓库
+final customWordRepositoryProvider = Provider<CustomWordRepository>((ref) {
+  return ref.read(getItProvider).get<CustomWordRepository>();
+});
+
 /// 全局 Provider：删除自建词库 UseCase
 ///
-/// 删除跨 Repository，由 UseCase 编排（doc 60 / 61）。
+/// 删除跨 Repository（单词 + Review + 词库），由 UseCase 编排（doc 60 / 61）。
 final deleteCustomWordBookUseCaseProvider =
     Provider<DeleteCustomWordBookUseCase>((ref) {
       return DeleteCustomWordBookUseCase(
         ref.read(customWordBookRepositoryProvider),
+        ref.read(customWordRepositoryProvider),
         ref.read(reviewRepositoryProvider),
       );
     });

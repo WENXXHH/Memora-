@@ -33,6 +33,11 @@ Future<void> main() async {
       boxes.customWordBooks,
       instanceName: HiveInitializer.customWordBooksBoxName,
     );
+    // 自建单词 Box，同样独立实例名（doc 24 / 26）。
+    getIt.registerSingleton<Box<Map<dynamic, dynamic>>>(
+      boxes.customWords,
+      instanceName: HiveInitializer.customWordsBoxName,
+    );
 
     // 初始化依赖注入（injectable 扫描）
     configureDependencies();
