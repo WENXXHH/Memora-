@@ -69,8 +69,9 @@ class ReviewLocalDataSource {
   WordReview _withClientUpdatedAtFallback(WordReview review) {
     if (review.clientUpdatedAt != null) return review;
     return review.copyWith(
-      clientUpdatedAt: review.lastReviewDate
-          ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      clientUpdatedAt:
+          review.lastReviewDate ??
+          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
     );
   }
 
@@ -109,6 +110,21 @@ class ReviewLocalDataSource {
   Future<void> deleteReview(String wordBookId, String wordId) async {
     final key = _buildKey(wordBookId, wordId);
     await _box.delete(key);
+  }
+
+  /// 删除指定词库的全部复习记录。
+  ///
+  /// 自建词库级联删除时调用（doc 15 / 16）：避免删除词库后
+  /// 残留孤儿 Review。按 key 前缀批量删除，一次事务完成。
+  Future<void> deleteReviewsByWordBookId(String wordBookId) async {
+    final prefix = '$wordBookId:';
+    final keys = _box.keys
+        .whereType<String>()
+        .where((key) => key.startsWith(prefix))
+        .toList();
+    if (keys.isNotEmpty) {
+      await _box.deleteAll(keys);
+    }
   }
 
   /// 清空所有复习记录（调试用）。

@@ -27,6 +27,12 @@ Future<void> main() async {
       boxes.settings,
       instanceName: HiveInitializer.settingsBoxName,
     );
+    // 自建词库 Box 需要独立实例名，与默认的 reviews Box 区分；
+    // CustomWordBookLocalSource 通过 @Named 注入它（doc 24 / 25）。
+    getIt.registerSingleton<Box<Map<dynamic, dynamic>>>(
+      boxes.customWordBooks,
+      instanceName: HiveInitializer.customWordBooksBoxName,
+    );
 
     // 初始化依赖注入（injectable 扫描）
     configureDependencies();

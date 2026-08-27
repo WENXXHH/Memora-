@@ -35,7 +35,9 @@ void main() {
       id: id,
       word: word,
       phonetic: '/test/',
-      meaning: [MeaningEntry(pos: 'v.', definitions: [definition])],
+      meaning: [
+        MeaningEntry(pos: 'v.', definitions: [definition]),
+      ],
       example: ['Test sentence.'],
       audio: '',
       wordBookId: 'test',
@@ -415,6 +417,9 @@ class FakeReviewRepository implements ReviewRepository {
 
   @override
   Future<int> getReviewedCount(String wordBookId) async => 0;
+
+  @override
+  Future<void> deleteReviewsByWordBookId(String wordBookId) async {}
 }
 
 /// Fake ApplyReviewFeedbackUseCase — 记录调用，可模拟失败。

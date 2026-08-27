@@ -204,6 +204,9 @@ class _IsolatedReviewRepository implements ReviewRepository {
 
   @override
   Future<int> getReviewedCount(String wordBookId) async => 0;
+
+  @override
+  Future<void> deleteReviewsByWordBookId(String wordBookId) async {}
 }
 
 /// Fake WordRepository：返回固定单词列表。

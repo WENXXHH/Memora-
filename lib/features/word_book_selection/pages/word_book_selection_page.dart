@@ -58,7 +58,18 @@ class _WordBookSelectionPageState extends ConsumerState<WordBookSelectionPage> {
         state.currentWordBookId;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('词库'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('词库'),
+        centerTitle: true,
+        // 自建词库管理入口（doc 38）：右上角进入管理页
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: '管理自建词库',
+            onPressed: () => context.push('/word-books/manage'),
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

@@ -17,6 +17,8 @@ import '../features/multiple_choice/pages/multiple_choice_page.dart';
 import '../features/profile/pages/profile_page.dart';
 import '../features/spelling_quiz/pages/spelling_quiz_page.dart';
 import '../features/word_book_selection/pages/word_book_selection_page.dart';
+import '../features/custom_word_book/pages/custom_word_book_manage_page.dart';
+import '../features/custom_word_book/pages/custom_word_book_form_page.dart';
 import '../components/bottom_navigation_shell.dart';
 import '../domain/enums/learning_enums.dart';
 import '../data/dto/word_model.dart';
@@ -165,6 +167,25 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/word-books',
         name: 'word-books',
         builder: (context, state) => const WordBookSelectionPage(),
+      ),
+
+      /// 自建词库管理页（全屏覆盖，无底部导航）
+      /// 从词库选择页右上角进入，负责自建词库的创建/重命名/删除
+      GoRoute(
+        path: '/word-books/manage',
+        name: 'word-books-manage',
+        builder: (context, state) => const CustomWordBookManagePage(),
+      ),
+
+      /// 自建词库创建 / 重命名表单页
+      /// 无 id 参数 → 新建；带 id → 重命名（doc 39）
+      GoRoute(
+        path: '/word-books/form',
+        name: 'word-books-form',
+        builder: (context, state) {
+          final id = state.uri.queryParameters['id'];
+          return CustomWordBookFormPage(bookId: id);
+        },
       ),
 
       /// 词库页（全屏覆盖，无底部导航）

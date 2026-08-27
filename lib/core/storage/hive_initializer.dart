@@ -19,6 +19,13 @@ class HiveInitializer {
   /// 与 reviews / auth 分离：不参与业务学习记录，也不参与凭证存储。
   static const String settingsBoxName = 'settings';
 
+  /// 自建词库 Box 名称（doc 24）。
+  ///
+  /// 单独一个 Box 存储全部自建词库元数据，key 为 wordBookId（doc 25）；
+  /// 自建单词另用 custom_words Box，不要为每个词库开一个 Box（doc 24）。
+  /// 沿用 Box<Map> + JSON 序列化，与 reviews Box 一致，无需 TypeAdapter。
+  static const String customWordBooksBoxName = 'custom_word_books';
+
   /// 初始化 Hive 引擎并打开所有业务 Box。
   ///
   /// 必须在 WidgetsFlutterBinding.ensureInitialized() 之后、
@@ -33,8 +40,16 @@ class HiveInitializer {
     );
     final authBox = await Hive.openBox<String>(authBoxName);
     final settingsBox = await Hive.openBox<String>(settingsBoxName);
+    final customWordBooksBox = await Hive.openBox<Map<dynamic, dynamic>>(
+      customWordBooksBoxName,
+    );
 
-    return HiveBoxes(reviews: reviewsBox, auth: authBox, settings: settingsBox);
+    return HiveBoxes(
+      reviews: reviewsBox,
+      auth: authBox,
+      settings: settingsBox,
+      customWordBooks: customWordBooksBox,
+    );
   }
 }
 
@@ -44,6 +59,7 @@ class HiveBoxes {
     required this.reviews,
     required this.auth,
     required this.settings,
+    required this.customWordBooks,
   });
 
   /// 学习记录 Box，存储 SM-2 复习状态。
@@ -54,4 +70,7 @@ class HiveBoxes {
 
   /// 设置 Box，存储设备级轻量偏好（当前词库选择等）。
   final Box<String> settings;
+
+  /// 自建词库元数据 Box，key 为 wordBookId（doc 25）。
+  final Box<Map<dynamic, dynamic>> customWordBooks;
 }
