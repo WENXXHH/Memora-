@@ -95,13 +95,20 @@ class MultipleChoiceController extends StateNotifier<MultipleChoiceState> {
       }
 
       if (questions.isEmpty) {
-        // 没有可生成的题目（词库太小或无到期复习词）
+        // 无题可生成：区分"词库太小"与"暂无到期复习词"（doc 52）。
+        // 词库唯一释义 < 4 时无法生成四选一，给出明确提示而非静默完成。
+        final enough =
+            _questionGenerator.uniqueMeaningCount(allWords) >=
+            QuestionGenerator.optionCount;
         state = state.copyWith(
           isLoading: false,
           questions: [],
           currentIndex: 0,
           currentQuestion: null,
           isCompleted: true,
+          errorMessage: enough
+              ? null
+              : '至少需要 ${QuestionGenerator.optionCount} 个不同释义的单词才能进行选择题复习',
         );
         return;
       }

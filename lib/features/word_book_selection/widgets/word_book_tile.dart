@@ -44,7 +44,9 @@ class WordBookTile extends StatelessWidget {
           ),
         ),
         // 来源类型展示（doc 66）：内置词库 / 自建词库
-        subtitle: Text(book.kind == WordBookKind.builtIn ? '内置词库' : '自建词库'),
+        subtitle: Text(
+          book.kind == WordBookKind.builtIn ? '内置词库' : '自建词库',
+        ),
         trailing: isSelected
             ? Icon(Icons.check_circle, color: colorScheme.primary)
             : null,

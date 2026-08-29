@@ -76,7 +76,11 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i97.CustomWordRepository(gh<_i1.CustomWordLocalSource>()),
     );
     gh.factory<_i237.WordRepository>(
-      () => _i237.WordRepository(gh<_i832.WordDataSource>()),
+      () => _i237.WordRepository(
+        gh<_i832.WordDataSource>(),
+        gh<_i456.CustomWordBookRepository>(),
+        gh<_i97.CustomWordRepository>(),
+      ),
     );
     return this;
   }

@@ -147,13 +147,10 @@ class _WordBookSelectionPageState extends ConsumerState<WordBookSelectionPage> {
   ///
   /// 名称从已加载列表按 ID 反查：当前词库可能是自建词库，
   /// 不能只查内置目录（doc 34）。
-  Widget _buildCurrentBook(
-    CurrentWordBookState state,
-    List<WordBookSummary> books,
-  ) {
+  Widget _buildCurrentBook(CurrentWordBookState state, List<WordBookSummary> books) {
     final colorScheme = Theme.of(context).colorScheme;
-    final currentName =
-        _findName(books, state.currentWordBookId) ?? state.currentWordBookId;
+    final currentName = _findName(books, state.currentWordBookId) ??
+        state.currentWordBookId;
 
     return Card(
       margin: EdgeInsets.zero,

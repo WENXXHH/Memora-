@@ -124,7 +124,10 @@ class _FakeCustomWordBookRepository implements CustomWordBookRepository {
   }
 
   @override
-  Future<CustomWordBook> rename({required String id, required String newName}) {
+  Future<CustomWordBook> rename({
+    required String id,
+    required String newName,
+  }) {
     throw UnimplementedError('测试不需要');
   }
 

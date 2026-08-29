@@ -31,11 +31,7 @@ class WordBookRegistry {
     ];
     final customs = [
       for (final book in await _customWordBookRepository.getAll())
-        WordBookSummary(
-          id: book.id,
-          name: book.name,
-          kind: WordBookKind.custom,
-        ),
+        WordBookSummary(id: book.id, name: book.name, kind: WordBookKind.custom),
     ];
     return [...builtIn, ...customs];
   }

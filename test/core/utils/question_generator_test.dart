@@ -211,4 +211,27 @@ void main() {
       expect(question!.correctAnswer, question.options[question.correctIndex]);
     });
   });
+
+  group('QuestionGenerator.uniqueMeaningCount（doc 52）', () {
+    setUp(() {
+      generator = QuestionGenerator(Random(42));
+    });
+
+    test('5 个不同释义 → 5', () {
+      expect(generator.uniqueMeaningCount(makeFiveUniqueWords()), 5);
+    });
+
+    test('释义相同按文本去重', () {
+      final words = [
+        makeWord(id: 'w1', word: 'abandon', pos: 'v.', definition: '放弃'),
+        makeWord(id: 'w2', word: 'bold', pos: 'v.', definition: '放弃'),
+        makeWord(id: 'w3', word: 'candid', pos: 'n.', definition: '坦诚'),
+      ];
+      expect(generator.uniqueMeaningCount(words), 2);
+    });
+
+    test('空词库 → 0', () {
+      expect(generator.uniqueMeaningCount(const []), 0);
+    });
+  });
 }

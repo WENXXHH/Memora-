@@ -98,12 +98,20 @@ class ListeningQuizController extends StateNotifier<ListeningQuizState> {
       }
 
       if (questions.isEmpty) {
+        // 无题可生成：区分"词库太小"与"暂无到期复习词"（doc 53）。
+        // 与选择题同一产品规则：唯一释义 < 4 时无法生成四选一。
+        final enough =
+            _questionGenerator.uniqueMeaningCount(allWords) >=
+            QuestionGenerator.optionCount;
         state = state.copyWith(
           isLoading: false,
           questions: [],
           currentIndex: 0,
           currentQuestion: null,
           isCompleted: true,
+          errorMessage: enough
+              ? null
+              : '至少需要 ${QuestionGenerator.optionCount} 个不同释义的单词才能进行听音辨词',
         );
         return;
       }

@@ -87,6 +87,19 @@ class QuestionGenerator {
     );
   }
 
+  /// 词库中不同释义文本的数量（doc 52）。
+  ///
+  /// 四选一（选择题 / 听音辨词）需要至少 [optionCount] 个不同释义才能生成
+  /// "1 正确 + 3 干扰"，少于该值任何题目都无法生成。供 Controller 在
+  /// 题量为空时区分"词库太小"与"暂无到期复习词"，给用户明确提示。
+  int uniqueMeaningCount(List<Word> allWords) {
+    final seen = <String>{};
+    for (final word in allWords) {
+      seen.add(_formatMeaning(word));
+    }
+    return seen.length;
+  }
+
   /// 格式化单词释义为显示文本。
   ///
   /// 多词性合并为 "v. 放弃、抛弃；n. 放纵" 格式。
