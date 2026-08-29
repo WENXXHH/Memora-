@@ -18,9 +18,13 @@ import '../core/services/tts/flutter_tts_service.dart' as _i1021;
 import '../core/services/tts/tts_module.dart' as _i838;
 import '../core/services/tts/tts_service.dart' as _i931;
 import '../data/repositories/ai_suggestion_repository.dart' as _i796;
+import '../data/repositories/custom_word_book_repository.dart' as _i456;
+import '../data/repositories/custom_word_repository.dart' as _i97;
 import '../data/repositories/review_repository.dart' as _i501;
 import '../data/repositories/word_repository.dart' as _i237;
 import '../data/sources/ai_suggestion_data_source.dart' as _i740;
+import '../data/sources/local/custom_word_book_local_source.dart' as _i821;
+import '../data/sources/local/custom_word_local_source.dart' as _i1;
 import '../data/sources/local/mock_ai_suggestion_source.dart' as _i317;
 import '../data/sources/local/mock_word_source.dart' as _i557;
 import '../data/sources/local/review_local_source.dart' as _i293;
@@ -48,12 +52,35 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i796.AiSuggestionRepository>(
       () => _i796.AiSuggestionRepository(gh<_i740.AiSuggestionDataSource>()),
     );
+    gh.factory<_i821.CustomWordBookLocalSource>(
+      () => _i821.CustomWordBookLocalSource(
+        gh<_i1055.Box<Map<dynamic, dynamic>>>(
+          instanceName: 'custom_word_books',
+        ),
+      ),
+    );
     gh.factory<_i832.WordDataSource>(() => _i557.MockWordSource());
+    gh.factory<_i1.CustomWordLocalSource>(
+      () => _i1.CustomWordLocalSource(
+        gh<_i1055.Box<Map<dynamic, dynamic>>>(instanceName: 'custom_words'),
+      ),
+    );
+    gh.factory<_i456.CustomWordBookRepository>(
+      () =>
+          _i456.CustomWordBookRepository(gh<_i821.CustomWordBookLocalSource>()),
+    );
     gh.factory<_i501.ReviewRepository>(
       () => _i501.ReviewRepository(gh<_i293.ReviewLocalDataSource>()),
     );
+    gh.factory<_i97.CustomWordRepository>(
+      () => _i97.CustomWordRepository(gh<_i1.CustomWordLocalSource>()),
+    );
     gh.factory<_i237.WordRepository>(
-      () => _i237.WordRepository(gh<_i832.WordDataSource>()),
+      () => _i237.WordRepository(
+        gh<_i832.WordDataSource>(),
+        gh<_i456.CustomWordBookRepository>(),
+        gh<_i97.CustomWordRepository>(),
+      ),
     );
     return this;
   }

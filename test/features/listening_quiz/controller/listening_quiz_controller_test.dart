@@ -35,7 +35,9 @@ void main() {
       id: id,
       word: word,
       phonetic: '/test/',
-      meaning: [MeaningEntry(pos: 'v.', definitions: [definition])],
+      meaning: [
+        MeaningEntry(pos: 'v.', definitions: [definition]),
+      ],
       example: ['Test sentence.'],
       audio: '',
       wordBookId: 'test',
@@ -103,12 +105,65 @@ void main() {
       expect(controller.state.hasAudioError, false);
     });
 
-    test('无到期复习词 → 空队列 + isCompleted + 不播放', () async {
+    test('无到期复习词 → 空队列 + isCompleted + 不播放 + 无提示', () async {
       await controller.startQuiz('test');
 
       expect(controller.state.questions, isEmpty);
       expect(controller.state.isCompleted, true);
       expect(audioService.playCalls, isEmpty);
+      expect(controller.state.errorMessage, isNull);
+    });
+  });
+
+  group('词库太小边界（doc 53）', () {
+    test('唯一释义 < 4 → 空队列 + 明确提示 + 不播放', () async {
+      // 3 个不同释义：无法生成"1 正确 + 3 干扰"
+      final smallWords = [
+        makeWord('w1', 'abandon', '放弃'),
+        makeWord('w2', 'bold', '勇敢的'),
+        makeWord('w3', 'candid', '坦诚的'),
+      ];
+      final smallController = ListeningQuizController(
+        FakeWordRepository(smallWords),
+        reviewRepo,
+        useCase,
+        audioService,
+        questionGenerator: QuestionGenerator(Random(42)),
+      );
+      for (final w in smallWords) {
+        reviewRepo.addDueReview(w.id);
+      }
+
+      await smallController.startQuiz('test');
+
+      expect(smallController.state.questions, isEmpty);
+      expect(smallController.state.isCompleted, true);
+      expect(smallController.state.errorMessage, contains('4 个不同释义'));
+      expect(audioService.playCalls, isEmpty);
+    });
+
+    test('恰好 4 个唯一释义且全部到期 → 可生成题目', () async {
+      final fourWords = [
+        makeWord('w1', 'abandon', '放弃'),
+        makeWord('w2', 'bold', '勇敢的'),
+        makeWord('w3', 'candid', '坦诚的'),
+        makeWord('w4', 'dazzle', '使目眩'),
+      ];
+      final smallController = ListeningQuizController(
+        FakeWordRepository(fourWords),
+        reviewRepo,
+        useCase,
+        audioService,
+        questionGenerator: QuestionGenerator(Random(42)),
+      );
+      for (final w in fourWords) {
+        reviewRepo.addDueReview(w.id);
+      }
+
+      await smallController.startQuiz('test');
+
+      expect(smallController.state.questions, isNotEmpty);
+      expect(smallController.state.errorMessage, isNull);
     });
   });
 
@@ -415,6 +470,12 @@ class FakeReviewRepository implements ReviewRepository {
 
   @override
   Future<int> getReviewedCount(String wordBookId) async => 0;
+
+  @override
+  Future<void> deleteReviewsByWordBookId(String wordBookId) async {}
+
+  @override
+  Future<void> deleteReview(String wordBookId, String wordId) async {}
 }
 
 /// Fake ApplyReviewFeedbackUseCase — 记录调用，可模拟失败。

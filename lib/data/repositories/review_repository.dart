@@ -57,4 +57,18 @@ class ReviewRepository {
   Future<int> getReviewedCount(String wordBookId) async {
     return _localDataSource.getReviewedCount(wordBookId);
   }
+
+  /// 删除指定词库的全部复习记录。
+  ///
+  /// 自建词库级联删除时调用（doc 15 / 61），避免残留孤儿 Review。
+  Future<void> deleteReviewsByWordBookId(String wordBookId) async {
+    await _localDataSource.deleteReviewsByWordBookId(wordBookId);
+  }
+
+  /// 删除单个单词的复习记录。
+  ///
+  /// 删除自建单词时调用（doc 23），避免留下孤儿 Review。
+  Future<void> deleteReview(String wordBookId, String wordId) async {
+    await _localDataSource.deleteReview(wordBookId, wordId);
+  }
 }

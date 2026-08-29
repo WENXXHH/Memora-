@@ -49,27 +49,32 @@ class _ListeningQuizPageState extends ConsumerState<ListeningQuizPage> {
     Navigator.of(context).pop();
   }
 
-  /// 构建空状态（无到期复习词或词库太小）
-  Widget _buildEmpty() {
+  /// 构建空状态。
+  ///
+  /// [message] 非空表示词库太小无法生成四选一（doc 53），
+  /// 直接给出明确提示，不显示"暂无复习词"误导用户。
+  Widget _buildEmpty({String? message}) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.check_circle_outline,
+            message == null ? Icons.check_circle_outline : Icons.info_outline,
             size: 64,
             color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
-          const Text(
-            '暂无需要复习的单词',
-            style: TextStyle(fontSize: 18, color: Colors.grey),
+          Text(
+            message ?? '暂无需要复习的单词',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 18, color: Colors.grey),
           ),
           const SizedBox(height: 8),
-          const Text(
-            '完成日常学习后再来听音辨词',
-            style: TextStyle(fontSize: 14, color: Colors.grey),
-          ),
+          if (message == null)
+            const Text(
+              '完成日常学习后再来听音辨词',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
           const SizedBox(height: 24),
           ElevatedButton(onPressed: _onPop, child: const Text('返回首页')),
         ],
@@ -292,7 +297,7 @@ class _ListeningQuizPageState extends ConsumerState<ListeningQuizPage> {
                     .startQuiz(widget.wordBookId),
               )
             : state.questions.isEmpty
-            ? _buildEmpty()
+            ? _buildEmpty(message: state.errorMessage)
             : state.isCompleted
             ? _buildComplete(state)
             : _buildContent(state),

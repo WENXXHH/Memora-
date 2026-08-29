@@ -141,6 +141,12 @@ class _FakeReviewRepository implements ReviewRepository {
 
   @override
   Future<void> saveWordReviews(Iterable<WordReview> reviews) async {}
+
+  @override
+  Future<void> deleteReviewsByWordBookId(String wordBookId) async {}
+
+  @override
+  Future<void> deleteReview(String wordBookId, String wordId) async {}
 }
 
 /// 模拟加载失败的 ReviewRepository（doc 44 降级路径）。
@@ -179,5 +185,13 @@ class _ThrowingReviewRepository implements ReviewRepository {
 
   @override
   Future<int> getReviewedCount(String wordBookId) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> deleteReviewsByWordBookId(String wordBookId) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> deleteReview(String wordBookId, String wordId) async =>
       throw UnimplementedError();
 }

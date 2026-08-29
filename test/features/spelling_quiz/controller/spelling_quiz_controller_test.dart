@@ -96,6 +96,22 @@ void main() {
       expect(controller.state.currentWord, isNull);
     });
 
+    test('只有 1 个到期词 → 正常开始拼写（doc 82：拼写不设 4 词门槛）', () async {
+      final singleWord = makeWord('w1', 'abandon', '放弃');
+      final singleController = SpellingQuizController(
+        FakeWordRepository([singleWord]),
+        FakeReviewRepository()..addDueReview('w1'),
+        useCase,
+      );
+
+      await singleController.startQuiz('test');
+
+      expect(singleController.state.isLoading, false);
+      expect(singleController.state.hasError, false);
+      expect(singleController.state.words, [singleWord]);
+      expect(singleController.state.isCompleted, false);
+    });
+
     test('加载失败 → hasError + errorMessage', () async {
       wordRepo.throwOnGetWords = true;
 
@@ -410,6 +426,12 @@ class FakeReviewRepository implements ReviewRepository {
 
   @override
   Future<int> getReviewedCount(String wordBookId) async => 0;
+
+  @override
+  Future<void> deleteReviewsByWordBookId(String wordBookId) async {}
+
+  @override
+  Future<void> deleteReview(String wordBookId, String wordId) async {}
 }
 
 /// Fake ApplyReviewFeedbackUseCase — 记录调用，可模拟失败。
