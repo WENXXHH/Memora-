@@ -77,6 +77,64 @@ void main() {
       );
       expect(cet6After.repetitionCount, cet6Before.repetitionCount);
     });
+
+    test('custom_a:1 与 custom_b:1 独立演进（doc 75）', () async {
+      final reviewRepo = _IsolatedReviewRepository();
+      final useCase = ApplyReviewFeedbackUseCase(reviewRepo);
+
+      await useCase.execute(
+        wordBookId: 'custom_a',
+        wordId: '1',
+        feedback: FeedbackType.known,
+      );
+      await useCase.execute(
+        wordBookId: 'custom_b',
+        wordId: '1',
+        feedback: FeedbackType.unknown,
+      );
+
+      final a = await reviewRepo.getWordReview('1', 'custom_a');
+      final b = await reviewRepo.getWordReview('1', 'custom_b');
+
+      expect(a, isNotNull);
+      expect(b, isNotNull);
+      expect(a!.wordBookId, 'custom_a');
+      expect(b!.wordBookId, 'custom_b');
+      // known 与 unknown 掌握度不同，证明两个自建词库的进度互不影响
+      expect(a.mastery, isNot(b.mastery));
+    });
+
+    test('更新 custom_b:1 不改变 custom_a:1（doc 75）', () async {
+      final reviewRepo = _IsolatedReviewRepository();
+      final useCase = ApplyReviewFeedbackUseCase(reviewRepo);
+
+      await useCase.execute(
+        wordBookId: 'custom_a',
+        wordId: '1',
+        feedback: FeedbackType.known,
+      );
+      await useCase.execute(
+        wordBookId: 'custom_a',
+        wordId: '1',
+        feedback: FeedbackType.known,
+      );
+      final aBefore = await reviewRepo.getWordReview('1', 'custom_a');
+
+      // 另一个自建词库答错，不应改写 custom_a 的 SM-2 状态
+      await useCase.execute(
+        wordBookId: 'custom_b',
+        wordId: '1',
+        feedback: FeedbackType.unknown,
+      );
+
+      final aAfter = await reviewRepo.getWordReview('1', 'custom_a');
+      expect(
+        aAfter!.interval,
+        aBefore!.interval,
+        reason: 'custom_b 的反馈不能改写 custom_a 的 SM-2 状态',
+      );
+      expect(aAfter.repetitionCount, aBefore.repetitionCount);
+    });
   });
 
   group('Quiz 提交传递当前词库（doc 51）', () {

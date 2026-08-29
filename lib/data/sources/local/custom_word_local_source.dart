@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:hive_ce/hive_ce.dart';
 import 'package:injectable/injectable.dart';
 
@@ -11,14 +13,21 @@ import '../../../core/storage/hive_initializer.dart';
 /// 沿用 Box<Map> + JSON 序列化，无需 TypeAdapter。
 @injectable
 class CustomWordLocalSource {
-  CustomWordLocalSource(
-    @Named(HiveInitializer.customWordsBoxName) this._box,
-  );
+  CustomWordLocalSource(@Named(HiveInitializer.customWordsBoxName) this._box);
 
   final Box<Map<dynamic, dynamic>> _box;
 
   /// 构造联合 Key：`$wordBookId:$wordId`（doc 26）。
   String _buildKey(String wordBookId, String wordId) => '$wordBookId:$wordId';
+
+  /// Hive 从磁盘读回时，嵌套 Map 的类型是 `Map<dynamic, dynamic>`，
+  /// 而 freezed 生成的 fromJson 要求 `Map<String, dynamic>`（as 强转）。
+  ///
+  /// 用 JSON round-trip 规整为 `Map<String, dynamic>` / `List<dynamic>`，
+  /// 保证杀进程重启后自建单词能正常解析（doc 72 第二层）。
+  Map<String, dynamic> _normalizeForJson(Map<dynamic, dynamic> data) {
+    return jsonDecode(jsonEncode(data)) as Map<String, dynamic>;
+  }
 
   /// 读取指定词库的全部自建单词，按创建时间升序。
   List<CustomWordRecord> getAll(String wordBookId) {
@@ -28,7 +37,7 @@ class CustomWordLocalSource {
         .where((key) => key.startsWith(prefix))
         .map((key) {
           final data = _box.get(key);
-          return CustomWordRecord.fromJson(Map<String, dynamic>.from(data!));
+          return CustomWordRecord.fromJson(_normalizeForJson(data!));
         })
         .toList();
     records.sort((a, b) => a.createdAt.compareTo(b.createdAt));
@@ -39,7 +48,7 @@ class CustomWordLocalSource {
   CustomWordRecord? getById(String wordBookId, String wordId) {
     final data = _box.get(_buildKey(wordBookId, wordId));
     if (data == null) return null;
-    return CustomWordRecord.fromJson(Map<String, dynamic>.from(data));
+    return CustomWordRecord.fromJson(_normalizeForJson(data));
   }
 
   /// 判断单词是否存在。
