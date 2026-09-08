@@ -1,4 +1,4 @@
-import '../../../data/dto/multiple_choice_question.dart';
+import '../../../domain/models/multiple_choice_question.dart';
 
 /// 选择题状态类（不可变）。
 ///
@@ -9,7 +9,7 @@ import '../../../data/dto/multiple_choice_question.dart';
 /// - [currentIndex]：当前题号（0-based）
 /// - [currentQuestion]：当前题目（完成后为 null）
 /// - [selectedIndex]：用户选中的选项索引（未作答为 null）
-/// - [hasAnswered]：当前题是否已作答（Bug 9/10 防重复提交）
+/// - [hasAnswered]：当前题是否已作答
 /// - [isCorrect]：本次作答是否正确（未作答为 null）
 /// - [correctCount] / [wrongCount]：累计统计
 /// - [isCompleted]：全部题目答完

@@ -15,7 +15,7 @@ import '../widgets/statistics_card.dart';
 /// 应用主页面，展示学习概览和快速入口。
 /// 数据跟随当前词库（currentWordBookIdProvider）加载与刷新：
 /// - 首次进入按当前词库加载
-/// - 切换词库后自动重新加载（doc 24 / 40）
+/// - 切换词库后自动重新加载
 /// 支持四种 UI 状态：加载中、正常数据、空数据（首次启动）、错误。
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -25,8 +25,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 /// 首页状态类
-///
-/// 继承 ConsumerState，支持通过 ref 访问 Riverpod Provider
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
@@ -47,7 +45,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final wordBookId = ref.watch(currentWordBookIdProvider);
     final homeState = ref.watch(homeControllerProvider(wordBookId));
 
-    // 切换词库后刷新统计，避免首页仍显示旧词库数据（doc 24 / 40 / Bug 3）
+    // 切换词库后刷新统计，避免首页仍显示旧词库数据
     ref.listen(currentWordBookIdProvider, (previous, next) {
       if (previous != next) _loadDataFor(next);
     });
@@ -67,7 +65,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  /// 当前词库展示（doc 22 最小 UI），点击进入词库选择页。
+  /// 当前词库展示，点击进入词库选择页。
   Widget _buildCurrentWordBookBar(String wordBookId) {
     final colorScheme = Theme.of(context).colorScheme;
     final name = BuiltInWordBooks.findById(wordBookId)?.name ?? wordBookId;

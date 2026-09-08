@@ -1,6 +1,6 @@
 /// 选择题生成器（纯函数 + 注入 Random）。
 ///
-/// 原则 17：QuestionGenerator 保持纯函数并注入 Random。
+/// QuestionGenerator 保持纯函数并注入 Random。
 /// - 生产环境用 `Random()`
 /// - 测试环境用 `Random(42)` 保证结果可重复
 /// - 不进 DI 容器，调用方持有 Random 实例
@@ -8,15 +8,15 @@ library;
 
 import 'dart:math';
 
-import '../../data/dto/word_model.dart';
-import '../../data/dto/multiple_choice_question.dart';
+import '../../domain/models/word_model.dart';
+import '../../domain/models/multiple_choice_question.dart';
 
 /// 选择题生成器。
 ///
 /// 职责：
 /// 1. 从词库中为指定单词生成一道四选一选择题
 /// 2. 干扰项来自词库的其他单词（题目=待复习词，干扰项=整个词库）
-/// 3. 处理 4 种边界情况（§2.5）：
+/// 3. 处理 4 种边界情况：
 ///    - 词库不足 4 个不同释义 → 返回 null
 ///    - 多个单词释义相同 → 按释义文本去重
 ///    - 正确答案不进入干扰项 → 按 word.id + meaning 去重
@@ -32,7 +32,7 @@ class QuestionGenerator {
   /// 为 [correctWord] 生成一道选择题。
   ///
   /// [allWords] 是当前词库的全部单词（干扰项池）。
-  /// 返回 null 表示词库可用选项不足（边界情况 1）。
+  /// 返回 null 表示词库可用选项不足。
   MultipleChoiceQuestion? build({
     required Word correctWord,
     required List<Word> allWords,
@@ -42,14 +42,14 @@ class QuestionGenerator {
 
     // 步骤 1：过滤候选干扰项
     // - 排除正确单词本身（按 id）
-    // - 排除与正确答案释义相同的单词（边界情况 3：正确答案不进入干扰项）
+    // - 排除与正确答案释义相同的单词
     final candidates = allWords.where((w) {
       if (w.id == correctWord.id) return false;
       if (_formatMeaning(w) == correctMeaning) return false;
       return true;
     }).toList();
 
-    // 步骤 2：按释义文本去重（边界情况 2：多个单词释义相同）
+    // 步骤 2：按释义文本去重
     // 保留每个释义的第一个出现者
     final seen = <String>{correctMeaning}; // 正确答案也加入去重集
     final uniqueCandidates = <Word>[];
@@ -60,7 +60,7 @@ class QuestionGenerator {
       }
     }
 
-    // 步骤 3：检查是否有足够的干扰项（边界情况 1）
+    // 步骤 3：检查是否有足够的干扰项
     // 需要 optionCount - 1 = 3 个不同释义的干扰项
     if (uniqueCandidates.length < optionCount - 1) {
       return null; // 词库可用选项不足
@@ -87,7 +87,7 @@ class QuestionGenerator {
     );
   }
 
-  /// 词库中不同释义文本的数量（doc 52）。
+  /// 词库中不同释义文本的数量。
   ///
   /// 四选一（选择题 / 听音辨词）需要至少 [optionCount] 个不同释义才能生成
   /// "1 正确 + 3 干扰"，少于该值任何题目都无法生成。供 Controller 在
@@ -103,7 +103,7 @@ class QuestionGenerator {
   /// 格式化单词释义为显示文本。
   ///
   /// 多词性合并为 "v. 放弃、抛弃；n. 放纵" 格式。
-  /// 此文本同时作为去重 key（Bug 8 防御）。
+  /// 此文本同时作为去重 key。
   String _formatMeaning(Word word) {
     return word.meaning
         .map((m) => '${m.pos} ${m.definitions.join('、')}')

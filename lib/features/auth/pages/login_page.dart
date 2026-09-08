@@ -4,10 +4,14 @@ import 'package:go_router/go_router.dart';
 
 import '../providers/auth_providers.dart';
 import '../state/auth_state.dart';
+import '../widgets/login_error_banner.dart';
+import '../widgets/login_header.dart';
+import '../widgets/login_register_link.dart';
+import '../widgets/login_submit_button.dart';
 
 /// 登录页。
 ///
-/// 表单校验只是改善体验（原则 15），服务端必须重新验证全部规则。
+/// 表单校验只是改善体验，服务端必须重新验证全部规则。
 /// 登录成功后路由守卫自动重定向到 /home，无需手动导航。
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -58,20 +62,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 32),
-              // Logo
-              Icon(
-                Icons.menu_book,
-                size: 64,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '欢迎回来',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 32),
+              const LoginHeader(),
 
               // 用户名
               TextFormField(
@@ -125,65 +116,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
               // 错误提示
               if (errorMessage != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.errorContainer.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        color: Theme.of(context).colorScheme.error,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          errorMessage,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                LoginErrorBanner(message: errorMessage),
                 const SizedBox(height: 16),
               ],
 
               // 登录按钮
-              FilledButton(
-                onPressed: isLoading ? null : _submit,
-                child: isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text('登录'),
+              LoginSubmitButton(
+                isLoading: isLoading,
+                onPressed: _submit,
               ),
               const SizedBox(height: 16),
 
               // 注册链接
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('还没有账号？'),
-                  TextButton(
-                    onPressed: isLoading
-                        ? null
-                        : () => context.go('/register'),
-                    child: const Text('注册'),
-                  ),
-                ],
+              LoginRegisterLink(
+                onPressed: isLoading ? null : () => context.go('/register'),
               ),
             ],
           ),

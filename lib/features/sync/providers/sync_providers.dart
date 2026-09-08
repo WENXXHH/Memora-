@@ -2,7 +2,7 @@
 ///
 /// 手动组装依赖链（与 auth_providers.dart 模式一致）：
 /// dioProvider → ReviewSyncRemoteDataSource → ReviewSyncRepository
-/// → SyncReviewRecordsUseCase → SyncController
+/// → SyncReviewRecordsService → SyncController
 ///
 /// 原则 15：复用第五周 dioProvider + AuthInterceptor，不创建第二套网络。
 library;
@@ -10,8 +10,8 @@ library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/repositories/review_sync_repository.dart';
+import '../../../data/services/sync_review_records_service.dart';
 import '../../../data/sources/remote/review_sync_remote_data_source.dart';
-import '../../../domain/use_cases/sync_review_records_use_case.dart';
 import '../../../providers/network_providers.dart';
 import '../../../providers/repository_providers.dart';
 import '../controller/sync_controller.dart';
@@ -31,16 +31,16 @@ final reviewSyncRepositoryProvider = Provider<ReviewSyncRepository>((ref) {
   return ReviewSyncRepository(ref.read(reviewSyncRemoteDataSourceProvider));
 });
 
-/// 同步 UseCase Provider。
+/// 同步服务 Provider。
 ///
 /// 依赖：
 /// - [reviewRepositoryProvider]：本地 Hive 读写
 /// - [wordRepositoryProvider]：本地单词列表（构建 WordIdMap）
 /// - [reviewSyncRepositoryProvider]：远端 HTTP 调用
-final syncReviewRecordsUseCaseProvider = Provider<SyncReviewRecordsUseCase>((
+final syncReviewRecordsServiceProvider = Provider<SyncReviewRecordsService>((
   ref,
 ) {
-  return SyncReviewRecordsUseCase(
+  return SyncReviewRecordsService(
     ref.read(reviewRepositoryProvider),
     ref.read(wordRepositoryProvider),
     ref.read(reviewSyncRepositoryProvider),
@@ -53,5 +53,5 @@ final syncReviewRecordsUseCaseProvider = Provider<SyncReviewRecordsUseCase>((
 final syncControllerProvider = StateNotifierProvider<SyncController, SyncState>((
   ref,
 ) {
-  return SyncController(ref.read(syncReviewRecordsUseCaseProvider));
+  return SyncController(ref.read(syncReviewRecordsServiceProvider));
 });

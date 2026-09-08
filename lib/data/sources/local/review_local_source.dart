@@ -1,7 +1,7 @@
 import 'package:hive_ce/hive_ce.dart';
 import 'package:injectable/injectable.dart';
 
-import '../../dto/word_review_model.dart';
+import '../../../domain/models/word_review_model.dart';
 import '../../../core/utils/sm2_algorithm.dart';
 
 /// 复习记录本地持久化数据源。
@@ -114,7 +114,7 @@ class ReviewLocalDataSource {
 
   /// 删除指定词库的全部复习记录。
   ///
-  /// 自建词库级联删除时调用（doc 15 / 16）：避免删除词库后
+  /// 自建词库级联删除时调用：避免删除词库后
   /// 残留孤儿 Review。按 key 前缀批量删除，一次事务完成。
   Future<void> deleteReviewsByWordBookId(String wordBookId) async {
     final prefix = '$wordBookId:';

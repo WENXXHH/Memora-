@@ -1,4 +1,4 @@
-import '../../data/dto/word_review_model.dart';
+import '../../domain/models/word_review_model.dart';
 import 'merge_result.dart';
 
 /// 复习记录同步合并器（纯函数，无副作用）。
@@ -7,7 +7,7 @@ import 'merge_result.dart';
 /// 对齐后比较 [WordReview.clientUpdatedAt]，执行 Last Write Wins 合并。
 ///
 /// 前置条件：remote 记录在进入 merger 前已通过 ID 映射表
-/// 将后端 int ID 转为 Flutter String ID（详见 doc 0 ID 边界转换策略）。
+/// 将后端 int ID 转为 Flutter String ID。
 class ReviewSyncMerger {
   const ReviewSyncMerger._();
 

@@ -1,16 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:memora/data/dto/word_model.dart';
-import 'package:memora/data/dto/word_review_model.dart';
+import 'package:memora/domain/models/word_model.dart';
+import 'package:memora/domain/models/word_review_model.dart';
 import 'package:memora/data/repositories/review_repository.dart';
 import 'package:memora/data/repositories/word_repository.dart';
 import 'package:memora/features/home/controller/home_controller.dart';
 
-/// 首页统计按词库隔离测试（doc 40 / 49 / 62 首页）。
+/// 首页统计按词库隔离测试。
 ///
 /// 核心断言：CET-6 与 CET-4 的待复习数 / 单词数 / 已学数 / 掌握数
 /// 各自独立，加载一个词库不影响另一个词库的状态。
 void main() {
-  group('首页统计按词库隔离（doc 40）', () {
+  group('首页统计按词库隔离', () {
     test('CET-6 与 CET-4 统计各自独立', () async {
       final wordRepo = _FakeWordRepository({'cet6': 100, 'cet4': 50});
       final reviewRepo = _FakeReviewRepository()
@@ -32,7 +32,7 @@ void main() {
       expect(cet6.state.isLoading, isFalse);
 
       await cet4.loadData();
-      expect(cet4.state.reviewCount, 2, reason: 'CET-4 待复习数（doc 40：8→2）');
+      expect(cet4.state.reviewCount, 2, reason: 'CET-4 待复习数（8→2）');
       expect(cet4.state.totalWords, 50);
       expect(cet4.state.learnedCount, 10);
       expect(cet4.state.masteredWords, 1);
@@ -149,7 +149,7 @@ class _FakeReviewRepository implements ReviewRepository {
   Future<void> deleteReview(String wordBookId, String wordId) async {}
 }
 
-/// 模拟加载失败的 ReviewRepository（doc 44 降级路径）。
+/// 模拟加载失败的 ReviewRepository。
 class _ThrowingReviewRepository implements ReviewRepository {
   @override
   Future<List<WordReview>> getDueReviews(String wordBookId) async =>

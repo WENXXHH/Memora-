@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:memora/features/home/widgets/quick_actions.dart';
 
-/// 词库切换入口传参测试（doc 48 / 62 入口）。
+/// 词库切换入口传参测试。
 ///
 /// 核心断言：QuickActions 使用页面传入的 [wordBookId] 拼接路由参数，
 /// 当前词库为 CET-4 时五个学习类入口全部携带 wordBookId=cet4，

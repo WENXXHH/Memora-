@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive_ce.dart';
 import 'package:memora/data/sources/local/word_book_preference_local_source.dart';
 
-/// WordBookPreferenceLocalSource 持久化测试（doc 72 第三层）。
+/// WordBookPreferenceLocalSource 持久化测试。
 ///
 /// 使用真实 Hive settings Box（临时目录），覆盖：
 /// 1. 无历史 → readCurrentWordBookId 返回 null
@@ -34,7 +34,7 @@ void main() {
     await tempDir.delete(recursive: true);
   });
 
-  group('读写（doc 9）', () {
+  group('读写', () {
     test('无历史选择 → null', () {
       expect(source.readCurrentWordBookId(), isNull);
     });
@@ -51,7 +51,7 @@ void main() {
     });
   });
 
-  group('杀进程持久化（doc 72 第三层）', () {
+  group('杀进程持久化', () {
     test('选择 custom_abc → 关闭 Box → 重新打开 → 仍为 custom_abc', () async {
       await source.saveCurrentWordBookId('custom_abc');
       await box.close();

@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memora/core/utils/question_generator.dart';
-import 'package:memora/data/dto/word_model.dart';
+import 'package:memora/domain/models/word_model.dart';
 
 /// QuestionGenerator 单元测试。
 ///
@@ -212,7 +212,7 @@ void main() {
     });
   });
 
-  group('QuestionGenerator.uniqueMeaningCount（doc 52）', () {
+  group('QuestionGenerator.uniqueMeaningCount', () {
     setUp(() {
       generator = QuestionGenerator(Random(42));
     });

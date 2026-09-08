@@ -1,19 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:memora/data/dto/custom_word_record_model.dart';
-import 'package:memora/data/dto/word_model.dart';
-import 'package:memora/data/dto/word_review_model.dart';
+import 'package:memora/domain/models/custom_word_record_model.dart';
+import 'package:memora/domain/models/word_model.dart';
+import 'package:memora/domain/models/word_review_model.dart';
 import 'package:memora/data/repositories/custom_word_repository.dart';
 import 'package:memora/data/repositories/review_repository.dart';
 import 'package:memora/features/custom_word_book/controller/custom_word_management_controller.dart';
 
-/// CustomWordManagementController 单元测试（doc 64 / 44 / 45 / 23）。
+/// CustomWordManagementController 单元测试。
 ///
 /// 覆盖：
 /// 1. load → state.words
-/// 2. create 成功：英文 trim + lowercase 标准化（doc 44），生成默认 MeaningEntry（doc 12）
-/// 3. create 空英文 / 空释义 / 重复英文（doc 45）
-/// 4. update 成功：id 不变（doc 19），排除自身重复校验（doc 45）
-/// 5. delete → 单词 + WordReview 一起删除（doc 23 / 89）
+/// 2. create 成功：英文 trim + lowercase 标准化，生成默认 MeaningEntry
+/// 3. create 空英文 / 空释义 / 重复英文
+/// 4. update 成功：id 不变，排除自身重复校验
+/// 5. delete → 单词 + WordReview 一起删除
 void main() {
   late _FakeCustomWordRepository wordRepo;
   late _FakeReviewRepository reviewRepo;
@@ -29,7 +29,7 @@ void main() {
     );
   });
 
-  group('load（doc 64）', () {
+  group('load', () {
     test('加载当前词库全部单词', () async {
       wordRepo.records.add(_record('w1', 'custom_abc', 'abandon'));
       wordRepo.records.add(_record('w2', 'custom_abc', 'ability'));
@@ -42,7 +42,7 @@ void main() {
     });
   });
 
-  group('create（doc 44 / 45 / 12）', () {
+  group('create', () {
     test('成功 → 英文 trim + lowercase 标准化存储', () async {
       final record = await controller.create(
         word: '  Abandon ',
@@ -52,9 +52,9 @@ void main() {
       );
 
       expect(record, isNotNull);
-      expect(record!.word, 'abandon', reason: '英文 trim + lowercase（doc 44）');
+      expect(record!.word, 'abandon', reason: '英文 trim + lowercase');
       expect(record.wordBookId, 'custom_abc');
-      expect(record.meaning.single.pos, '', reason: '表单只输入中文释义（doc 12）');
+      expect(record.meaning.single.pos, '', reason: '表单只输入中文释义');
       expect(record.meaning.single.definitions, ['放弃']);
       expect(record.example, ['A test sentence.']);
       expect(controller.state.errorMessage, isNull);
@@ -72,7 +72,7 @@ void main() {
       expect(controller.state.errorMessage, '英文不能为空');
     });
 
-    test('空释义 → null + errorMessage（doc 43）', () async {
+    test('空释义 → null + errorMessage', () async {
       final record = await controller.create(
         word: 'abandon',
         phonetic: '',
@@ -84,7 +84,7 @@ void main() {
       expect(controller.state.errorMessage, '中文释义不能为空');
     });
 
-    test('同词库重复英文（大小写 / 空格差异）→ 拒绝（doc 45）', () async {
+    test('同词库重复英文（大小写 / 空格差异）→ 拒绝', () async {
       await controller.create(
         word: 'abandon',
         phonetic: '',
@@ -104,7 +104,7 @@ void main() {
     });
   });
 
-  group('update（doc 19 / 45 / 80）', () {
+  group('update', () {
     test('成功 → id 不变，内容更新', () async {
       final created = await controller.create(
         word: 'abandon',
@@ -122,11 +122,11 @@ void main() {
       );
 
       expect(updated, isNotNull);
-      expect(updated!.id, created.id, reason: '单词 ID 编辑后保持不变（doc 19）');
+      expect(updated!.id, created.id, reason: '单词 ID 编辑后保持不变');
       expect(updated.meaning.single.definitions, ['抛弃']);
     });
 
-    test('编辑为自身当前英文 → 成功（排除自身，doc 45）', () async {
+    test('编辑为自身当前英文 → 成功', () async {
       final created = await controller.create(
         word: 'abandon',
         phonetic: '',
@@ -173,7 +173,7 @@ void main() {
     });
   });
 
-  group('delete（doc 23 / 89）', () {
+  group('delete', () {
     test('删除单词 → 同步删除该词 WordReview', () async {
       final created = await controller.create(
         word: 'abandon',
@@ -197,7 +197,7 @@ void main() {
     });
   });
 
-  group('validateWord（doc 45 即时校验）', () {
+  group('validateWord', () {
     test('基于当前 state 判重', () async {
       await controller.create(
         word: 'abandon',

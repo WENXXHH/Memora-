@@ -2,19 +2,19 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive_ce.dart';
-import 'package:memora/data/dto/custom_word_record_model.dart';
-import 'package:memora/data/dto/word_model.dart';
+import 'package:memora/domain/models/custom_word_record_model.dart';
+import 'package:memora/domain/models/word_model.dart';
 import 'package:memora/data/repositories/custom_word_repository.dart';
 import 'package:memora/data/sources/local/custom_word_local_source.dart';
 
-/// CustomWordRepository 真 Hive 持久化测试（doc 84 / 72 / 75）。
+/// CustomWordRepository 真 Hive 持久化测试。
 ///
 /// 使用真实 Hive Box（临时目录），覆盖：
-/// 1. create → getAll / getById（doc 84）
-/// 2. update → id / createdAt 不变，仅内容变化（doc 80）
-/// 3. delete 单个 / deleteByWordBookId（级联删词库支持，doc 61）
-/// 4. 两个自建词库单词隔离（doc 75）
-/// 5. 杀进程持久化：关闭 Box 重新打开后单词仍在（doc 72 第二层）
+/// 1. create → getAll / getById
+/// 2. update → id / createdAt 不变，仅内容变化
+/// 3. delete 单个 / deleteByWordBookId
+/// 4. 两个自建词库单词隔离
+/// 5. 杀进程持久化：关闭 Box 重新打开后单词仍在
 void main() {
   late Directory tempDir;
   late Box<Map<dynamic, dynamic>> box;
@@ -41,7 +41,7 @@ void main() {
     await tempDir.delete(recursive: true);
   });
 
-  group('CRUD（doc 84）', () {
+  group('CRUD', () {
     test('create → getAll 按创建时间升序返回指定词库单词', () async {
       final w1 = await repository.create(
         wordBookId: 'custom_abc',
@@ -90,7 +90,7 @@ void main() {
       expect(await repository.getById('custom_abc', 'missing'), isNull);
     });
 
-    test('update → id / createdAt 不变，仅内容与 updatedAt 变化（doc 80）', () async {
+    test('update → id / createdAt 不变，仅内容与 updatedAt 变化', () async {
       final created = await repository.create(
         wordBookId: 'custom_abc',
         word: 'abandonn',
@@ -112,7 +112,7 @@ void main() {
         example: const ['A new example.'],
       );
 
-      expect(updated.id, created.id, reason: '单词 ID 编辑后保持不变（doc 19）');
+      expect(updated.id, created.id, reason: '单词 ID 编辑后保持不变');
       expect(updated.createdAt, created.createdAt);
       expect(updated.word, 'abandon');
       expect(updated.meaning.first.definitions, ['抛弃', '放弃']);
@@ -136,7 +136,7 @@ void main() {
       expect(await repository.getById('custom_abc', created.id), isNull);
     });
 
-    test('deleteByWordBookId 只删本词库单词（doc 61）', () async {
+    test('deleteByWordBookId 只删本词库单词', () async {
       await repository.create(
         wordBookId: 'custom_a',
         word: 'abandon',
@@ -163,7 +163,7 @@ void main() {
     });
   });
 
-  group('两个自建词库单词隔离（doc 75）', () {
+  group('两个自建词库单词隔离', () {
     test('custom_a:1 与 custom_b:1 联合 Key 独立', () async {
       // 人工构造相同 wordId，验证联合 Key `$wordBookId:$wordId` 隔离
       await localSource.save(_record('1', 'custom_a', 'abandon'));
@@ -191,7 +191,7 @@ void main() {
     });
   });
 
-  group('杀进程持久化（doc 72 第二层）', () {
+  group('杀进程持久化', () {
     test('新增单词 → 关闭 Box → 重新打开 → 仍存在', () async {
       await repository.create(
         wordBookId: 'custom_abc',

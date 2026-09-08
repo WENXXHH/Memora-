@@ -4,8 +4,6 @@
 /// 1. 封装 [AuthRemoteDataSource] 调用，面向业务层提供统一接口
 /// 2. 登录成功后保存 Token / 登出清除 Token / 启动恢复会话
 /// 3. 区分"Token 无效"（401）与"暂时无网络"——前者删 Token，后者保留
-///
-/// 原则 14：断网和 Token 失效不能混为一谈。
 library;
 
 import '../../core/network/network_exception.dart';
@@ -93,7 +91,7 @@ class AuthRepository {
 
   /// 启动时恢复会话。
   ///
-  /// 流程（遵循 §2.4 启动恢复）：
+  /// 流程：
   /// ```
   /// 读 Token
   ///   ├─ 无 Token → noToken

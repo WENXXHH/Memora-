@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/learning_state.dart';
 import '../../../data/repositories/word_repository.dart';
 import '../../../data/repositories/review_repository.dart';
-import '../../../data/dto/word_model.dart';
+import '../../../domain/models/word_model.dart';
 import '../../../domain/enums/learning_enums.dart';
 import '../../../domain/use_cases/apply_review_feedback_use_case.dart';
 

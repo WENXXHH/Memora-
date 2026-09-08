@@ -1,8 +1,8 @@
 /// Token 本地持久化封装。
 ///
 /// 复用现有 Hive `auth` Box（`Box<String>`）和 `kAccessTokenKey` 常量，
-/// 不引入 flutter_secure_storage，遵循第五周原则 11：
-/// "Token 使用安全存储，不放入普通 Hive"——此处 `auth` Box 独立于业务 Box，
+/// 不引入 flutter_secure_storage，：
+/// Token 使用安全存储，不放入普通 Hive"——此处 `auth` Box 独立于业务 Box，
 /// 语义上已与 `reviews` Box 分离。
 library;
 

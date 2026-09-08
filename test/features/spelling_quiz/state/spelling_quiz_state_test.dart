@@ -1,14 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:memora/data/dto/word_model.dart';
+import 'package:memora/domain/models/word_model.dart';
 import 'package:memora/features/spelling_quiz/state/spelling_quiz_state.dart';
 
-/// SpellingQuizState 测试（doc 32）。
+/// SpellingQuizState 测试。
 ///
 /// 覆盖：
 /// - 初始状态
 /// - 各字段更新（isLoading / hasError / currentIndex / 统计 / inputError...）
 /// - sentinel copyWith：不传参保持旧值、显式 null 能清除 nullable 字段
-/// - currentWord getter（越界返回 null，doc 12）
+/// - currentWord getter
 void main() {
   Word makeWord(String id) {
     return Word(
@@ -146,7 +146,7 @@ void main() {
     });
   });
 
-  group('currentWord getter（doc 12）', () {
+  group('currentWord getter', () {
     test('正常范围返回对应单词', () {
       final state = baseState.copyWith(words: testWords, currentIndex: 1);
       expect(state.currentWord?.id, '2');

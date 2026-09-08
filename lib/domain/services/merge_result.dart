@@ -1,4 +1,4 @@
-import '../../data/dto/word_review_model.dart';
+import '../../domain/models/word_review_model.dart';
 
 /// 同步合并结果。
 ///

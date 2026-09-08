@@ -5,7 +5,7 @@ import 'package:memora/domain/services/word_book_registry.dart';
 import 'package:memora/domain/services/word_book_summary.dart';
 import 'package:memora/features/word_book_selection/controller/current_word_book_controller.dart';
 
-/// CurrentWordBookController 单元测试（doc 46）。
+/// CurrentWordBookController 单元测试。
 ///
 /// 覆盖：
 /// 1. 无历史数据 → cet6
@@ -19,7 +19,7 @@ import 'package:memora/features/word_book_selection/controller/current_word_book
 /// 9. selectWordBook(unknown) → state 不变
 /// 10. 切 cet6 → cet4 → cet6 → 状态正确
 /// 额外：读取异常降级 / 保存失败 state 不变 / resetToDefault
-/// 自建词库（doc 33 / 34）：选择 custom / 恢复 custom / 已删除 custom fallback
+/// 自建词库：选择 custom / 恢复 custom / 已删除 custom fallback
 void main() {
   late FakeWordBookPreferenceLocalSource localSource;
   late _FakeWordBookRegistry registry;
@@ -31,7 +31,7 @@ void main() {
     controller = CurrentWordBookController(localSource, registry);
   });
 
-  group('initialize（doc 10 / 46）', () {
+  group('initialize', () {
     test('无历史数据 → cet6 且 isInitialized', () async {
       await controller.initialize();
       expect(controller.state.currentWordBookId, BuiltInWordBooks.cet6.id);
@@ -61,14 +61,14 @@ void main() {
       expect(controller.state.errorMessage, isNotNull);
     });
 
-    test('非法历史 ID 被修复：存储写回 cet6（doc 11）', () async {
+    test('非法历史 ID 被修复：存储写回 cet6', () async {
       localSource.stored = 'cet5';
       await controller.initialize();
       expect(localSource.stored, BuiltInWordBooks.cet6.id);
       expect(localSource.writeCount, 1);
     });
 
-    test('读取异常 → 降级 cet6 + errorMessage，不阻止 App 使用（doc 44）', () async {
+    test('读取异常 → 降级 cet6 + errorMessage，不阻止 App 使用', () async {
       localSource.throwOnRead = true;
       await controller.initialize();
       expect(controller.state.currentWordBookId, BuiltInWordBooks.cet6.id);
@@ -85,34 +85,34 @@ void main() {
     });
   });
 
-  group('selectWordBook（doc 13 / 14 / 46）', () {
+  group('selectWordBook', () {
     test('selectWordBook(cet4) → state = cet4', () async {
       await controller.selectWordBook('cet4');
       expect(controller.state.currentWordBookId, 'cet4');
       expect(controller.state.errorMessage, isNull);
     });
 
-    test('selectWordBook 后写入持久化（doc 46 #7）', () async {
+    test('selectWordBook 后写入持久化', () async {
       await controller.selectWordBook('cet4');
       expect(localSource.stored, 'cet4');
       expect(localSource.writeCount, 1);
     });
 
-    test('重复选择 cet4 → 不重复写（doc 14 / Bug 8 防御）', () async {
+    test('重复选择 cet4 → 不重复写', () async {
       await controller.selectWordBook('cet4');
       await controller.selectWordBook('cet4');
       expect(localSource.writeCount, 1);
       expect(controller.state.currentWordBookId, 'cet4');
     });
 
-    test('selectWordBook(unknown) → state 不变 + errorMessage（doc 13）', () async {
+    test('selectWordBook(unknown) → state 不变 + errorMessage', () async {
       await controller.selectWordBook('cet5');
       expect(controller.state.currentWordBookId, BuiltInWordBooks.cet6.id);
       expect(controller.state.errorMessage, contains('cet5'));
       expect(localSource.writeCount, 0);
     });
 
-    test('切 cet6 → cet4 → cet6 状态正确（doc 46 #10）', () async {
+    test('切 cet6 → cet4 → cet6 状态正确', () async {
       await controller.selectWordBook('cet4');
       expect(controller.state.currentWordBookId, 'cet4');
 
@@ -121,7 +121,7 @@ void main() {
       expect(localSource.stored, 'cet6');
     });
 
-    test('保存失败 → state 不变 + errorMessage（Bug 9 防御）', () async {
+    test('保存失败 → state 不变 + errorMessage', () async {
       localSource.throwOnWrite = true;
       await controller.selectWordBook('cet4');
       expect(controller.state.currentWordBookId, BuiltInWordBooks.cet6.id);
@@ -129,7 +129,7 @@ void main() {
       expect(localSource.stored, isNull);
     });
 
-    test('Catalog 中的每个词库都能被 selectWordBook 接受（doc 47）', () async {
+    test('Catalog 中的每个词库都能被 selectWordBook 接受', () async {
       for (final config in BuiltInWordBooks.all) {
         await controller.selectWordBook(config.id);
         expect(
@@ -141,7 +141,7 @@ void main() {
     });
   });
 
-  group('resetToDefault（doc 12）', () {
+  group('resetToDefault', () {
     test('重置回默认 CET-6 并持久化', () async {
       await controller.selectWordBook('cet4');
       await controller.resetToDefault();
@@ -155,7 +155,7 @@ void main() {
     });
   });
 
-  group('自建词库接入（doc 33 / 34 / 35）', () {
+  group('自建词库接入', () {
     test('selectWordBook(custom_abc) → 接受并持久化', () async {
       registry.customBooks['custom_abc'] = '考研重点';
       await controller.selectWordBook('custom_abc');
@@ -164,7 +164,7 @@ void main() {
       expect(localSource.stored, 'custom_abc');
     });
 
-    test('initialize 恢复自建词库（doc 34）', () async {
+    test('initialize 恢复自建词库', () async {
       registry.customBooks['custom_abc'] = '考研重点';
       localSource.stored = 'custom_abc';
       await controller.initialize();
@@ -173,7 +173,7 @@ void main() {
       expect(controller.state.errorMessage, isNull);
     });
 
-    test('已删除的自建词库 → fallback cet6 + 修正存储（doc 34）', () async {
+    test('已删除的自建词库 → fallback cet6 + 修正存储', () async {
       localSource.stored = 'custom_deleted';
       await controller.initialize();
       expect(controller.state.currentWordBookId, BuiltInWordBooks.cet6.id);
@@ -182,7 +182,7 @@ void main() {
       expect(localSource.stored, BuiltInWordBooks.cet6.id);
     });
 
-    test('resetToDefault 从自建词库回退 cet6（doc 35）', () async {
+    test('resetToDefault 从自建词库回退 cet6', () async {
       registry.customBooks['custom_abc'] = '考研重点';
       await controller.selectWordBook('custom_abc');
       await controller.resetToDefault();
@@ -190,7 +190,7 @@ void main() {
       expect(localSource.stored, BuiltInWordBooks.cet6.id);
     });
 
-    test('Registry 验证异常 → 按未知词库处理，state 不变（doc 33）', () async {
+    test('Registry 验证异常 → 按未知词库处理，state 不变', () async {
       registry.throwOnExists = true;
       await controller.selectWordBook('custom_abc');
       expect(controller.state.currentWordBookId, BuiltInWordBooks.cet6.id);

@@ -1,7 +1,7 @@
 /// 认证相关 Riverpod Provider。
 ///
-/// 由于 AuthRemoteDataSource / AuthRepository 依赖 Dio（来自 Riverpod dioProvider，
-/// 而非 getIt），不使用 @injectable，改由本文件手动组装依赖链。
+/// 由于 AuthRemoteDataSource / AuthRepository 依赖 Dio（来自 Riverpod dioProvider，而非 getIt），
+/// 不使用 @injectable，改由本文件手动组装依赖链。
 library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';

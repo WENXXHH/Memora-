@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-/// 听音辨词音频提示区（doc 22 / 29 / 30）。
+/// 听音辨词音频提示区。
 ///
 /// 职责：
-/// - 显示喇叭图标（不显示英文单词拼写，doc 39 验收清单）
+/// - 显示喇叭图标
 /// - 提供"🔊 再听一次"按钮，点击触发 [onReplay]
 /// - 第 4 天临时显示 `♪ ${lastPlayedWord}` debug 文本辅助人工验证
-///   （doc 22：Fake 不输出声音，靠 debug 文本对账题目切换是否正确）
-/// - 播放失败时显示错误提示（doc 30：与答错完全不同的事件）
+///   （Fake 不输出声音，靠 debug 文本对账题目切换是否正确）
+/// - 播放失败时显示错误提示（与答错完全不同的事件）
 class ListeningPrompt extends StatelessWidget {
   const ListeningPrompt({
     super.key,
@@ -76,7 +76,7 @@ class ListeningPrompt extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            // 播放失败提示（doc 30）
+            // 播放失败提示
             if (hasAudioError) ...[
               Text(
                 audioErrorMessage ?? '播放失败，请重试',
@@ -85,7 +85,7 @@ class ListeningPrompt extends StatelessWidget {
               ),
               const SizedBox(height: 8),
             ],
-            // "再听一次"按钮（doc 29）
+            // "再听一次"按钮
             OutlinedButton.icon(
               onPressed: isPlaying ? null : onReplay,
               icon: const Icon(Icons.replay),

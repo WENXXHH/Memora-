@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/utils/question_generator.dart';
-import '../../../data/dto/multiple_choice_question.dart';
+import '../../../domain/models/multiple_choice_question.dart';
 import '../../../data/repositories/review_repository.dart';
 import '../../../data/repositories/word_repository.dart';
 import '../../../domain/enums/learning_enums.dart';
@@ -14,8 +14,8 @@ import '../state/multiple_choice_state.dart';
 ///
 /// 职责：
 /// 1. 加载今日到期复习词 → 生成四选一题目
-/// 2. 处理用户选项点击（每题只提交一次，Bug 9/10 防御）
-/// 3. SM-2 映射：正确→fuzzy，错误→unknown（约束 16 / Bug 11）
+/// 2. 处理用户选项点击
+/// 3. SM-2 映射：正确→fuzzy，错误→unknown
 /// 4. 通过 [ApplyReviewFeedbackUseCase] 复用反馈保存逻辑（原则 16）
 ///
 /// 答题流程（§2.5 文档 17）：
@@ -95,7 +95,7 @@ class MultipleChoiceController extends StateNotifier<MultipleChoiceState> {
       }
 
       if (questions.isEmpty) {
-        // 无题可生成：区分"词库太小"与"暂无到期复习词"（doc 52）。
+        // 无题可生成：区分"词库太小"与"暂无到期复习词"。
         // 词库唯一释义 < 4 时无法生成四选一，给出明确提示而非静默完成。
         final enough =
             _questionGenerator.uniqueMeaningCount(allWords) >=
@@ -136,9 +136,9 @@ class MultipleChoiceController extends StateNotifier<MultipleChoiceState> {
 
   /// 用户选择某个选项。
   ///
-  /// 防重复提交（Bug 9/10）：已作答时直接返回。
-  /// SM-2 映射（约束 16）：正确→fuzzy，错误→unknown。
-  /// 保存失败（第五天）：设置 hasSaveError，不阻断答题流程。
+  /// 防重复提交：已作答时直接返回。
+  /// SM-2 映射：正确→fuzzy，错误→unknown。
+  /// 保存失败：设置 hasSaveError，不阻断答题流程。
   Future<void> selectOption(int index) async {
     // Bug 9：hasAnswered 立即检查，防止重复提交
     if (state.hasAnswered) return;
@@ -181,8 +181,7 @@ class MultipleChoiceController extends StateNotifier<MultipleChoiceState> {
 
   /// 跳到下一题。
   ///
-  /// 必须已作答才能跳转（约束 19：用"下一题"按钮，不自动跳转）。
-  /// Bug 10：下一题按钮不再保存 SM-2，只推进题目。
+  /// 必须已作答才能跳转。
   void nextQuestion() {
     if (!state.hasAnswered) return; // 未作答时不允许跳转
 

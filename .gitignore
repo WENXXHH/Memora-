@@ -54,3 +54,9 @@ app.*.map.json
 .env
 .env.local
 !.env.example
+
+# Python / backend 运行产物
+backend/.venv/
+backend/__pycache__/
+backend/*.pyc
+backend/memora.db

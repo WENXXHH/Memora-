@@ -1,11 +1,8 @@
-// Freezed 2.x 在工厂构造参数上使用 @JsonKey 会触发 invalid_annotation_target
-// 警告，但生成的代码正确（与 auth_models.dart 一致），可安全忽略。
-// ignore_for_file: invalid_annotation_target
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../domain/services/word_book_id_map.dart';
-import '../../domain/services/word_id_map.dart';
-import 'word_review_model.dart';
+import '../services/word_book_id_map.dart';
+import '../services/word_id_map.dart';
+import '../../domain/models/word_review_model.dart';
 
 part 'review_record_dto.freezed.dart';
 part 'review_record_dto.g.dart';
@@ -49,7 +46,7 @@ class WordResponse with _$WordResponse {
 /// 学习记录同步项（对应后端 ReviewRecordSyncItem）。
 ///
 /// HTTP 层使用后端 int 主键（wordBookId / wordId），
-/// 通过 [WordBookIdMap] 和 [WordIdMap] 与 Flutter String 域互转（doc 0）。
+/// 通过 [WordBookIdMap] 和 [WordIdMap] 与 Flutter String 域互转。
 ///
 /// 使用 [ReviewRecordDtoX] 扩展进行域模型转换，映射缺失时返回 null，
 /// 由 UseCase 统计 unmappedCount 并跳过，不阻塞其他记录同步。

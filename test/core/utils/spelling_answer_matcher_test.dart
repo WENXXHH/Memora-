@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memora/core/utils/spelling_answer_matcher.dart';
 
-/// SpellingAnswerMatcher 单元测试（doc 31 全部 12 项）。
+/// SpellingAnswerMatcher 单元测试。
 ///
-/// 规则（doc 6 / 7）：
+/// 规则：
 /// - 只做 trim + toLowerCase 容错
 /// - 错字母 / 少字母 / 多字母 / 内部多空格 一律判错，不做模糊匹配
 void main() {

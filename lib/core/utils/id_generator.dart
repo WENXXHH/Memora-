@@ -1,6 +1,6 @@
 /// 客户端 ID 生成器。
 ///
-/// 自建词库 Domain ID 采用 `custom_<uuid>`（doc 5 / 6）：
+/// 自建词库 Domain ID 采用 `custom_<uuid>`：
 /// - ID 一旦创建永不因重命名而变化，故不能使用英文文本或时间戳
 /// - 未来云同步需要稳定的客户端随机 UUID，而非依赖本地时间
 /// 项目当前未引入 uuid 依赖，自建轻量 v4 风格 UUID 即可满足需求。
@@ -24,6 +24,6 @@ abstract final class IdGenerator {
         '${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}';
   }
 
-  /// 自建词库 Domain ID：`custom_<uuid>`（doc 5）。
+  /// 自建词库 Domain ID：`custom_<uuid>`。
   static String customWordBookId() => 'custom_${uuidV4()}';
 }

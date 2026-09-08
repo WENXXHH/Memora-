@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memora/core/utils/question_generator.dart';
-import 'package:memora/data/dto/word_model.dart';
-import 'package:memora/data/dto/word_review_model.dart';
+import 'package:memora/domain/models/word_model.dart';
+import 'package:memora/domain/models/word_review_model.dart';
 import 'package:memora/data/repositories/review_repository.dart';
 import 'package:memora/data/repositories/word_repository.dart';
 import 'package:memora/domain/enums/learning_enums.dart';
@@ -100,7 +100,7 @@ void main() {
     });
   });
 
-  group('词库太小边界（doc 52）', () {
+  group('词库太小边界', () {
     test('唯一释义 < 4 → 空队列 + 明确提示', () async {
       // 3 个不同释义：任何题都无法生成"1 正确 + 3 干扰"
       final smallWords = [
@@ -149,7 +149,7 @@ void main() {
     });
   });
 
-  group('selectOption — 防重复提交（Bug 9）', () {
+  group('selectOption — 防重复提交', () {
     setUp(() async {
       for (final w in testWords) {
         reviewRepo.addDueReview(w.id);
@@ -167,7 +167,7 @@ void main() {
       expect(controller.state.correctCount, 1);
     });
 
-    test('已作答后再次点击 → 无效（Bug 9）', () async {
+    test('已作答后再次点击 → 无效', () async {
       final correctIndex = controller.state.currentQuestion!.correctIndex;
       await controller.selectOption(correctIndex);
 
@@ -192,7 +192,7 @@ void main() {
     });
   });
 
-  group('selectOption — SM-2 映射（约束 16/Bug 11）', () {
+  group('selectOption — SM-2 映射', () {
     setUp(() async {
       for (final w in testWords) {
         reviewRepo.addDueReview(w.id);
@@ -260,7 +260,7 @@ void main() {
       expect(controller.state.currentQuestion, isNull);
     });
 
-    test('nextQuestion 不调用 UseCase（Bug 10）', () async {
+    test('nextQuestion 不调用 UseCase', () async {
       final correctIndex = controller.state.currentQuestion!.correctIndex;
       await controller.selectOption(correctIndex);
 

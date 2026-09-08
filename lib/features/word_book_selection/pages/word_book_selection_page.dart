@@ -8,13 +8,13 @@ import '../providers/current_word_book_providers.dart';
 import '../state/current_word_book_state.dart';
 import '../widgets/word_book_tile.dart';
 
-/// 词库选择页（doc 18 / 19 / 20 / 21 / 23 / 37 / 65）。
+/// 词库选择页。
 ///
 /// - 顶部展示"当前词库"（从 [CurrentWordBookState] 读取，非硬编码）
-/// - 列表从 [WordBookRegistry.getAll] 动态渲染（doc 37），
-///   按来源分组展示"内置词库 / 我的词库"（doc 37）
-/// - 管理页操作后返回时重新拉取列表，保证"返回后不是旧列表"（doc 65）
-/// - 点击词库 → 切换 + SnackBar 反馈 + 返回（doc 23）
+/// - 列表从 [WordBookRegistry.getAll] 动态渲染，
+///   按来源分组展示"内置词库 / 我的词库"
+/// - 管理页操作后返回时重新拉取列表，保证"返回后不是旧列表"
+/// - 点击词库 → 切换 + SnackBar 反馈 + 返回
 class WordBookSelectionPage extends ConsumerStatefulWidget {
   const WordBookSelectionPage({super.key});
 
@@ -30,13 +30,13 @@ class _WordBookSelectionPageState extends ConsumerState<WordBookSelectionPage> {
   void initState() {
     super.initState();
     _booksFuture = ref.read(wordBookRegistryProvider).getAll();
-    // 进入页面时恢复用户上次选择（幂等，doc 10 / Commit 1）
+    // 进入页面时恢复用户上次选择
     Future.microtask(() {
       ref.read(currentWordBookControllerProvider.notifier).initialize();
     });
   }
 
-  /// 进入管理页；返回后刷新列表（doc 65：自建词库增删后选择页必须刷新）。
+  /// 进入管理页；返回后刷新列表（自建词库增删后选择页必须刷新）。
   Future<void> _openManage() async {
     await context.push('/word-books/manage');
     if (!mounted) return;
@@ -45,7 +45,7 @@ class _WordBookSelectionPageState extends ConsumerState<WordBookSelectionPage> {
     });
   }
 
-  /// 切换词库：成功 → SnackBar + 返回首页；失败 → 错误提示（doc 23 / 13）。
+  /// 切换词库：成功 → SnackBar + 返回首页；失败 → 错误提示。
   Future<void> _handleSelect(WordBookSummary book) async {
     final controller = ref.read(currentWordBookControllerProvider.notifier);
     await controller.selectWordBook(book.id);
@@ -73,7 +73,7 @@ class _WordBookSelectionPageState extends ConsumerState<WordBookSelectionPage> {
       appBar: AppBar(
         title: const Text('词库'),
         centerTitle: true,
-        // 自建词库管理入口（doc 38）：右上角进入管理页
+        // 自建词库管理入口：右上角进入管理页
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
@@ -95,7 +95,7 @@ class _WordBookSelectionPageState extends ConsumerState<WordBookSelectionPage> {
     );
   }
 
-  /// 词库列表：按来源分组（doc 37），自建区为空时不展示。
+  /// 词库列表：按来源分组，自建区为空时不展示。
   Widget _buildList(CurrentWordBookState state, List<WordBookSummary> books) {
     final builtIn = [
       for (final book in books)
@@ -143,10 +143,10 @@ class _WordBookSelectionPageState extends ConsumerState<WordBookSelectionPage> {
     );
   }
 
-  /// 当前词库展示卡片（doc 19 / 22）。
+  /// 当前词库展示卡片。
   ///
   /// 名称从已加载列表按 ID 反查：当前词库可能是自建词库，
-  /// 不能只查内置目录（doc 34）。
+  /// 不能只查内置目录。
   Widget _buildCurrentBook(CurrentWordBookState state, List<WordBookSummary> books) {
     final colorScheme = Theme.of(context).colorScheme;
     final currentName = _findName(books, state.currentWordBookId) ??

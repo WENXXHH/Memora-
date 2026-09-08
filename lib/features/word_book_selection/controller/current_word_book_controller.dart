@@ -5,15 +5,15 @@ import '../../../data/sources/local/word_book_preference_local_source.dart';
 import '../../../domain/services/word_book_registry.dart';
 import '../state/current_word_book_state.dart';
 
-/// 当前词库选择控制器（doc 12 / 13 / 14 / 54 / 55）。
+/// 当前词库选择控制器。
 ///
 /// 职责只有三件：恢复选择、选择词库、重置默认。
-/// - 不负责加载 Word（doc 12）
-/// - 不依赖任何学习 Controller（doc 15，避免成为上帝对象）
+/// - 不负责加载 Word
+/// - 不依赖任何学习 Controller
 ///
-/// 选择顺序（doc 55 / Bug 9 防御）：验证 → 去重 → 先持久化 →
+/// 选择顺序：验证 → 去重 → 先持久化 →
 /// 成功后才更新 state。保存失败时当前选择不变，保证内存与磁盘一致。
-/// 合法词库判定统一走 [WordBookRegistry.exists]（doc 33 / 67），
+/// 合法词库判定统一走 [WordBookRegistry.exists]，
 /// 内置与自建词库共用一套验证。
 class CurrentWordBookController extends StateNotifier<CurrentWordBookState> {
   CurrentWordBookController(this._localSource, this._registry)
@@ -22,13 +22,12 @@ class CurrentWordBookController extends StateNotifier<CurrentWordBookState> {
   final WordBookPreferenceLocalSource _localSource;
   final WordBookRegistry _registry;
 
-  /// 恢复用户上次的词库选择（doc 10 / 11 / 44）。
+  /// 恢复用户上次的词库选择。
   ///
   /// - 无历史选择 → 保持默认 CET-6
-  /// - 历史选择有效（含自建词库）→ 恢复（doc 34）
+  /// - 历史选择有效（含自建词库）→ 恢复
   /// - 历史选择无效（如已删除的自建词库）→ fallback CET-6，并顺手修正存储
-  ///   （避免每次启动都遇到同一个坏数据，doc 11）
-  /// - 读取异常 → 降级 CET-6，不阻止 App 使用（doc 44）
+  /// - 读取异常 → 降级 CET-6，不阻止 App 使用
   ///
   /// 幂等：已初始化时直接返回。
   Future<void> initialize() async {
@@ -54,7 +53,7 @@ class CurrentWordBookController extends StateNotifier<CurrentWordBookState> {
     try {
       exists = await _registry.exists(savedId);
     } catch (_) {
-      // Registry 读取失败降级默认，不阻止 App 使用（doc 44）
+      // Registry 读取失败降级默认，不阻止 App 使用
       state = state.copyWith(
         isInitialized: true,
         errorMessage: '读取词库偏好失败，已恢复默认',
@@ -80,12 +79,12 @@ class CurrentWordBookController extends StateNotifier<CurrentWordBookState> {
     );
   }
 
-  /// 主动选择词库（doc 13 / 55）。
+  /// 主动选择词库。
   ///
   /// - 非法 ID（Registry 判定，含自建词库）：state 不变 + errorMessage
   ///   （明确失败，不静默 fallback）
-  /// - 与当前相同：no-op，不重复写存储（doc 14 / Bug 8 防御）
-  /// - 先持久化，成功后才更新 state（Bug 9 防御）
+  /// - 与当前相同：no-op，不重复写存储
+  /// - 先持久化，成功后才更新 state
   Future<void> selectWordBook(String wordBookId) async {
     final bool exists;
     try {

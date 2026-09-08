@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers/custom_word_book_providers.dart';
+import '../widgets/custom_word_form_field.dart';
+import '../widgets/custom_word_form_submit_button.dart';
 
-/// 自建词库创建 / 重命名表单页（doc 39）。
+/// 自建词库创建 / 重命名表单页。
 ///
 /// [bookId] 为 null 时是"新建"模式，否则为"重命名"模式。
-/// 名称校验走管理控制器的 [validateName]（doc 13 / 14），
+/// 名称校验走管理控制器的 [validateName]，
 /// 校验失败在输入框下方内联提示，存储失败用 SnackBar 提示。
 class CustomWordBookFormPage extends ConsumerStatefulWidget {
   const CustomWordBookFormPage({super.key, this.bookId});
@@ -102,28 +104,20 @@ class _CustomWordBookFormPageState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
+            CustomWordFormField(
               controller: _nameController,
               autofocus: true,
               maxLength: 30,
-              decoration: InputDecoration(
-                labelText: '词库名称',
-                hintText: '如：考研词汇',
-                errorText: _errorText,
-                border: const OutlineInputBorder(),
-              ),
+              labelText: '词库名称',
+              hintText: '如：考研词汇',
+              errorText: _errorText,
               onSubmitted: (_) => _submit(),
             ),
             const SizedBox(height: 16),
-            FilledButton(
-              onPressed: _submitting ? null : _submit,
-              child: _submitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(_isEdit ? '保存' : '创建'),
+            CustomWordFormSubmitButton(
+              submitting: _submitting,
+              label: _isEdit ? '保存' : '创建',
+              onSubmit: _submit,
             ),
           ],
         ),

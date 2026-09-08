@@ -6,7 +6,7 @@
 /// - GET  /v1/records             拉取当前用户全部学习记录
 /// - POST /v1/records/sync        批量上传学习记录（带时间戳保护）
 ///
-/// 复用第五周 dioProvider + AuthInterceptor（原则 15：不创建第二套网络基础设施）。
+/// 复用第五周 dioProvider + AuthInterceptor。
 /// Token 自动注入、401 自动跳登录由 AuthInterceptor 处理。
 library;
 
@@ -71,7 +71,7 @@ class ReviewSyncRemoteDataSource {
 
   /// 批量上传学习记录（POST /records/sync）。
   ///
-  /// 后端逐条执行时间戳保护（doc 9）：
+  /// 后端逐条执行时间戳保护：
   /// incoming.client_updated_at > existing → UPDATE
   /// incoming.client_updated_at <= existing → IGNORE
   ///

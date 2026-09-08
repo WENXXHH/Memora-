@@ -1,12 +1,12 @@
-import '../../../data/dto/multiple_choice_question.dart';
+import '../../../domain/models/multiple_choice_question.dart';
 
-/// 听音辨词状态类（不可变，doc 25）。
+/// 听音辨词状态类。
 ///
 /// 与选择题相比，复用 [MultipleChoiceQuestion] 题目模型，但状态
-/// 新增三个音频相关字段以承载播放状态机（doc 27/28/29/30）：
+/// 新增三个音频相关字段以承载播放状态机：
 /// - [isPlaying]：当前是否正在播放（驱动 UI 显示 loading 指示）
-/// - [hasAudioError]：播放是否失败（doc 30：与答题错误必须区分）
-/// - [lastPlayedWord]：最后播放的单词文本（第 4 天 UI debug 文本 ♪ 用）
+/// - [hasAudioError]：播放是否失败（与答题错误必须区分）
+/// - [lastPlayedWord]：最后播放的单词文本
 ///
 /// 状态不变量：
 /// ```
@@ -15,7 +15,7 @@ import '../../../data/dto/multiple_choice_question.dart';
 /// 完成：currentIndex >= questions.length && isCompleted == true
 /// ```
 ///
-/// 音频错误不变量（doc 30 / Bug 11）：
+/// 音频错误不变量：
 /// `hasAudioError == true` 时不允许保存 SM-2，由 Controller 强制
 /// 在 selectOption 首行检查 isPlaying 正常 / hasAudioError == false。
 class ListeningQuizState {
@@ -33,13 +33,13 @@ class ListeningQuizState {
   final bool isCompleted;
   final bool hasSaveError;
 
-  /// 当前是否正在播放音频（doc 27）。
+  /// 当前是否正在播放音频。
   final bool isPlaying;
 
-  /// 音频播放是否失败（doc 30：播放失败不能修改 SM-2）。
+  /// 音频播放是否失败（播放失败不能修改 SM-2）。
   final bool hasAudioError;
 
-  /// 最后一次播放的英文单词文本（doc 22：第 4 天 UI debug 用）。
+  /// 最后一次播放的英文单词文本（第 4 天 UI debug 用）。
   final String? lastPlayedWord;
 
   /// 播放失败的提示信息。

@@ -3,13 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers/custom_word_book_providers.dart';
+import '../widgets/custom_word_form_field.dart';
+import '../widgets/custom_word_form_submit_button.dart';
 
-/// 自建单词新增 / 编辑表单页（doc 42 / 43）。
+/// 自建单词新增 / 编辑表单页。
 ///
 /// [wordId] 为 null 时是"新增"模式，否则为"编辑"模式。
-/// - 必填：英文单词、中文释义（doc 12，释义自动生成一条默认 MeaningEntry）
+/// - 必填：英文单词、中文释义（释义自动生成一条默认 MeaningEntry）
 /// - 可选：音标、例句
-/// - 英文重复校验走控制器（doc 45），内联提示；英文统一 trim + lowercase
+/// - 英文重复校验走控制器，内联提示；英文统一 trim + lowercase
 class CustomWordFormPage extends ConsumerStatefulWidget {
   const CustomWordFormPage({
     super.key,
@@ -91,7 +93,7 @@ class _CustomWordFormPageState extends ConsumerState<CustomWordFormPage> {
       setState(() => _meaningError = '中文释义不能为空');
       return;
     }
-    // 重复英文校验（doc 45，编辑时排除自身）
+    // 重复英文校验
     final controller = ref.read(
       customWordManagementControllerProvider(widget.wordBookId).notifier,
     );
@@ -145,54 +147,37 @@ class _CustomWordFormPageState extends ConsumerState<CustomWordFormPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
+            CustomWordFormField(
               controller: _wordController,
               autofocus: true,
-              decoration: InputDecoration(
-                labelText: '英文单词 *',
-                hintText: '如：abandon',
-                errorText: _wordError,
-                border: const OutlineInputBorder(),
-              ),
+              labelText: '英文单词 *',
+              hintText: '如：abandon',
+              errorText: _wordError,
             ),
             const SizedBox(height: 16),
-            TextField(
+            CustomWordFormField(
               controller: _meaningController,
-              decoration: InputDecoration(
-                labelText: '中文释义 *',
-                hintText: '如：放弃；抛弃',
-                errorText: _meaningError,
-                border: const OutlineInputBorder(),
-              ),
+              labelText: '中文释义 *',
+              hintText: '如：放弃；抛弃',
+              errorText: _meaningError,
             ),
             const SizedBox(height: 16),
-            TextField(
+            CustomWordFormField(
               controller: _phoneticController,
-              decoration: const InputDecoration(
-                labelText: '音标（可选）',
-                hintText: '如：/əˈbændən/',
-                border: OutlineInputBorder(),
-              ),
+              labelText: '音标（可选）',
+              hintText: '如：/əˈbændən/',
             ),
             const SizedBox(height: 16),
-            TextField(
+            CustomWordFormField(
               controller: _exampleController,
-              decoration: const InputDecoration(
-                labelText: '例句（可选）',
-                hintText: '如：He decided to abandon the project.',
-                border: OutlineInputBorder(),
-              ),
+              labelText: '例句（可选）',
+              hintText: '如：He decided to abandon the project.',
             ),
             const SizedBox(height: 24),
-            FilledButton(
-              onPressed: _submitting ? null : _submit,
-              child: _submitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(_isEdit ? '保存' : '添加'),
+            CustomWordFormSubmitButton(
+              submitting: _submitting,
+              label: _isEdit ? '保存' : '添加',
+              onSubmit: _submit,
             ),
           ],
         ),

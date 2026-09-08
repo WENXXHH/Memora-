@@ -2,7 +2,7 @@ import '../../core/utils/built_in_word_books.dart';
 import '../../data/repositories/custom_word_book_repository.dart';
 import 'word_book_summary.dart';
 
-/// 统一词库注册表（doc 31 / 32 / 33 / 34 / 67）。
+/// 统一词库注册表。
 ///
 /// 职责只有三个：`getAll()` / `findById(id)` / `exists(id)`。
 /// 内部组合两路来源，对外屏蔽"内置 / 自建"的差异：
@@ -11,7 +11,7 @@ import 'word_book_summary.dart';
 ///
 /// 这样 [CurrentWordBookController]、[WordBookSelectionPage]、
 /// [WordRepository] 都只需面向 Registry 一套判断，不必分别维护
-/// 合法词库集合（doc 31 / 67）。
+/// 合法词库集合。
 class WordBookRegistry {
   WordBookRegistry(this._customWordBookRepository);
 
@@ -57,7 +57,7 @@ class WordBookRegistry {
     return null;
   }
 
-  /// 是否为已注册的合法词库（内置或自建，doc 33 / 67）。
+  /// 是否为已注册的合法词库（内置或自建）。
   Future<bool> exists(String id) async {
     if (BuiltInWordBooks.contains(id)) return true;
     return _customWordBookRepository.exists(id);

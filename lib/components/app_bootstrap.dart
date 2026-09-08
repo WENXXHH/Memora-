@@ -5,21 +5,7 @@ import '../features/auth/providers/auth_providers.dart';
 import '../features/auth/state/auth_state.dart';
 import '../features/sync/providers/sync_providers.dart';
 
-/// 应用启动引导组件（doc 15 入口 1：登录恢复后自动同步）。
-///
-/// 作用：在不依赖另一个 Controller 的前提下（原则 15：Controller 不依赖
-/// Controller），桥接认证状态与同步流程。检测到首次进入
-/// [AuthStatus.authenticated] 时调用 [SyncController.syncIfNeeded]。
-///
-/// 设计要点：
-/// - 不直接在 AuthController 中引用 SyncController（避免形成反向耦合）
-/// - 使用 `ref.listen`：在 authentication 第一次变为 true 时触发同步
-/// - 同步失败不影响首页渲染（原则 13 / doc 16：网络错误不退登、不阻塞）
-///
-/// 第三天自动同步场景覆盖：
-/// 1. App 启动 splash → restoreSession → authenticated → syncIfNeeded
-/// 2. 手动登录 → authenticated → syncIfNeeded
-/// 3. 杀进程恢复 → restoreSession 成功 → syncIfNeeded
+/// 应用启动引导组件
 class AppBootstrap extends ConsumerStatefulWidget {
   const AppBootstrap({super.key, required this.child});
 
@@ -42,9 +28,8 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
   /// 使用 `ref.listen` 的 prev/next 比较天然提供"边沿检测"：
   /// - prev == unauthenticated/unknown/checking → next = authenticated
   ///   时才触发一次同步
-  /// - 已 authenticated 后再次收到 authenticated（token 刷新、
-  ///   路由 guard 重渲染）不会重复触发
-  ///   → 保障重复同步幂等（doc 18 第 8 条）
+  /// - 已 authenticated 后再次收到 authenticated不会重复触发
+  ///   → 保障重复同步幂等
   void _installAuthListener() {
     ref.listen<AuthState>(authControllerProvider, (prev, next) {
       final prevStatus = prev?.status;

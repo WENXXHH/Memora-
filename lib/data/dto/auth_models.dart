@@ -1,6 +1,3 @@
-// Freezed 2.x 在工厂构造参数上使用 @JsonKey 会触发 invalid_annotation_target
-// 警告，但生成的代码正确（已验证 auth_models.g.dart），可安全忽略。
-// ignore_for_file: invalid_annotation_target
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'auth_models.freezed.dart';

@@ -1,12 +1,12 @@
 /// 同步仓库层。
 ///
 /// 薄包装 [ReviewSyncRemoteDataSource]，统一暴露同步相关远端接口。
-/// 不负责 ID 映射和域模型转换（映射表在 UseCase 中构建，doc 0/13）。
+/// 不负责 ID 映射和域模型转换。
 ///
 /// 职责边界：
 /// - ReviewRepository → 本地 Hive 读写
 /// - ReviewSyncRepository → 远端 HTTP 调用（返回 DTO）
-/// - SyncReviewRecordsUseCase → 协调两者 + 映射 + 合并
+/// - SyncReviewRecordsService → 协调两者 + 映射 + 合并
 library;
 
 import '../dto/review_record_dto.dart';

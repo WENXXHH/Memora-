@@ -3,16 +3,17 @@ import 'package:go_router/go_router.dart';
 
 /// 快速入口组件
 ///
-/// 提供六个核心功能入口：学习新词、复习旧词、选择题复习、听音辨词、
-/// 拼写复习、查看词库。
-/// 使用 2×2 网格布局（3 行 × 2 列），支持路由跳转。
+/// 提供七个核心功能入口：学习新词、复习旧词、选择题复习、听音辨词、
+/// 拼写复习、词库浏览、词库切换。
+/// 使用 2×2 网格布局（4 行），最后一行"词库切换"为全宽按钮。
+/// 支持路由跳转。
 ///
 /// 学习类入口统一携带 [wordBookId]（由页面从 currentWordBookIdProvider
-/// 读取后传入，doc 17 / 28），保证四个模式读取同一个当前词库。
+/// 读取后传入），保证所有模式读取同一个当前词库。
 class QuickActions extends StatelessWidget {
   const QuickActions({super.key, required this.wordBookId});
 
-  /// 当前词库 Domain ID，所有学习类入口共享同一来源（doc 35）。
+  /// 当前词库 Domain ID，所有学习类入口共享同一来源。
   final String wordBookId;
 
   @override
@@ -76,8 +77,23 @@ class QuickActions extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             _ActionButton(
-              icon: Icons.library_books,
-              label: '词库',
+              icon: Icons.menu_book,
+              label: '词库浏览',
+              color: colorScheme.secondary,
+              onPressed: () => context.push(
+                '/vocabulary?wordBookId=$wordBookId&title=词库',
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // _ActionButton 内部是 Expanded，必须放在 Row 中
+        // （直接放进 Column 会因无界高度约束抛布局异常，导致首页空白）
+        Row(
+          children: [
+            _ActionButton(
+              icon: Icons.swap_horiz,
+              label: '词库切换',
               color: colorScheme.secondary,
               onPressed: () => context.push('/word-books'),
             ),

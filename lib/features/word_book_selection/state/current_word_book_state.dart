@@ -1,13 +1,13 @@
-/// 当前词库选择状态（doc 6）。
+/// 当前词库选择状态。
 ///
 /// 字段说明：
 /// - [currentWordBookId]：当前词库 Domain ID（cet6 / cet4），默认 CET-6
-/// - [isInitialized]：是否已完成本地选择恢复（doc 7）
+/// - [isInitialized]：是否已完成本地选择恢复
 /// - [errorMessage]：初始化失败 / 非法选择的错误提示
 ///
 /// 区分"默认值"与"已恢复"：
 /// 若用户上次选择 CET-4 而启动时先按默认 CET-6 渲染，会产生页面闪烁 /
-/// 重复加载（doc 7），因此用 [isInitialized] 显式表达恢复完成。
+/// 重复加载，因此用 [isInitialized] 显式表达恢复完成。
 class CurrentWordBookState {
   final String currentWordBookId;
   final bool isInitialized;

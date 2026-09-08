@@ -1,8 +1,8 @@
-/// 同步状态机（doc 14）。
+/// 同步状态机。
 ///
 /// 四态：idle / syncing / success / error
 ///
-/// 防并发（doc 14）：Controller 首行检查 `status == syncing` 时直接返回，
+/// 防并发：Controller 首行检查 `status == syncing` 时直接返回，
 /// 避免用户连续点击触发多个并发 HTTP 请求。
 class SyncState {
   const SyncState({

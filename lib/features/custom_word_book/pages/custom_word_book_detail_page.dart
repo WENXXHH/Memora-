@@ -2,18 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../data/dto/custom_word_record_model.dart';
+import '../../../domain/models/custom_word_record_model.dart';
 import '../../../providers/repository_providers.dart';
 import '../../word_book_selection/providers/current_word_book_providers.dart';
 import '../providers/custom_word_book_providers.dart';
+import '../widgets/custom_word_book_delete_dialog.dart';
+import '../widgets/custom_word_book_empty_view.dart';
+import '../widgets/custom_word_book_error_view.dart';
+import '../widgets/custom_word_delete_dialog.dart';
+import '../widgets/custom_word_tile.dart';
 
-/// 自建词库详情页（doc 39 / 23）。
+/// 自建词库详情页。
 ///
 /// - 展示词库名与单词列表，AppBar 提供"添加单词"
-/// - 每条单词支持编辑（进单词表单页）与删除（二次确认，doc 23）
+/// - 每条单词支持编辑（进单词表单页）与删除（二次确认）
 /// - ⋮ 菜单提供"重命名词库 / 删除词库"；删除词库级联删单词与 Review，
-///   若删除的是当前词库则回退 CET-6 并回到词库选择页（doc 71）
-/// - 单词列表按词库隔离（autoDispose.family，doc 64）
+///   若删除的是当前词库则回退 CET-6 并回到词库选择页
+/// - 单词列表按词库隔离（autoDispose.family）
 class CustomWordBookDetailPage extends ConsumerStatefulWidget {
   const CustomWordBookDetailPage({super.key, required this.wordBookId});
 
@@ -53,23 +58,14 @@ class _CustomWordBookDetailPageState
     }
   }
 
-  /// 删除单词：二次确认后级联删除其 Review（doc 23）。
+  /// 删除单词：二次确认后级联删除其 Review。
   Future<void> _handleDeleteWord(CustomWordRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('删除单词？'),
-        content: Text('删除「${record.word}」？该单词的学习进度也会被删除。'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('删除'),
-          ),
-        ],
+      builder: (context) => CustomWordDeleteDialog(
+        word: record.word,
+        onCancel: () => Navigator.of(context).pop(false),
+        onConfirm: () => Navigator.of(context).pop(true),
       ),
     );
     if (confirmed != true || !mounted) return;
@@ -111,26 +107,14 @@ class _CustomWordBookDetailPageState
     context.push('/word-books/form?id=${widget.wordBookId}');
   }
 
-  /// 删除词库：级联删除单词 / Review，若为当前词库回退 CET-6（doc 71）。
+  /// 删除词库：级联删除单词 / Review，若为当前词库回退 CET-6。
   Future<void> _handleDeleteBook() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('删除词库？'),
-        content: Text(
-          '「${_bookName ?? ''}」中的所有单词及本地学习进度都会被删除，'
-          '此操作不可撤销。',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('删除'),
-          ),
-        ],
+      builder: (context) => CustomWordBookDeleteDialog(
+        bookName: _bookName ?? '',
+        onCancel: () => Navigator.of(context).pop(false),
+        onConfirm: () => Navigator.of(context).pop(true),
       ),
     );
     if (confirmed != true || !mounted) return;
@@ -149,7 +133,7 @@ class _CustomWordBookDetailPageState
       return;
     }
 
-    // 删除的是当前词库 → 回退默认（doc 35 / 71）
+    // 删除的是当前词库 → 回退默认
     final currentId = ref
         .read(currentWordBookControllerProvider)
         .currentWordBookId;
@@ -205,29 +189,13 @@ class _CustomWordBookDetailPageState
 
     // 加载失败且无数据：错误态 + 重试
     if (state.errorMessage != null && state.words.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 12),
-            Text(
-              state.errorMessage!,
-              style: const TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: () => ref
-                  .read(
-                    customWordManagementControllerProvider(
-                      widget.wordBookId,
-                    ).notifier,
-                  )
-                  .load(),
-              child: const Text('重试'),
-            ),
-          ],
-        ),
+      return CustomWordBookErrorView(
+        errorMessage: state.errorMessage!,
+        onRetry: () => ref
+            .read(
+              customWordManagementControllerProvider(widget.wordBookId).notifier,
+            )
+            .load(),
       );
     }
 
@@ -238,62 +206,19 @@ class _CustomWordBookDetailPageState
 
     // 空列表
     if (state.words.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.edit_note, size: 48, color: Colors.grey),
-            const SizedBox(height: 12),
-            const Text('还没有单词，点击右上角添加', style: TextStyle(color: Colors.grey)),
-            const SizedBox(height: 12),
-            FilledButton.icon(
-              onPressed: _handleAddWord,
-              icon: const Icon(Icons.add),
-              label: const Text('添加单词'),
-            ),
-          ],
-        ),
-      );
+      return CustomWordBookEmptyView(onAdd: _handleAddWord);
     }
 
     return ListView(
       padding: const EdgeInsets.all(16),
-      children: [for (final record in state.words) _buildWordTile(record)],
-    );
-  }
-
-  Widget _buildWordTile(CustomWordRecord record) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final definitions = record.meaning
-        .expand((entry) => entry.definitions)
-        .join('；');
-    final subtitle = [
-      if (record.phonetic.isNotEmpty) record.phonetic,
-      definitions,
-    ].join('  ');
-
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: ListTile(
-        leading: Icon(Icons.translate, color: colorScheme.primary),
-        title: Text(record.word),
-        subtitle: subtitle.isEmpty ? null : Text(subtitle),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.edit_outlined),
-              tooltip: '编辑',
-              onPressed: () => _handleEditWord(record),
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete_outline),
-              tooltip: '删除',
-              onPressed: () => _handleDeleteWord(record),
-            ),
-          ],
-        ),
-      ),
+      children: [
+        for (final record in state.words)
+          CustomWordTile(
+            record: record,
+            onEdit: () => _handleEditWord(record),
+            onDelete: () => _handleDeleteWord(record),
+          ),
+      ],
     );
   }
 }

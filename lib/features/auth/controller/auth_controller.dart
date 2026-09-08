@@ -10,9 +10,6 @@ import '../state/auth_state.dart';
 /// 1. 管理 [AuthState] 6 态机
 /// 2. 调用 [AuthRepository] 执行登录/注册/登出/恢复会话
 /// 3. 区分"密码错误"与"网络错误"——前者设为 error 态，后者保留 Token
-///
-/// 原则 15：Controller 不依赖另一个 Controller。
-/// 此处只依赖 AuthRepository，不直接访问 Dio 或其他 Controller。
 class AuthController extends StateNotifier<AuthState> {
   AuthController(this._authRepository) : super(const AuthState.unknown());
 
@@ -20,11 +17,11 @@ class AuthController extends StateNotifier<AuthState> {
 
   /// 启动时恢复会话。
   ///
-  /// 流程（§2.4）：
+  /// 流程：
   /// - 无 Token → unauthenticated
   /// - 有 Token + /auth/me 成功 → authenticated
   /// - 有 Token + 401 → 删 Token → unauthenticated
-  /// - 有 Token + 网络错误 → 不删 Token → error（显示离线/重试）
+  /// - 有 Token + 网络错误 → 不删 Token → error
   Future<void> restoreSession() async {
     state = state.copyWith(status: AuthStatus.checking, errorMessage: null);
 

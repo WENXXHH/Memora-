@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../../domain/services/word_book_summary.dart';
 
-/// 词库列表项组件（doc 19 / 20 / 21 / 66）。
+/// 词库列表项组件。
 ///
 /// 只展示统一展示模型 [WordBookSummary]（id + name + kind），
-/// 不读取 Asset 资源、不感知底层内置/自建数据模型（doc 9）。
-/// 副标题按来源类型展示"内置词库 / 自建词库"（doc 66），
+/// 不读取 Asset 资源、不感知底层内置/自建数据模型。
+/// 副标题按来源类型展示"内置词库 / 自建词库"，
 /// 当前选中项显示勾选标记并加粗名称。
 class WordBookTile extends StatelessWidget {
   const WordBookTile({
@@ -43,7 +43,7 @@ class WordBookTile extends StatelessWidget {
             color: isSelected ? colorScheme.primary : null,
           ),
         ),
-        // 来源类型展示（doc 66）：内置词库 / 自建词库
+        // 来源类型展示：内置词库 / 自建词库
         subtitle: Text(
           book.kind == WordBookKind.builtIn ? '内置词库' : '自建词库',
         ),

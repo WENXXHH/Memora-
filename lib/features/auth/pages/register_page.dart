@@ -4,6 +4,10 @@ import 'package:go_router/go_router.dart';
 
 import '../providers/auth_providers.dart';
 import '../state/auth_state.dart';
+import '../widgets/register_error_banner.dart';
+import '../widgets/register_header.dart';
+import '../widgets/register_login_link.dart';
+import '../widgets/register_submit_button.dart';
 
 /// 注册页。
 ///
@@ -66,19 +70,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 24),
-              Icon(
-                Icons.person_add_outlined,
-                size: 56,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '创建账号',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 24),
+              const RegisterHeader(),
 
               // 用户名
               TextFormField(
@@ -206,63 +198,20 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
               // 错误提示
               if (errorMessage != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.errorContainer.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        color: Theme.of(context).colorScheme.error,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          errorMessage,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                RegisterErrorBanner(message: errorMessage),
                 const SizedBox(height: 16),
               ],
 
               // 注册按钮
-              FilledButton(
-                onPressed: isLoading ? null : _submit,
-                child: isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text('注册'),
+              RegisterSubmitButton(
+                isLoading: isLoading,
+                onPressed: _submit,
               ),
               const SizedBox(height: 16),
 
               // 登录链接
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('已有账号？'),
-                  TextButton(
-                    onPressed: isLoading ? null : () => context.go('/login'),
-                    child: const Text('登录'),
-                  ),
-                ],
+              RegisterLoginLink(
+                onPressed: isLoading ? null : () => context.go('/login'),
               ),
             ],
           ),

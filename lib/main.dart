@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce/hive_ce.dart';
 
-import 'app/MyApp.dart';
+import 'app/my_app.dart';
 import 'app/dependency_injection.dart';
 import 'core/storage/hive_initializer.dart';
 import 'core/services/tts/tts_service.dart';
@@ -16,34 +16,34 @@ Future<void> main() async {
     // 初始化 Hive 引擎，打开 reviews Box 与 auth Box
     final boxes = await HiveInitializer.initialize();
 
-    // 将已打开的 Box 注册到 DI 容器
-    //    同时注册 auth Box，供 AuthInterceptor 读取 JWT
+    // 把 reviews Box 放进 getIt 对象仓库
     getIt.registerSingleton<Box<Map<dynamic, dynamic>>>(boxes.reviews);
+    // 把 auth Box 放进去，并贴上 auth 名字标签
     getIt.registerSingleton<Box<String>>(
       boxes.auth,
       instanceName: HiveInitializer.authBoxName,
     );
+    //把 settings Box 放进去，并贴上 settings 标签
     getIt.registerSingleton<Box<String>>(
       boxes.settings,
       instanceName: HiveInitializer.settingsBoxName,
     );
     // 自建词库 Box 需要独立实例名，与默认的 reviews Box 区分；
-    // CustomWordBookLocalSource 通过 @Named 注入它（doc 24 / 25）。
+    // CustomWordBookLocalSource 通过 @Named 注入它。
     getIt.registerSingleton<Box<Map<dynamic, dynamic>>>(
       boxes.customWordBooks,
       instanceName: HiveInitializer.customWordBooksBoxName,
     );
-    // 自建单词 Box，同样独立实例名（doc 24 / 26）。
+    // 自建单词 Box，同样独立实例名。
     getIt.registerSingleton<Box<Map<dynamic, dynamic>>>(
       boxes.customWords,
       instanceName: HiveInitializer.customWordsBoxName,
     );
 
-    // 初始化依赖注入（injectable 扫描）
+    // 初始化依赖注入
     configureDependencies();
 
-    // 预初始化 TTS 引擎（设置语言、语速等默认参数）
-    //    不等待完成，避免阻塞启动；首次发音时会自动完成初始化
+    // 预初始化 TTS 引擎
     getIt.get<TtsService>().initialize();
 
     // 启动应用，ProviderScope 提供 Riverpod 状态管理能力

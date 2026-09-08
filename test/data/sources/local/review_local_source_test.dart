@@ -2,16 +2,16 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive_ce.dart';
-import 'package:memora/data/dto/word_review_model.dart';
+import 'package:memora/domain/models/word_review_model.dart';
 import 'package:memora/data/sources/local/review_local_source.dart';
 
-/// ReviewLocalDataSource 真 Hive 持久化与隔离测试（doc 74 / 75 / 72）。
+/// ReviewLocalDataSource 真 Hive 持久化与隔离测试。
 ///
 /// 使用真实 Hive reviews Box（临时目录），覆盖：
-/// 1. 相同 wordId 跨词库隔离：cet6:1 与 custom_abc:1 独立演进（doc 74）
-/// 2. 两个自建词库隔离：custom_a:1 与 custom_b:1 独立演进（doc 75）
-/// 3. deleteReviewsByWordBookId 只删本词库（doc 61）
-/// 4. 杀进程持久化：Review 重启后仍在（doc 73）
+/// 1. 相同 wordId 跨词库隔离：cet6:1 与 custom_abc:1 独立演进
+/// 2. 两个自建词库隔离：custom_a:1 与 custom_b:1 独立演进
+/// 3. deleteReviewsByWordBookId 只删本词库
+/// 4. 杀进程持久化：Review 重启后仍在
 void main() {
   late Directory tempDir;
   late Box<Map<dynamic, dynamic>> box;
@@ -36,7 +36,7 @@ void main() {
     await tempDir.delete(recursive: true);
   });
 
-  group('内置 vs 自建 Review 隔离（doc 74）', () {
+  group('内置 vs 自建 Review 隔离', () {
     test('cet6:1 与 custom_abc:1 是两条独立记录，互不影响', () async {
       await source.saveWordReview(_review('1', 'cet6', mastery: 0.9));
       await source.saveWordReview(_review('1', 'custom_abc', mastery: 0.1));
@@ -55,7 +55,7 @@ void main() {
     });
   });
 
-  group('两个自建词库 Review 隔离（doc 75）', () {
+  group('两个自建词库 Review 隔离', () {
     test('custom_a:1 与 custom_b:1 独立演进', () async {
       await source.saveWordReview(_review('1', 'custom_a', mastery: 0.8));
       await source.saveWordReview(_review('1', 'custom_b', mastery: 0.3));
@@ -80,7 +80,7 @@ void main() {
     });
   });
 
-  group('级联删除支持（doc 61）', () {
+  group('级联删除支持', () {
     test('deleteReviewsByWordBookId 只删本词库 Review', () async {
       await source.saveWordReview(_review('1', 'custom_a', mastery: 0.8));
       await source.saveWordReview(_review('1', 'custom_b', mastery: 0.6));
@@ -91,7 +91,7 @@ void main() {
       expect(source.getWordReview('custom_b', '1'), isNotNull);
     });
 
-    test('deleteReview 只删单个单词的 Review（doc 23）', () async {
+    test('deleteReview 只删单个单词的 Review', () async {
       await source.saveWordReview(_review('1', 'custom_a', mastery: 0.8));
       await source.saveWordReview(_review('2', 'custom_a', mastery: 0.4));
 
@@ -102,7 +102,7 @@ void main() {
     });
   });
 
-  group('杀进程持久化（doc 73）', () {
+  group('杀进程持久化', () {
     test('Review 关闭 Box 重新打开后仍在', () async {
       await source.saveWordReview(_review('1', 'custom_abc', mastery: 0.8));
       await box.close();

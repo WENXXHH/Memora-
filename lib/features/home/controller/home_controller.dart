@@ -7,7 +7,7 @@ import '../../../data/repositories/review_repository.dart';
 ///
 /// 负责加载指定词库的首页统计数据（复习数量、学习进度、掌握情况等）。
 /// 由 family(wordBookId) 创建：每个词库一份独立状态，切换词库时页面
-/// 自然 watch 新实例，CET-6 / CET-4 统计互不串扰（doc 24 / 26 / 40）。
+/// 自然 watch 新实例，CET-6 / CET-4 统计互不串扰。
 /// 加载失败时标记错误状态，由 UI 层展示重试入口。
 class HomeController extends StateNotifier<HomeState> {
   HomeController(this._wordBookId, this._wordRepository, this._reviewRepository)

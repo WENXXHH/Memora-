@@ -1,18 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:memora/data/dto/custom_word_book_model.dart';
-import 'package:memora/data/dto/custom_word_record_model.dart';
-import 'package:memora/data/dto/word_model.dart';
-import 'package:memora/data/dto/word_review_model.dart';
+import 'package:memora/domain/models/custom_word_book_model.dart';
+import 'package:memora/domain/models/custom_word_record_model.dart';
+import 'package:memora/domain/models/word_model.dart';
+import 'package:memora/domain/models/word_review_model.dart';
 import 'package:memora/data/repositories/custom_word_book_repository.dart';
 import 'package:memora/data/repositories/custom_word_repository.dart';
 import 'package:memora/data/repositories/review_repository.dart';
 import 'package:memora/domain/use_cases/delete_custom_word_book_use_case.dart';
 
-/// DeleteCustomWordBookUseCase 级联删除测试（doc 60 / 61 / 18）。
+/// DeleteCustomWordBookUseCase 级联删除测试。
 ///
 /// 覆盖：
-/// 1. 删除词库 → 依次删除其全部单词、全部 Review、词库元数据（doc 61）
-/// 2. 内置词库禁止删除（doc 18）
+/// 1. 删除词库 → 依次删除其全部单词、全部 Review、词库元数据
+/// 2. 内置词库禁止删除
 void main() {
   late _FakeCustomWordBookRepository bookRepo;
   late _FakeCustomWordRepository wordRepo;
@@ -26,7 +26,7 @@ void main() {
     useCase = DeleteCustomWordBookUseCase(bookRepo, wordRepo, reviewRepo);
   });
 
-  group('删 Book → Words + Reviews（doc 61）', () {
+  group('删 Book → Words + Reviews', () {
     test('依次删除单词 → Review → 词库元数据', () async {
       await useCase.execute('custom_abc');
 
@@ -35,7 +35,7 @@ void main() {
       expect(bookRepo.deletedIds, ['custom_abc']);
     });
 
-    test('非当前词库不影响当前选择（doc 36）：只删数据不动选择', () async {
+    test('非当前词库不影响当前选择：只删数据不动选择', () async {
       await useCase.execute('custom_xyz');
 
       expect(wordRepo.deletedBookIds, ['custom_xyz']);
@@ -43,7 +43,7 @@ void main() {
       expect(bookRepo.deletedIds, ['custom_xyz']);
     });
 
-    test('内置词库禁止删除（doc 18）', () async {
+    test('内置词库禁止删除', () async {
       await expectLater(useCase.execute('cet6'), throwsA(isA<ArgumentError>()));
       expect(wordRepo.deletedBookIds, isEmpty);
       expect(reviewRepo.deletedReviewBookIds, isEmpty);

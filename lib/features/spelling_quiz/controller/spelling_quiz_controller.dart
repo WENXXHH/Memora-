@@ -9,13 +9,13 @@ import '../state/spelling_quiz_state.dart';
 
 /// 拼写复习控制器。
 ///
-/// 职责（doc §0 / §41）：
-/// 1. 加载今日到期复习词作为拼写队列（取题口径与选择题 / 听音辨词一致，doc §14）
-/// 2. 处理用户提交（每题只提交一次，Bug 3 防重复）
-/// 3. SM-2 映射（doc §16）：拼写正确 → known，错误 → unknown
-/// 4. 通过 [ApplyReviewFeedbackUseCase] 复用 SM-2 + Hive 保存链路（doc §18）
+/// 职责：
+/// 1. 加载今日到期复习词作为拼写队列
+/// 2. 处理用户提交
+/// 3. SM-2 映射：拼写正确 → known，错误 → unknown
+/// 4. 通过 [ApplyReviewFeedbackUseCase] 复用 SM-2 + Hive 保存链路
 ///
-/// 答题流程（doc §15）：
+/// 答题流程：
 /// ```
 /// 用户提交 → 已作答则返回 → trim 为空则 inputError
 /// → 判定对错 → 锁定 hasAnswered → UseCase 保存 → 更新统计 → 手动"下一题"
@@ -51,9 +51,9 @@ class SpellingQuizController extends StateNotifier<SpellingQuizState> {
 
   /// 启动拼写复习会话。
   ///
-  /// 取题口径与 [MultipleChoiceController.startQuiz] 完全一致（doc §14）：
+  /// 取题口径与 [MultipleChoiceController.startQuiz] 完全一致：
   /// 今日到期复习词 → 过滤出词库中的单词 → 最多 [_maxQuestions] 个。
-  /// 队列为空时置空队列 + isCompleted（页面走空状态分支，doc §12 / §30）。
+  /// 队列为空时置空队列 + isCompleted。
   Future<void> startQuiz(String wordBookId) async {
     _wordBookId = wordBookId;
     state = state.copyWith(
@@ -110,11 +110,11 @@ class SpellingQuizController extends StateNotifier<SpellingQuizState> {
 
   /// 用户提交拼写答案。
   ///
-  /// 防重复提交（Bug 3）：已作答时直接返回。
-  /// 空输入校验（doc §8 / Bug 2）：trim 后为空 → inputError 提示，
+  /// 防重复提交：已作答时直接返回。
+  /// 空输入校验：trim 后为空 → inputError 提示，
   /// 不判定、不保存 SM-2、不推进题目（输入无效 ≠ 回答错误）。
-  /// SM-2 映射（doc §16）：正确 → known，错误 → unknown。
-  /// 保存失败（doc §19）：设置 hasSaveError，不改变答题真假。
+  /// SM-2 映射：正确 → known，错误 → unknown。
+  /// 保存失败：设置 hasSaveError，不改变答题真假。
   Future<void> submitAnswer(String input) async {
     // Bug 3：hasAnswered 立即检查，防止快速双击提交导致同一题保存两次
     if (state.hasAnswered) return;
@@ -164,7 +164,7 @@ class SpellingQuizController extends StateNotifier<SpellingQuizState> {
     );
   }
 
-  /// 跳到下一题（doc §21）。
+  /// 跳到下一题。
   ///
   /// 必须已作答才能跳转（不自动跳题，答错后需时间看正确拼写）。
   /// Bug 4：nextQuestion 绝对不保存 SM-2，只推进状态并清理作答字段。

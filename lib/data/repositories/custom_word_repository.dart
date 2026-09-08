@@ -1,13 +1,13 @@
 import 'package:injectable/injectable.dart';
 
-import '../dto/custom_word_record_model.dart';
-import '../dto/word_model.dart';
+import '../../domain/models/custom_word_record_model.dart';
+import '../../domain/models/word_model.dart';
 import '../sources/local/custom_word_local_source.dart';
 import '../../core/utils/id_generator.dart';
 
-/// 自建单词仓库（doc 28 / 46）。
+/// 自建单词仓库。
 ///
-/// 只负责自建单词 CRUD；对上层统一返回现有 [Word]（doc 10），
+/// 只负责自建单词 CRUD；对上层统一返回现有 [Word]，
 /// 使学习 Controller 无需感知"自建"数据源。
 @injectable
 class CustomWordRepository {
@@ -25,8 +25,8 @@ class CustomWordRepository {
 
   /// 创建自建单词。
   ///
-  /// wordId 由 [IdGenerator] 生成 uuid（doc 19，不用英文文本作 ID）。
-  /// 英文/释义已由 Controller 完成 trim 与重复校验（doc 43 / 45）。
+  /// wordId 由 [IdGenerator] 生成 uuid（不用英文文本作 ID）。
+  /// 英文/释义已由 Controller 完成 trim 与重复校验。
   Future<CustomWordRecord> create({
     required String wordBookId,
     required String word,
@@ -77,17 +77,17 @@ class CustomWordRepository {
 
   /// 删除单个自建单词。
   ///
-  /// 关联的 WordReview 由上层删除（doc 23），本方法只删单词本体。
+  /// 关联的 WordReview 由上层删除，本方法只删单词本体。
   Future<void> delete(String wordBookId, String wordId) async {
     await _localSource.delete(wordBookId, wordId);
   }
 
-  /// 删除指定词库的全部自建单词（级联删词库时调用，doc 61）。
+  /// 删除指定词库的全部自建单词（级联删词库时调用）。
   Future<void> deleteByWordBookId(String wordBookId) async {
     await _localSource.deleteByWordBookId(wordBookId);
   }
 
-  /// 读取指定词库单词并统一转换为 [Word]（doc 10 / 46）。
+  /// 读取指定词库单词并统一转换为 [Word]。
   ///
   /// 供后续 WordRepository 按 wordBookId 路由数据源时使用，
   /// 学习模式只感知 [Word]。

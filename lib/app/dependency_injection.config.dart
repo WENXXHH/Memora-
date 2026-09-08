@@ -28,6 +28,7 @@ import '../data/sources/local/custom_word_local_source.dart' as _i1;
 import '../data/sources/local/mock_ai_suggestion_source.dart' as _i317;
 import '../data/sources/local/mock_word_source.dart' as _i557;
 import '../data/sources/local/review_local_source.dart' as _i293;
+import '../data/sources/local/word_book_preference_local_source.dart' as _i447;
 import '../data/sources/word_data_source.dart' as _i832;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -45,6 +46,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i293.ReviewLocalDataSource>(
       () =>
           _i293.ReviewLocalDataSource(gh<_i1055.Box<Map<dynamic, dynamic>>>()),
+    );
+    gh.factory<_i447.WordBookPreferenceLocalSource>(
+      () => _i447.WordBookPreferenceLocalSource(
+        gh<_i1055.Box<String>>(instanceName: 'settings'),
+      ),
     );
     gh.lazySingleton<_i931.TtsService>(
       () => _i1021.FlutterTtsService(gh<_i50.FlutterTts>()),
