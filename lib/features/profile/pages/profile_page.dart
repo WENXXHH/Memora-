@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../auth/providers/auth_providers.dart';
+import '../../auth/state/auth_state.dart';
 import '../../sync/providers/sync_providers.dart';
 import '../../sync/state/sync_state.dart';
 import '../widgets/logout_button.dart';
@@ -67,6 +69,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
+    final isGuest = authState.status == AuthStatus.guest;
     final user = authState.currentUser;
     final syncState = ref.watch(syncControllerProvider);
 
@@ -76,25 +79,48 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ProfileUserHeader(
-              username: user?.username,
-              email: user?.email,
-            ),
-            const SizedBox(height: 32),
+            if (isGuest) ...[
+              // 游客身份：展示登录入口，不显示同步与登出
+              const ProfileUserHeader(username: '游客'),
+              const SizedBox(height: 32),
+              Card(
+                margin: const EdgeInsets.symmetric(horizontal: 32),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      const Text('登录后即可云同步学习进度'),
+                      const SizedBox(height: 16),
+                      FilledButton.icon(
+                        onPressed: () => context.go('/login'),
+                        icon: const Icon(Icons.login),
+                        label: const Text('登录 / 注册'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ] else ...[
+              ProfileUserHeader(
+                username: user?.username,
+                email: user?.email,
+              ),
+              const SizedBox(height: 32),
 
-            // 同步学习进度卡片
-            SyncCard(
-              isSyncing: syncState.isSyncing,
-              onSync: _handleSync,
-              syncedTimeText: _formatSyncedTime(syncState.lastSyncedAt),
-              errorMessage: syncState.errorMessage,
-            ),
+              // 同步学习进度卡片
+              SyncCard(
+                isSyncing: syncState.isSyncing,
+                onSync: _handleSync,
+                syncedTimeText: _formatSyncedTime(syncState.lastSyncedAt),
+                errorMessage: syncState.errorMessage,
+              ),
 
-            const SizedBox(height: 48),
-            LogoutButton(
-              isLoading: _isLoggingOut,
-              onPressed: _handleLogout,
-            ),
+              const SizedBox(height: 48),
+              LogoutButton(
+                isLoading: _isLoggingOut,
+                onPressed: _handleLogout,
+              ),
+            ],
           ],
         ),
       ),

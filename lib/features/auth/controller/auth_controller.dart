@@ -118,4 +118,13 @@ class AuthController extends StateNotifier<AuthState> {
   void resetToUnauthenticated() {
     state = const AuthState.unauthenticated();
   }
+
+  /// 进入游客模式。
+  ///
+  /// 由登录页「游客模式」入口调用：跳过登录，直接进入主界面。
+  /// 游客可使用全部离线学习功能（本地 Hive 持久化），
+  /// 但登录 / 云同步仍需要正式账号。
+  void enterGuestMode() {
+    state = const AuthState.guest();
+  }
 }

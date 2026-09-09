@@ -74,6 +74,9 @@ enum AuthStatus {
   /// 没有有效登录。
   unauthenticated,
 
+  /// 游客模式：未登录，但可进入主界面离线使用核心功能。
+  guest,
+
   /// 正在注册或登录中（网络请求进行中）。
   authenticating,
 

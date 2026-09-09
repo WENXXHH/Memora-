@@ -131,6 +131,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               LoginRegisterLink(
                 onPressed: isLoading ? null : () => context.go('/register'),
               ),
+              const SizedBox(height: 8),
+
+              // 游客模式入口：跳过登录，离线使用核心学习功能
+              TextButton(
+                onPressed: isLoading
+                    ? null
+                    : () => ref
+                          .read(authControllerProvider.notifier)
+                          .enterGuestMode(),
+                child: const Text('游客模式，先逛逛'),
+              ),
             ],
           ),
         ),

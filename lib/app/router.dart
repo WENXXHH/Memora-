@@ -69,6 +69,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           // 注册成功后状态回到 unauthenticated，自动跳到登录页
           return '/login';
 
+        case AuthStatus.guest:
+          // 游客：放行所有业务路由（离线使用核心功能）
+          // 同时允许进入登录/注册页，方便升级为正式账号
+          // splash 是会话恢复页，游客无需经过，直接回首页
+          if (matchedLocation == isSplashRoute) return '/home';
+          return null;
+
         case AuthStatus.authenticated:
           // 已认证：在登录/注册/splash 页则跳回首页
           if (isAuthRoute || matchedLocation == '/splash') {
