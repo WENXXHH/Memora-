@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/utils/built_in_word_books.dart';
+import '../../../domain/services/word_book_summary.dart';
+import '../../../providers/repository_providers.dart';
 import '../../word_book_selection/providers/current_word_book_providers.dart';
 import '../providers/home_providers.dart';
 import '../state/home_state.dart';
@@ -40,6 +41,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
   }
 
+  /// 词库名解析 Future 缓存（按 wordBookId 失效，避免每次 build 重复查询）。
+  String? _nameFutureBookId;
+  Future<WordBookSummary?>? _nameFuture;
+
+  Future<WordBookSummary?> _nameFutureFor(String wordBookId) {
+    if (_nameFutureBookId != wordBookId) {
+      _nameFutureBookId = wordBookId;
+      _nameFuture = ref.read(wordBookRegistryProvider).findById(wordBookId);
+    }
+    return _nameFuture!;
+  }
+
   @override
   Widget build(BuildContext context) {
     final wordBookId = ref.watch(currentWordBookIdProvider);
@@ -68,7 +81,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   /// 当前词库展示，点击进入词库选择页。
   Widget _buildCurrentWordBookBar(String wordBookId) {
     final colorScheme = Theme.of(context).colorScheme;
-    final name = BuiltInWordBooks.findById(wordBookId)?.name ?? wordBookId;
 
     return Material(
       color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
@@ -86,12 +98,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(width: 8),
               const Text('当前词库', style: TextStyle(fontSize: 14)),
               const Spacer(),
-              Text(
-                name,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.primary,
+              // 词库名：通过 Registry 解析（含自建词库真实名称）；
+              // Flexible + ellipsis 防止长名（尤其自建词库）横向溢出。
+              Flexible(
+                child: FutureBuilder<WordBookSummary?>(
+                  future: _nameFutureFor(wordBookId),
+                  builder: (context, snapshot) {
+                    final name = snapshot.data?.name ?? wordBookId;
+                    return Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.primary,
+                      ),
+                    );
+                  },
                 ),
               ),
               Icon(Icons.chevron_right, size: 18, color: colorScheme.primary),
@@ -155,7 +180,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           StatisticsCard(
             totalWords: homeState.totalWords,
             masteredWords: homeState.masteredWords,
-            streakDays: homeState.streakDays,
           ),
         ],
       ),

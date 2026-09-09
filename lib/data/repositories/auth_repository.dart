@@ -89,6 +89,16 @@ class AuthRepository {
     await _tokenStorage.deleteToken();
   }
 
+  /// 当前是否处于游客模式（杀进程重启后据此恢复游客态）。
+  bool get isGuestMode => _tokenStorage.isGuestMode;
+
+  /// 持久化游客模式标记。
+  ///
+  /// 进入游客模式写 true；登录 / 注册成功、登出写 false，
+  /// 保证下次启动 restoreSession 能落到正确的认证态。
+  Future<void> setGuestMode(bool enabled) =>
+      _tokenStorage.setGuestMode(enabled);
+
   /// 启动时恢复会话。
   ///
   /// 流程：

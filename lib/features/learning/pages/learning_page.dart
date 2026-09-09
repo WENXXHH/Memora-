@@ -142,6 +142,12 @@ class _LearningPageState extends ConsumerState<LearningPage> {
             transitionBuilder: (Widget child, Animation<double> animation) {
               return FadeTransition(opacity: animation, child: child);
             },
+            // 旧卡立即移除、只渲染新卡（新卡 150ms 淡入），
+            // 避免默认 Stack 布局下新旧两张高度不同的卡叠加导致
+            // "大→中→小" 的尺寸跳变。
+            layoutBuilder:
+                (Widget? currentChild, List<Widget> previousChildren) =>
+                    currentChild!,
             child: WordLearningCard(
               key: ValueKey(state.currentWord!.id),
               word: state.currentWord!,

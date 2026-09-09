@@ -4,18 +4,18 @@ import 'package:go_router/go_router.dart';
 
 import '../../../domain/models/custom_word_record_model.dart';
 import '../../../providers/repository_providers.dart';
+import '../../home/providers/home_providers.dart';
 import '../../word_book_selection/providers/current_word_book_providers.dart';
 import '../providers/custom_word_book_providers.dart';
 import '../widgets/custom_word_book_delete_dialog.dart';
 import '../widgets/custom_word_book_empty_view.dart';
 import '../widgets/custom_word_book_error_view.dart';
-import '../widgets/custom_word_delete_dialog.dart';
 import '../widgets/custom_word_tile.dart';
 
 /// 自建词库详情页。
 ///
 /// - 展示词库名与单词列表，AppBar 提供"添加单词"
-/// - 每条单词支持编辑（进单词表单页）与删除（二次确认）
+/// - 每条单词支持编辑（进单词表单页）与删除（点击即删，单词消失即反馈）
 /// - ⋮ 菜单提供"重命名词库 / 删除词库"；删除词库级联删单词与 Review，
 ///   若删除的是当前词库则回退 CET-6 并回到词库选择页
 /// - 单词列表按词库隔离（autoDispose.family）
@@ -58,36 +58,23 @@ class _CustomWordBookDetailPageState
     }
   }
 
-  /// 删除单词：二次确认后级联删除其 Review。
+  /// 删除单词：点击即删，不做二次确认、不弹成功提示——
+  /// 单词从列表即时消失就是反馈；仅在删除失败时提示（失败无视觉反馈）。
   Future<void> _handleDeleteWord(CustomWordRecord record) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => CustomWordDeleteDialog(
-        word: record.word,
-        onCancel: () => Navigator.of(context).pop(false),
-        onConfirm: () => Navigator.of(context).pop(true),
-      ),
-    );
-    if (confirmed != true || !mounted) return;
-
     final ok = await ref
         .read(
           customWordManagementControllerProvider(widget.wordBookId).notifier,
         )
         .delete(record.id);
     if (!mounted) return;
-    if (!ok) {
-      final error = ref
-          .read(customWordManagementControllerProvider(widget.wordBookId))
-          .errorMessage;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error ?? '删除失败，请重试')));
-      return;
-    }
+    if (ok) return;
+
+    final error = ref
+        .read(customWordManagementControllerProvider(widget.wordBookId))
+        .errorMessage;
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text('已删除「${record.word}」')));
+    ).showSnackBar(SnackBar(content: Text(error ?? '删除失败，请重试')));
   }
 
   /// 编辑单词：进入单词表单页（编辑模式）。
@@ -151,6 +138,23 @@ class _CustomWordBookDetailPageState
 
   @override
   Widget build(BuildContext context) {
+    // 单词增 / 删后刷新首页统计：首页在 IndexedStack 中保活，initState
+    // 只执行一次，从本页（或本页推入的表单页）添加单词后返回首页不会自动
+    // 重载，统计会停留在添加前的值（常为 0）。详情页在表单页下层保持挂载，
+    // 监听到单词数量变化即刷新"当前词库"的首页统计；非当前词库无需刷新
+    // （切换词库时首页会按新词库重新加载）。
+    ref.listen(
+      customWordManagementControllerProvider(widget.wordBookId),
+      (previous, next) {
+        if (previous?.words.length != next.words.length &&
+            ref.read(currentWordBookIdProvider) == widget.wordBookId) {
+          ref
+              .read(homeControllerProvider(widget.wordBookId).notifier)
+              .loadData();
+        }
+      },
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_bookName ?? '词库详情'),

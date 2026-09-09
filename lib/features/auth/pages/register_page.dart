@@ -16,7 +16,9 @@ import '../widgets/register_submit_button.dart';
 /// - email: 合法邮箱格式
 /// - password: 6-128 字符
 ///
-/// 注册成功后状态回到 unauthenticated，路由守卫自动重定向到 /login。
+/// 注册成功后弹出「注册成功，请登录」提示并主动跳转 /login
+/// （SnackBar 挂在根 ScaffoldMessenger，跨页面可见）；
+/// 失败则留在本页，由错误横幅展示原因。
 class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
 
@@ -43,7 +45,15 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     super.dispose();
   }
 
-  /// 提交注册表单
+  /// 提交注册表单。
+  ///
+  /// 成功（状态回到 unauthenticated）→ 弹出「注册成功，请登录」提示并
+  /// 立即跳转登录页；失败（error 态）→ 留在本页，由错误横幅展示原因。
+  ///
+  /// 成功后必须立即离开本页：否则按钮在 isLoading 复位后可再次点击，
+  /// 重复注册会触发「用户名已存在」错误，误导用户以为注册失败。
+  /// SnackBar 挂在 MaterialApp 的根 ScaffoldMessenger 上，
+  /// 路由切换后在登录页仍然可见。
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -52,6 +62,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
+    if (!mounted) return;
+
+    if (ref.read(authControllerProvider).status == AuthStatus.unauthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('注册成功，请登录')),
+      );
+      context.go('/login');
+    }
   }
 
   @override

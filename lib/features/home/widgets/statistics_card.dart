@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 /// 学习统计卡片组件
 ///
-/// 展示学习进度统计数据：总单词数、已掌握数、连续打卡天数
-/// 通过构造函数接收数据，实现数据驱动的 UI
+/// 展示学习进度统计数据：总单词数、已掌握数。
+/// 通过构造函数接收数据，实现数据驱动的 UI。
+///
+/// 注：连续打卡天数功能尚未实现，不在此卡片展示，避免误导演示。
 class StatisticsCard extends StatelessWidget {
   /// 词库总单词数量
   final int totalWords;
@@ -11,14 +13,10 @@ class StatisticsCard extends StatelessWidget {
   /// 已掌握单词数量
   final int masteredWords;
 
-  /// 连续打卡天数
-  final int streakDays;
-
   const StatisticsCard({
     super.key,
     required this.totalWords,
     required this.masteredWords,
-    required this.streakDays,
   });
 
   @override
@@ -42,7 +40,6 @@ class StatisticsCard extends StatelessWidget {
               children: [
                 _StatItem('总单词', '$totalWords', colorScheme.primary),
                 _StatItem('已掌握', '$masteredWords', colorScheme.secondary),
-                _StatItem('连续打卡', '$streakDays天', colorScheme.error),
               ],
             ),
           ],

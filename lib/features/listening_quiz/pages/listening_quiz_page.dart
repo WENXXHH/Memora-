@@ -59,6 +59,7 @@ class _ListeningQuizPageState extends ConsumerState<ListeningQuizPage> {
       hasAudioError: state.hasAudioError,
       audioErrorMessage: state.audioErrorMessage,
       lastPlayedWord: state.lastPlayedWord,
+      hasAnswered: state.hasAnswered,
       onReplay: () => ref
           .read(listeningQuizControllerProvider(widget.wordBookId).notifier)
           .replay(),

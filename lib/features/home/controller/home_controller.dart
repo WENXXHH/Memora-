@@ -17,7 +17,6 @@ class HomeController extends StateNotifier<HomeState> {
           learnedCount: 0,
           totalWords: 0,
           masteredWords: 0,
-          streakDays: 0,
           isLoading: true,
         ),
       );
@@ -45,7 +44,6 @@ class HomeController extends StateNotifier<HomeState> {
         learnedCount: reviewedCount,
         totalWords: totalWords,
         masteredWords: masteredCount,
-        streakDays: 0,
         isLoading: false,
       );
     } catch (e) {

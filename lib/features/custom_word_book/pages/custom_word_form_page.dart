@@ -122,10 +122,14 @@ class _CustomWordFormPageState extends ConsumerState<CustomWordFormPage> {
     setState(() => _submitting = false);
 
     if (result != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(_isEdit ? '单词已更新' : '单词已添加')));
+      // 先退出页面（列表自动刷新 + 页面关闭本身就是主反馈），
+      // 再在根 ScaffoldMessenger 上提示；pop 后本页 context 已失效，
+      // 必须提前捕获 messenger。
+      final messenger = ScaffoldMessenger.of(context);
       context.pop();
+      messenger.showSnackBar(
+        SnackBar(content: Text(_isEdit ? '单词已更新' : '单词已添加')),
+      );
       return;
     }
 

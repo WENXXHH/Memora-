@@ -37,6 +37,11 @@ class AuthController extends StateNotifier<AuthState> {
         // 恢复成功：对齐数据所有者空间（幂等，guest 空间为空时是 no-op）
         await _userDataSpace.switchToUser(result.user!.id.toString());
         state = AuthState.authenticated(result.user!);
+      } else if (_authRepository.isGuestMode) {
+        // 无 Token 但上次以游客模式退出：杀进程重启后直接恢复游客态，
+        // 不回落登录页（游客学习数据在 guest 空间，本地可用）。
+        await _userDataSpace.switchToGuest();
+        state = const AuthState.guest();
       } else {
         // noToken 或 invalidToken → 都需要登录
         state = const AuthState.unauthenticated();
@@ -63,6 +68,8 @@ class AuthController extends StateNotifier<AuthState> {
         username: username,
         password: password,
       );
+      // 登录成功：清除游客标记（重启后不再恢复游客态）
+      await _authRepository.setGuestMode(false);
       // 先把 guest 空间学习成果迁入该用户空间并切换 owner，
       // 再置 authenticated（AppBootstrap 会在 authenticated 边沿触发同步，
       // 此时必须已读到切换后的空间）
@@ -96,7 +103,9 @@ class AuthController extends StateNotifier<AuthState> {
         email: email,
         password: password,
       );
-      // 注册成功：回到未认证态，路由守卫会将 /register 重定向到 /login
+      // 注册成功：清除游客标记，回到未认证态，
+      // 路由守卫会将 /register 重定向到 /login
+      await _authRepository.setGuestMode(false);
       state = const AuthState.unauthenticated();
     } on NetworkException catch (e) {
       state = AuthState(status: AuthStatus.error, errorMessage: e.message);
@@ -105,11 +114,13 @@ class AuthController extends StateNotifier<AuthState> {
 
   /// 登出。
   ///
-  /// 清除本地 Token，数据所有者空间切回 guest（该账号数据保留在
-  /// 自己的命名空间里，重新登录自动恢复），状态回到 unauthenticated。
+  /// 清除本地 Token 与游客标记（重启后回登录页而非游客态），
+  /// 数据所有者空间切回 guest（该账号数据保留在自己的命名空间里，
+  /// 重新登录自动恢复），状态回到 unauthenticated。
   /// 路由守卫自动重定向到 /login。
   Future<void> logout() async {
     await _authRepository.logout();
+    await _authRepository.setGuestMode(false);
     await _userDataSpace.switchToGuest();
     state = const AuthState.unauthenticated();
   }
@@ -135,8 +146,10 @@ class AuthController extends StateNotifier<AuthState> {
   /// 由登录页「游客模式」入口调用：跳过登录，直接进入主界面。
   /// 游客可使用全部离线学习功能（本地 Hive 持久化），
   /// 但登录 / 云同步仍需要正式账号。
-  /// 数据所有者空间切回 guest（幂等）。
+  /// 数据所有者空间切回 guest（幂等），并持久化游客标记——
+  /// 杀进程重启后 restoreSession 据此直接恢复游客态，不回落登录页。
   Future<void> enterGuestMode() async {
+    await _authRepository.setGuestMode(true);
     await _userDataSpace.switchToGuest();
     state = const AuthState.guest();
   }

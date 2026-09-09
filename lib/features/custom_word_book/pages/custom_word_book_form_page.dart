@@ -40,7 +40,7 @@ class _CustomWordBookFormPageState
             .read(customWordBookManagementControllerProvider)
             .wordBooks;
         final book = books.where((b) => b.id == widget.bookId).firstOrNull;
-        if (book != null && _nameController.text.isNotEmpty) {
+        if (book != null && _nameController.text.isEmpty) {
           _nameController.text = book.name;
         }
       });
@@ -76,10 +76,14 @@ class _CustomWordBookFormPageState
     setState(() => _submitting = false);
 
     if (result != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(_isEdit ? '词库已重命名' : '词库已创建')));
+      // 先退出页面（列表自动刷新 + 页面关闭本身就是主反馈），
+      // 再在根 ScaffoldMessenger 上提示；pop 后本页 context 已失效，
+      // 必须提前捕获 messenger。
+      final messenger = ScaffoldMessenger.of(context);
       context.pop();
+      messenger.showSnackBar(
+        SnackBar(content: Text(_isEdit ? '词库已重命名' : '词库已创建')),
+      );
       return;
     }
 

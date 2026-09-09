@@ -80,29 +80,24 @@ class _WordLearningCardState extends ConsumerState<WordLearningCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 单词 + 音标 + 喇叭按钮
+            // 单词独占一行：给足整行宽度完整展示，
+            // 避免与音标、喇叭按钮挤在同一行时被压缩成 "acc"
+            Text(
+              word.word,
+              style: const TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            // 音标 + 喇叭按钮紧随下一行
             Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
               children: [
                 Expanded(
                   child: Text(
-                    word.word,
-                    maxLines: 1,
-                    overflow: TextOverflow.fade,
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Flexible(
-                  flex: 2,
-                  child: Text(
                     word.phonetic,
                     maxLines: 1,
-                    overflow: TextOverflow.fade,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 18,
                       fontStyle: FontStyle.italic,
