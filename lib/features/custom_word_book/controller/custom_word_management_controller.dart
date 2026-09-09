@@ -1,19 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../data/dto/custom_word_record_model.dart';
-import '../../../data/dto/word_model.dart';
+import '../../../domain/models/custom_word_record_model.dart';
+import '../../../domain/models/word_model.dart';
 import '../../../data/repositories/custom_word_repository.dart';
 import '../../../data/repositories/review_repository.dart';
 import '../state/custom_word_management_state.dart';
 
-/// 自建单词管理控制器（doc 64）。
+/// 自建单词管理控制器。
 ///
 /// 通过 family(wordBookId) 按词库隔离，负责当前词库单词的
 /// load / create / update / delete。
 ///
-/// - 英文保存标准化：trim + lowercase（doc 44，与 CET 数据风格一致）
-/// - 重复英文校验：同词库内 trim + lowercase 归一化判重（doc 45）
-/// - 删除单词同步删除该词 WordReview，不留孤儿数据（doc 23）
+/// - 英文保存标准化：trim + lowercase（与 CET 数据风格一致）
+/// - 重复英文校验：同词库内 trim + lowercase 归一化判重
+/// - 删除单词同步删除该词 WordReview，不留孤儿数据
 class CustomWordManagementController
     extends StateNotifier<CustomWordManagementState> {
   CustomWordManagementController(
@@ -41,7 +41,7 @@ class CustomWordManagementController
 
   /// 同步名称校验（供表单页提交前即时校验，基于当前 state）。
   ///
-  /// [excludeWordId] 为编辑时排除自身的单词 ID（doc 45）。
+  /// [excludeWordId] 为编辑时排除自身的单词 ID。
   String? validateWord(String word, {String? excludeWordId}) {
     final trimmed = word.trim();
     if (trimmed.isEmpty) return '英文不能为空';
@@ -55,9 +55,9 @@ class CustomWordManagementController
 
   /// 新增单词，成功返回新记录，失败返回 null 并写入 errorMessage。
   ///
-  /// 校验基于最新数据（doc 45）：英文 trim 非空、同词库不重复；
-  /// 中文释义 trim 非空（doc 43）。表单只输入中文，生成一条默认
-  /// 词性为空串的 MeaningEntry（doc 12）。
+  /// 校验基于最新数据：英文 trim 非空、同词库不重复；
+  /// 中文释义 trim 非空。表单只输入中文，生成一条默认
+  /// 词性为空串的 MeaningEntry。
   Future<CustomWordRecord?> create({
     required String word,
     required String phonetic,
@@ -101,7 +101,7 @@ class CustomWordManagementController
 
   /// 编辑单词，成功返回更新后的记录，失败返回 null。
   ///
-  /// ID 不变（doc 19），重复校验排除自身 wordId（doc 45）。
+  /// ID 不变，重复校验排除自身 wordId。
   Future<CustomWordRecord?> update({
     required String wordId,
     required String word,
@@ -147,7 +147,7 @@ class CustomWordManagementController
 
   /// 删除单词，成功返回 true。
   ///
-  /// 同步删除该单词的 WordReview（doc 23），避免孤儿数据。
+  /// 同步删除该单词的 WordReview，避免孤儿数据。
   Future<bool> delete(String wordId) async {
     try {
       await _wordRepository.delete(wordBookId, wordId);
@@ -171,13 +171,13 @@ class CustomWordManagementController
     }
   }
 
-  /// 保存后刷新列表，让新增 / 编辑结果立即可见（doc 65）。
+  /// 保存后刷新列表，让新增 / 编辑结果立即可见。
   Future<void> _refresh() async {
     final words = await _wordRepository.getAll(wordBookId);
     state = state.copyWith(words: words, errorMessage: null);
   }
 
-  /// 基于最新列表校验重复（doc 45）。
+  /// 基于最新列表校验重复。
   String? _validateAgainst(
     String normalizedWord,
     List<CustomWordRecord> existing, {
@@ -190,6 +190,6 @@ class CustomWordManagementController
     return null;
   }
 
-  /// 归一化：trim + lowercase，用于存储与判重（doc 44 / 45）。
+  /// 归一化：trim + lowercase，用于存储与判重（。
   String _normalize(String word) => word.trim().toLowerCase();
 }

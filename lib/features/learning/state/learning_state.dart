@@ -1,4 +1,4 @@
-import '../../../data/dto/word_model.dart';
+import '../../../domain/models/word_model.dart';
 import '../../../domain/enums/learning_enums.dart';
 
 /// 学习状态类（不可变）

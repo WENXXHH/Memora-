@@ -37,7 +37,7 @@ final customWordBookRepositoryProvider = Provider<CustomWordBookRepository>(
   },
 );
 
-/// 全局 Provider：统一词库注册表（doc 31 / 32）
+/// 全局 Provider：统一词库注册表
 ///
 /// 组合内置静态目录 + 自建 Hive 词库，供词库选择验证与选择页渲染使用。
 final wordBookRegistryProvider = Provider<WordBookRegistry>((ref) {
@@ -51,7 +51,7 @@ final customWordRepositoryProvider = Provider<CustomWordRepository>((ref) {
 
 /// 全局 Provider：删除自建词库 UseCase
 ///
-/// 删除跨 Repository（单词 + Review + 词库），由 UseCase 编排（doc 60 / 61）。
+/// 删除跨 Repository（单词 + Review + 词库），由 UseCase 编排。
 final deleteCustomWordBookUseCaseProvider = Provider<DeleteCustomWordBookUseCase>(
   (ref) {
     return DeleteCustomWordBookUseCase(

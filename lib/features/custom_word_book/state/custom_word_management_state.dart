@@ -1,12 +1,12 @@
-import '../../../data/dto/custom_word_record_model.dart';
+import '../../../domain/models/custom_word_record_model.dart';
 
-/// 自建单词管理状态（doc 64）。
+/// 自建单词管理状态。
 ///
 /// - [isLoading]：是否正在加载单词列表
 /// - [words]：当前词库的全部自建单词（按创建时间升序）
 /// - [errorMessage]：加载 / 新增 / 编辑 / 删除失败的错误提示
 ///
-/// 通过 StateNotifierProvider.autoDispose.family(wordBookId) 按词库隔离（doc 64）。
+/// 通过 StateNotifierProvider.autoDispose.family(wordBookId) 按词库隔离。
 class CustomWordManagementState {
   final bool isLoading;
   final List<CustomWordRecord> words;

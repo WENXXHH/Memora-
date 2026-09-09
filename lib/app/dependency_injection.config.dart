@@ -22,12 +22,14 @@ import '../data/repositories/custom_word_book_repository.dart' as _i456;
 import '../data/repositories/custom_word_repository.dart' as _i97;
 import '../data/repositories/review_repository.dart' as _i501;
 import '../data/repositories/word_repository.dart' as _i237;
+import '../data/services/user_data_space_service.dart' as _i876;
 import '../data/sources/ai_suggestion_data_source.dart' as _i740;
 import '../data/sources/local/custom_word_book_local_source.dart' as _i821;
 import '../data/sources/local/custom_word_local_source.dart' as _i1;
 import '../data/sources/local/mock_ai_suggestion_source.dart' as _i317;
 import '../data/sources/local/mock_word_source.dart' as _i557;
 import '../data/sources/local/review_local_source.dart' as _i293;
+import '../data/sources/local/word_book_preference_local_source.dart' as _i447;
 import '../data/sources/word_data_source.dart' as _i832;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -39,12 +41,19 @@ extension GetItInjectableX on _i174.GetIt {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final ttsModule = _$TtsModule();
     gh.lazySingleton<_i50.FlutterTts>(() => ttsModule.flutterTts);
+    gh.factory<_i293.ReviewLocalDataSource>(
+      () => _i293.ReviewLocalDataSource(
+        gh<_i1055.Box<Map<dynamic, dynamic>>>(),
+        gh<_i1055.Box<String>>(instanceName: 'auth'),
+      ),
+    );
     gh.factory<_i740.AiSuggestionDataSource>(
       () => _i317.MockAiSuggestionSource(),
     );
-    gh.factory<_i293.ReviewLocalDataSource>(
-      () =>
-          _i293.ReviewLocalDataSource(gh<_i1055.Box<Map<dynamic, dynamic>>>()),
+    gh.factory<_i447.WordBookPreferenceLocalSource>(
+      () => _i447.WordBookPreferenceLocalSource(
+        gh<_i1055.Box<String>>(instanceName: 'settings'),
+      ),
     );
     gh.lazySingleton<_i931.TtsService>(
       () => _i1021.FlutterTtsService(gh<_i50.FlutterTts>()),
@@ -63,6 +72,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i1.CustomWordLocalSource>(
       () => _i1.CustomWordLocalSource(
         gh<_i1055.Box<Map<dynamic, dynamic>>>(instanceName: 'custom_words'),
+      ),
+    );
+    gh.factory<_i876.UserDataSpaceService>(
+      () => _i876.UserDataSpaceService(
+        gh<_i1055.Box<Map<dynamic, dynamic>>>(),
+        gh<_i1055.Box<String>>(instanceName: 'auth'),
       ),
     );
     gh.factory<_i456.CustomWordBookRepository>(

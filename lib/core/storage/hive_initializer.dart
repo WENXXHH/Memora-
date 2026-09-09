@@ -1,35 +1,27 @@
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
 /// 集中管理 Hive 的初始化生命周期。
-///
-/// 遵循规范：统一由一个 Initializer 打开 Box，
-/// 其他层（Repository / DataSource / Interceptor）只获取已打开实例，
-/// 不在多处重复调用 openBox()。
 class HiveInitializer {
   HiveInitializer._();
 
-  /// Box 名称常量
+  /// 复习状态Box 名称
   static const String reviewsBoxName = 'reviews';
 
   /// 鉴权 Box 名称，存储 JWT 等凭证。
   static const String authBoxName = 'auth';
 
   /// 设置 Box 名称，存储设备级轻量偏好（如当前词库选择）。
-  ///
-  /// 与 reviews / auth 分离：不参与业务学习记录，也不参与凭证存储。
   static const String settingsBoxName = 'settings';
 
-  /// 自建词库 Box 名称（doc 24）。
+  /// 自建词库 Box 名称。
   ///
-  /// 单独一个 Box 存储全部自建词库元数据，key 为 wordBookId（doc 25）；
-  /// 自建单词另用 custom_words Box，不要为每个词库开一个 Box（doc 24）。
-  /// 沿用 Box<Map> + JSON 序列化，与 reviews Box 一致，无需 TypeAdapter。
+  /// 单独一个 Box 存储全部自建词库元数据，key 为 wordBookId；
+  /// 自建单词另用 custom_words Box。
   static const String customWordBooksBoxName = 'custom_word_books';
 
-  /// 自建单词 Box 名称（doc 24 / 26）。
+  /// 自建单词 Box 名称。
   ///
-  /// 全部自建单词存同一个 Box，key 为联合 Key `$wordBookId:$wordId`（doc 26）。
-  /// 与 custom_word_books 分开，避免词库元数据与单词数据互相污染。
+  /// 全部自建单词存同一个 Box，key 为联合 Key `$wordBookId:$wordId`。
   static const String customWordsBoxName = 'custom_words';
 
   /// 初始化 Hive 引擎并打开所有业务 Box。
@@ -82,9 +74,9 @@ class HiveBoxes {
   /// 设置 Box，存储设备级轻量偏好（当前词库选择等）。
   final Box<String> settings;
 
-  /// 自建词库元数据 Box，key 为 wordBookId（doc 25）。
+  /// 自建词库元数据 Box，key 为 wordBookId。
   final Box<Map<dynamic, dynamic>> customWordBooks;
 
-  /// 自建单词 Box，key 为联合 Key `$wordBookId:$wordId`（doc 26）。
+  /// 自建单词 Box，key 为联合 Key `$wordBookId:$wordId`。
   final Box<Map<dynamic, dynamic>> customWords;
 }

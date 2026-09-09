@@ -3,12 +3,12 @@ import 'dart:convert';
 import 'package:hive_ce/hive_ce.dart';
 import 'package:injectable/injectable.dart';
 
-import '../../dto/custom_word_record_model.dart';
+import '../../../domain/models/custom_word_record_model.dart';
 import '../../../core/storage/hive_initializer.dart';
 
-/// 自建单词本地持久化数据源（doc 24 / 26）。
+/// 自建单词本地持久化数据源。
 ///
-/// 全部自建单词存同一个 Hive Box，key 为联合 Key `$wordBookId:$wordId`（doc 26），
+/// 全部自建单词存同一个 Hive Box，key 为联合 Key `$wordBookId:$wordId`，
 /// 与词库元数据（custom_word_books Box）分离。
 /// 沿用 Box<Map> + JSON 序列化，无需 TypeAdapter。
 @injectable
@@ -17,14 +17,14 @@ class CustomWordLocalSource {
 
   final Box<Map<dynamic, dynamic>> _box;
 
-  /// 构造联合 Key：`$wordBookId:$wordId`（doc 26）。
+  /// 构造联合 Key：`$wordBookId:$wordId`。
   String _buildKey(String wordBookId, String wordId) => '$wordBookId:$wordId';
 
   /// Hive 从磁盘读回时，嵌套 Map 的类型是 `Map<dynamic, dynamic>`，
   /// 而 freezed 生成的 fromJson 要求 `Map<String, dynamic>`（as 强转）。
   ///
   /// 用 JSON round-trip 规整为 `Map<String, dynamic>` / `List<dynamic>`，
-  /// 保证杀进程重启后自建单词能正常解析（doc 72 第二层）。
+  /// 保证杀进程重启后自建单词能正常解析。
   Map<String, dynamic> _normalizeForJson(Map<dynamic, dynamic> data) {
     return jsonDecode(jsonEncode(data)) as Map<String, dynamic>;
   }
@@ -63,12 +63,12 @@ class CustomWordLocalSource {
   /// 删除单个自建单词。
   ///
   /// 只删单词本体，关联的 WordReview 由上层 UseCase / Controller
-  /// 级联删除（doc 23）。
+  /// 级联删除。
   Future<void> delete(String wordBookId, String wordId) async {
     await _box.delete(_buildKey(wordBookId, wordId));
   }
 
-  /// 删除指定词库的全部自建单词（级联删词库时调用，doc 61）。
+  /// 删除指定词库的全部自建单词（级联删词库时调用）。
   Future<void> deleteByWordBookId(String wordBookId) async {
     final prefix = '$wordBookId:';
     final keys = _box.keys

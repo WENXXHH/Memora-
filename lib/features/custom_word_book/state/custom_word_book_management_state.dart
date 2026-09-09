@@ -1,6 +1,6 @@
-import '../../../data/dto/custom_word_book_model.dart';
+import '../../../domain/models/custom_word_book_model.dart';
 
-/// 自建词库管理状态（doc 63）。
+/// 自建词库管理状态。
 ///
 /// 字段说明：
 /// - [isLoading]：是否正在加载词库列表

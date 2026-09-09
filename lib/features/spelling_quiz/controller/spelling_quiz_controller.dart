@@ -4,18 +4,19 @@ import '../../../core/utils/spelling_answer_matcher.dart';
 import '../../../data/repositories/review_repository.dart';
 import '../../../data/repositories/word_repository.dart';
 import '../../../domain/enums/learning_enums.dart';
+import '../../../domain/models/word_model.dart';
 import '../../../domain/use_cases/apply_review_feedback_use_case.dart';
 import '../state/spelling_quiz_state.dart';
 
 /// 拼写复习控制器。
 ///
-/// 职责（doc §0 / §41）：
-/// 1. 加载今日到期复习词作为拼写队列（取题口径与选择题 / 听音辨词一致，doc §14）
-/// 2. 处理用户提交（每题只提交一次，Bug 3 防重复）
-/// 3. SM-2 映射（doc §16）：拼写正确 → known，错误 → unknown
-/// 4. 通过 [ApplyReviewFeedbackUseCase] 复用 SM-2 + Hive 保存链路（doc §18）
+/// 职责：
+/// 1. 加载今日到期复习词作为拼写队列
+/// 2. 处理用户提交
+/// 3. SM-2 映射：拼写正确 → known，错误 → unknown
+/// 4. 通过 [ApplyReviewFeedbackUseCase] 复用 SM-2 + Hive 保存链路
 ///
-/// 答题流程（doc §15）：
+/// 答题流程：
 /// ```
 /// 用户提交 → 已作答则返回 → trim 为空则 inputError
 /// → 判定对错 → 锁定 hasAnswered → UseCase 保存 → 更新统计 → 手动"下一题"
@@ -51,9 +52,10 @@ class SpellingQuizController extends StateNotifier<SpellingQuizState> {
 
   /// 启动拼写复习会话。
   ///
-  /// 取题口径与 [MultipleChoiceController.startQuiz] 完全一致（doc §14）：
-  /// 今日到期复习词 → 过滤出词库中的单词 → 最多 [_maxQuestions] 个。
-  /// 队列为空时置空队列 + isCompleted（页面走空状态分支，doc §12 / §30）。
+  /// 取题口径与 [MultipleChoiceController.startQuiz] 完全一致：
+  /// 优先今日到期复习词；到期队列为空时回退到"已学未到期"的巩固练习词
+  /// （按上次复习时间最近优先）→ 解析出词库中的单词 → 最多 [_maxQuestions] 个。
+  /// 两者都为空时置空队列 + isCompleted。
   Future<void> startQuiz(String wordBookId) async {
     _wordBookId = wordBookId;
     state = state.copyWith(
@@ -63,18 +65,27 @@ class SpellingQuizController extends StateNotifier<SpellingQuizState> {
     );
 
     try {
-      final dueReviews = await _reviewRepository.getDueReviews(wordBookId);
-      final dueWordIds = dueReviews.map((r) => r.wordId).toSet();
+      // 题目来源：优先今日到期复习词；到期队列为空时回退到已学未到期的
+      // 巩固练习词（按上次复习时间最近优先），保证复习做完后仍有词可练。
+      var practiceReviews = await _reviewRepository.getDueReviews(wordBookId);
+      if (practiceReviews.isEmpty) {
+        practiceReviews =
+            await _reviewRepository.getRecentLearned(wordBookId);
+      }
 
       final allWords = await _wordRepository.getWords(wordBookId);
 
-      final words = allWords
-          .where((w) => dueWordIds.contains(w.id))
+      // 按复习记录顺序解析待练单词（到期顺序 / 巩固模式的最近复习顺序），
+      // 跳过词库中已不存在的孤儿记录，最多取 _maxQuestions 个。
+      final wordById = {for (final w in allWords) w.id: w};
+      final words = practiceReviews
+          .map((r) => wordById[r.wordId])
+          .whereType<Word>()
           .take(_maxQuestions)
           .toList();
 
       if (words.isEmpty) {
-        // 无到期复习词：空队列 + 完成态（页面显示"暂无需要拼写复习的单词"）
+        // 无到期 / 无已学词：空队列 + 完成态（页面显示"暂无需要拼写复习的单词"）
         state = state.copyWith(
           isLoading: false,
           hasError: false,
@@ -110,11 +121,11 @@ class SpellingQuizController extends StateNotifier<SpellingQuizState> {
 
   /// 用户提交拼写答案。
   ///
-  /// 防重复提交（Bug 3）：已作答时直接返回。
-  /// 空输入校验（doc §8 / Bug 2）：trim 后为空 → inputError 提示，
+  /// 防重复提交：已作答时直接返回。
+  /// 空输入校验：trim 后为空 → inputError 提示，
   /// 不判定、不保存 SM-2、不推进题目（输入无效 ≠ 回答错误）。
-  /// SM-2 映射（doc §16）：正确 → known，错误 → unknown。
-  /// 保存失败（doc §19）：设置 hasSaveError，不改变答题真假。
+  /// SM-2 映射：正确 → known，错误 → unknown。
+  /// 保存失败：设置 hasSaveError，不改变答题真假。
   Future<void> submitAnswer(String input) async {
     // Bug 3：hasAnswered 立即检查，防止快速双击提交导致同一题保存两次
     if (state.hasAnswered) return;
@@ -164,7 +175,7 @@ class SpellingQuizController extends StateNotifier<SpellingQuizState> {
     );
   }
 
-  /// 跳到下一题（doc §21）。
+  /// 跳到下一题。
   ///
   /// 必须已作答才能跳转（不自动跳题，答错后需时间看正确拼写）。
   /// Bug 4：nextQuestion 绝对不保存 SM-2，只推进状态并清理作答字段。

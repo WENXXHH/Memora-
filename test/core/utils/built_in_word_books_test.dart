@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memora/core/utils/built_in_word_books.dart';
 
-/// BuiltInWordBooks 目录单元测试（doc 38）。
+/// BuiltInWordBooks 目录单元测试。
 ///
 /// 覆盖：
 /// 1. all 包含 cet6 / cet4

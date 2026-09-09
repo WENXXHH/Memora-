@@ -5,13 +5,13 @@ import 'package:hive_ce/hive_ce.dart';
 import 'package:memora/data/repositories/custom_word_book_repository.dart';
 import 'package:memora/data/sources/local/custom_word_book_local_source.dart';
 
-/// CustomWordBookRepository 真 Hive 持久化测试（doc 84 / 72）。
+/// CustomWordBookRepository 真 Hive 持久化测试。
 ///
 /// 使用真实 Hive Box（临时目录），覆盖：
-/// 1. create → getAll / getById / exists（doc 84）
-/// 2. rename → id 不变，仅 name / updatedAt 变化（doc 5 / 79）
-/// 3. delete（doc 84）
-/// 4. 杀进程持久化：关闭 Box 重新打开后词库仍在（doc 72 第一层）
+/// 1. create → getAll / getById / exists
+/// 2. rename → id 不变，仅 name / updatedAt 变化
+/// 3. delete
+/// 4. 杀进程持久化：关闭 Box 重新打开后词库仍在
 void main() {
   late Directory tempDir;
   late Box<Map<dynamic, dynamic>> box;
@@ -39,8 +39,8 @@ void main() {
     await tempDir.delete(recursive: true);
   });
 
-  group('CRUD（doc 84）', () {
-    test('create → getAll 按创建时间升序，ID 为 custom_<uuid>（doc 5）', () async {
+  group('CRUD', () {
+    test('create → getAll 按创建时间升序，ID 为 custom_<uuid>', () async {
       final b1 = await repository.create(name: '考研词库');
       // 间隔保证 createdAt 严格递增，验证展示顺序稳定
       await Future<void>.delayed(const Duration(milliseconds: 5));
@@ -65,12 +65,12 @@ void main() {
       expect(await repository.exists('custom_missing'), isFalse);
     });
 
-    test('rename → id / createdAt 不变，仅 name / updatedAt 变化（doc 79）', () async {
+    test('rename → id / createdAt 不变，仅 name / updatedAt 变化', () async {
       final book = await repository.create(name: 'A');
 
       final renamed = await repository.rename(id: book.id, newName: 'B');
 
-      expect(renamed.id, book.id, reason: '词库 ID 不随重命名变化（doc 5）');
+      expect(renamed.id, book.id, reason: '词库 ID 不随重命名变化');
       expect(renamed.createdAt, book.createdAt);
       expect(renamed.name, 'B');
       expect(renamed.updatedAt.isAfter(book.updatedAt), isTrue);
@@ -86,7 +86,7 @@ void main() {
     });
   });
 
-  group('杀进程持久化（doc 72 第一层）', () {
+  group('杀进程持久化', () {
     test('创建词库 → 关闭 Box → 重新打开 → 仍存在', () async {
       await repository.create(name: '考研词库');
       await box.close();

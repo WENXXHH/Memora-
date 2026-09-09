@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-/// 听音辨词音频提示区（doc 22 / 29 / 30）。
+/// 听音辨词音频提示区。
 ///
 /// 职责：
-/// - 显示喇叭图标（不显示英文单词拼写，doc 39 验收清单）
+/// - 显示喇叭图标
 /// - 提供"🔊 再听一次"按钮，点击触发 [onReplay]
-/// - 第 4 天临时显示 `♪ ${lastPlayedWord}` debug 文本辅助人工验证
-///   （doc 22：Fake 不输出声音，靠 debug 文本对账题目切换是否正确）
-/// - 播放失败时显示错误提示（doc 30：与答错完全不同的事件）
+/// - 作答后显示 `♪ ${lastPlayedWord}` 文本用于确认刚听的单词；
+///   **作答前绝不显示**，否则等于直接泄露答案
+/// - 播放失败时显示错误提示（与答错完全不同的事件）
 class ListeningPrompt extends StatelessWidget {
   const ListeningPrompt({
     super.key,
@@ -15,6 +15,7 @@ class ListeningPrompt extends StatelessWidget {
     required this.hasAudioError,
     required this.audioErrorMessage,
     required this.lastPlayedWord,
+    required this.hasAnswered,
     required this.onReplay,
   });
 
@@ -27,8 +28,11 @@ class ListeningPrompt extends StatelessWidget {
   /// 播放失败提示信息。
   final String? audioErrorMessage;
 
-  /// 最后播放的单词文本（第 4 天 debug 用）。
+  /// 最后播放的单词文本（作答后确认用）。
   final String? lastPlayedWord;
+
+  /// 当前题是否已作答：未作答时不显示单词拼写，避免泄露答案。
+  final bool hasAnswered;
 
   /// 点击"再听一次"回调。
   final VoidCallback onReplay;
@@ -65,18 +69,21 @@ class ListeningPrompt extends StatelessWidget {
                         : colorScheme.primary,
                   ),
             const SizedBox(height: 8),
-            // 第 4 天 debug 文本（Fake 不出声，靠文本对账题目切换）
-            // 第 5 天接 TtsService 后可移除
-            Text(
-              lastPlayedWord != null ? '♪ $lastPlayedWord' : '♪ —',
-              style: TextStyle(
-                fontSize: 12,
-                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                fontStyle: FontStyle.italic,
-              ),
-            ),
+            // 作答后才显示单词拼写（"作答确认"体验）；
+            // 作答前留等高占位，避免显隐时卡片高度跳动。
+            if (hasAnswered)
+              Text(
+                lastPlayedWord != null ? '♪ $lastPlayedWord' : '♪ —',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                  fontStyle: FontStyle.italic,
+                ),
+              )
+            else
+              const SizedBox(height: 17),
             const SizedBox(height: 16),
-            // 播放失败提示（doc 30）
+            // 播放失败提示
             if (hasAudioError) ...[
               Text(
                 audioErrorMessage ?? '播放失败，请重试',
@@ -85,7 +92,7 @@ class ListeningPrompt extends StatelessWidget {
               ),
               const SizedBox(height: 8),
             ],
-            // "再听一次"按钮（doc 29）
+            // "再听一次"按钮
             OutlinedButton.icon(
               onPressed: isPlaying ? null : onReplay,
               icon: const Icon(Icons.replay),

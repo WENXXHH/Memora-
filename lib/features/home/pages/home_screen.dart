@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/utils/built_in_word_books.dart';
+import '../../../domain/services/word_book_summary.dart';
+import '../../../providers/repository_providers.dart';
 import '../../word_book_selection/providers/current_word_book_providers.dart';
 import '../providers/home_providers.dart';
 import '../state/home_state.dart';
@@ -15,7 +16,7 @@ import '../widgets/statistics_card.dart';
 /// 应用主页面，展示学习概览和快速入口。
 /// 数据跟随当前词库（currentWordBookIdProvider）加载与刷新：
 /// - 首次进入按当前词库加载
-/// - 切换词库后自动重新加载（doc 24 / 40）
+/// - 切换词库后自动重新加载
 /// 支持四种 UI 状态：加载中、正常数据、空数据（首次启动）、错误。
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -25,8 +26,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 /// 首页状态类
-///
-/// 继承 ConsumerState，支持通过 ref 访问 Riverpod Provider
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
@@ -42,12 +41,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
   }
 
+  /// 词库名解析 Future 缓存（按 wordBookId 失效，避免每次 build 重复查询）。
+  String? _nameFutureBookId;
+  Future<WordBookSummary?>? _nameFuture;
+
+  Future<WordBookSummary?> _nameFutureFor(String wordBookId) {
+    if (_nameFutureBookId != wordBookId) {
+      _nameFutureBookId = wordBookId;
+      _nameFuture = ref.read(wordBookRegistryProvider).findById(wordBookId);
+    }
+    return _nameFuture!;
+  }
+
   @override
   Widget build(BuildContext context) {
     final wordBookId = ref.watch(currentWordBookIdProvider);
     final homeState = ref.watch(homeControllerProvider(wordBookId));
 
-    // 切换词库后刷新统计，避免首页仍显示旧词库数据（doc 24 / 40 / Bug 3）
+    // 切换词库后刷新统计，避免首页仍显示旧词库数据
     ref.listen(currentWordBookIdProvider, (previous, next) {
       if (previous != next) _loadDataFor(next);
     });
@@ -67,10 +78,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  /// 当前词库展示（doc 22 最小 UI），点击进入词库选择页。
+  /// 当前词库展示，点击进入词库选择页。
   Widget _buildCurrentWordBookBar(String wordBookId) {
     final colorScheme = Theme.of(context).colorScheme;
-    final name = BuiltInWordBooks.findById(wordBookId)?.name ?? wordBookId;
 
     return Material(
       color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
@@ -88,12 +98,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(width: 8),
               const Text('当前词库', style: TextStyle(fontSize: 14)),
               const Spacer(),
-              Text(
-                name,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.primary,
+              // 词库名：通过 Registry 解析（含自建词库真实名称）；
+              // Flexible + ellipsis 防止长名（尤其自建词库）横向溢出。
+              Flexible(
+                child: FutureBuilder<WordBookSummary?>(
+                  future: _nameFutureFor(wordBookId),
+                  builder: (context, snapshot) {
+                    final name = snapshot.data?.name ?? wordBookId;
+                    return Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.primary,
+                      ),
+                    );
+                  },
                 ),
               ),
               Icon(Icons.chevron_right, size: 18, color: colorScheme.primary),
@@ -157,7 +180,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           StatisticsCard(
             totalWords: homeState.totalWords,
             masteredWords: homeState.masteredWords,
-            streakDays: homeState.streakDays,
           ),
         ],
       ),

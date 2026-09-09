@@ -10,7 +10,6 @@ class HomeState {
   final int learnedCount;
   final int totalWords;
   final int masteredWords;
-  final int streakDays;
   final bool isLoading;
   final bool hasError;
   final String? errorMessage;
@@ -20,7 +19,6 @@ class HomeState {
     required this.learnedCount,
     required this.totalWords,
     required this.masteredWords,
-    required this.streakDays,
     required this.isLoading,
     this.hasError = false,
     this.errorMessage,
@@ -31,7 +29,6 @@ class HomeState {
     int? learnedCount,
     int? totalWords,
     int? masteredWords,
-    int? streakDays,
     bool? isLoading,
     bool? hasError,
     String? errorMessage,
@@ -41,7 +38,6 @@ class HomeState {
       learnedCount: learnedCount ?? this.learnedCount,
       totalWords: totalWords ?? this.totalWords,
       masteredWords: masteredWords ?? this.masteredWords,
-      streakDays: streakDays ?? this.streakDays,
       isLoading: isLoading ?? this.isLoading,
       hasError: hasError ?? this.hasError,
       errorMessage: errorMessage ?? this.errorMessage,

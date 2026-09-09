@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../auth/providers/auth_providers.dart';
+import '../../auth/state/auth_state.dart';
 import '../../sync/providers/sync_providers.dart';
 import '../../sync/state/sync_state.dart';
+import '../widgets/logout_button.dart';
+import '../widgets/profile_user_header.dart';
+import '../widgets/sync_card.dart';
 
 /// 个人中心页。
 ///
@@ -64,6 +69,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
+    final isGuest = authState.status == AuthStatus.guest;
     final user = authState.currentUser;
     final syncState = ref.watch(syncControllerProvider);
 
@@ -73,116 +79,46 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircleAvatar(
-              radius: 40,
-              child: Icon(
-                Icons.person,
-                size: 48,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              user?.username ?? '未知用户',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              user?.email ?? '',
-              style: TextStyle(
-                fontSize: 14,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // 同步学习进度卡片
-            _SyncCard(
-              syncState: syncState,
-              onSync: _handleSync,
-              syncedTimeText: _formatSyncedTime(syncState.lastSyncedAt),
-            ),
-
-            const SizedBox(height: 48),
-            FilledButton.tonalIcon(
-              onPressed: _isLoggingOut ? null : _handleLogout,
-              icon: _isLoggingOut
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.logout),
-              label: const Text('登出'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// 同步状态卡片（doc 15 入口 2：ProfilePage "立即同步"）。
-class _SyncCard extends StatelessWidget {
-  const _SyncCard({
-    required this.syncState,
-    required this.onSync,
-    required this.syncedTimeText,
-  });
-
-  final SyncState syncState;
-  final VoidCallback onSync;
-  final String syncedTimeText;
-
-  @override
-  Widget build(BuildContext context) {
-    final isSyncing = syncState.isSyncing;
-    final theme = Theme.of(context);
-
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 32),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Icon(Icons.cloud_sync, color: theme.colorScheme.primary),
-                const SizedBox(width: 12),
-                Expanded(
+            if (isGuest) ...[
+              // 游客身份：展示登录入口，不显示同步与登出
+              const ProfileUserHeader(username: '游客'),
+              const SizedBox(height: 32),
+              Card(
+                margin: const EdgeInsets.symmetric(horizontal: 32),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '同步学习进度',
-                        style: theme.textTheme.titleMedium,
-                      ),
-                      Text(
-                        '上次同步：$syncedTimeText',
-                        style: theme.textTheme.bodySmall,
+                      const Text('登录后即可云同步学习进度'),
+                      const SizedBox(height: 16),
+                      FilledButton.icon(
+                        onPressed: () => context.go('/login'),
+                        icon: const Icon(Icons.login),
+                        label: const Text('登录 / 注册'),
                       ),
                     ],
                   ),
                 ),
-                FilledButton.icon(
-                  onPressed: isSyncing ? null : onSync,
-                  icon: isSyncing
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.sync),
-                  label: Text(isSyncing ? '同步中' : '立即同步'),
-                ),
-              ],
-            ),
-            if (syncState.status == SyncStatus.error &&
-                syncState.errorMessage != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                syncState.errorMessage!,
-                style: TextStyle(fontSize: 13, color: theme.colorScheme.error),
+              ),
+            ] else ...[
+              ProfileUserHeader(
+                username: user?.username,
+                email: user?.email,
+              ),
+              const SizedBox(height: 32),
+
+              // 同步学习进度卡片
+              SyncCard(
+                isSyncing: syncState.isSyncing,
+                onSync: _handleSync,
+                syncedTimeText: _formatSyncedTime(syncState.lastSyncedAt),
+                errorMessage: syncState.errorMessage,
+              ),
+
+              const SizedBox(height: 48),
+              LogoutButton(
+                isLoading: _isLoggingOut,
+                onPressed: _handleLogout,
               ),
             ],
           ],

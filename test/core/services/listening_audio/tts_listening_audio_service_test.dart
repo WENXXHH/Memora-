@@ -2,12 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:memora/core/services/listening_audio/tts_listening_audio_service.dart';
 import 'package:memora/core/services/tts/tts_service.dart';
 
-/// TtsListeningAudioService 单元测试（doc 23 薄适配层）。
+/// TtsListeningAudioService 单元测试。
 ///
 /// 验证：
 /// 1. play 转发给 TtsService.speak
 /// 2. stop 转发给 TtsService.stop
-/// 3. speak 抛出的异常原样向上传递（doc 30：由 Controller 捕获设 hasAudioError，
+/// 3. speak 抛出的异常原样向上传递（由 Controller 捕获设 hasAudioError，
 ///    绝不在适配层吞掉并错误地保存 SM-2）
 ///
 /// 使用 Fake 实现 [TtsService]，不触碰真实 FlutterTts 插件。
@@ -34,7 +34,7 @@ void main() {
       expect(ttsService.stopCalls, 1);
     });
 
-    test('连续 play 不重复 stop（speak 内部已防叠音，doc 29）', () async {
+    test('连续 play 不重复 stop', () async {
       await adapter.play('abandon');
       await adapter.play('ability');
 
@@ -43,7 +43,7 @@ void main() {
     });
   });
 
-  group('TtsListeningAudioService — 错误传递（doc 30）', () {
+  group('TtsListeningAudioService — 错误传递', () {
     test('speak 抛异常原样向上传递，不被吞掉', () async {
       ttsService.speakError = Exception('TTS engine unavailable');
 
@@ -54,7 +54,7 @@ void main() {
     });
 
     test('空文本由底层 TtsService 抛 ArgumentError（不在适配层重复校验）', () {
-      // 空文本校验是 TtsService 的职责，适配层只转发（doc 23 薄适配）
+      // 空文本校验是 TtsService 的职责，适配层只转发
       ttsService.speakError = ArgumentError('朗读文本不能为空');
 
       expect(

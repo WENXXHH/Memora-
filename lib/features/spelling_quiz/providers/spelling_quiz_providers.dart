@@ -4,10 +4,10 @@ import '../../../providers/repository_providers.dart';
 import '../controller/spelling_quiz_controller.dart';
 import '../state/spelling_quiz_state.dart';
 
-/// 拼写复习控制器 Provider（doc §26）。
+/// 拼写复习控制器 Provider。
 ///
 /// 使用 autoDispose.family 按 wordBookId 隔离状态：
-/// - 页面退出后 Provider 被 dispose，再次进入不会残留上一轮作答（Bug 8）
+/// - 页面退出后 Provider 被 dispose，再次进入不会残留上一轮作答
 /// - 不同 wordBookId → 不同 Controller，不会发生状态串场
 ///
 /// 与最新的听音辨词 feature 保持一致（选择题仍是旧的非 autoDispose

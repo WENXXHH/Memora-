@@ -1,5 +1,5 @@
 import 'package:injectable/injectable.dart';
-import '../dto/word_review_model.dart';
+import '../../domain/models/word_review_model.dart';
 import '../sources/local/review_local_source.dart';
 
 /// 管理用户复习记录的持久化存取。
@@ -25,6 +25,14 @@ class ReviewRepository {
   /// 获取今日待复习队列
   Future<List<WordReview>> getDueReviews(String wordBookId) async {
     return _localDataSource.getDueReviews(wordBookId);
+  }
+
+  /// 获取"已学未到期"的巩固练习队列（按上次复习时间倒序）。
+  ///
+  /// 今日到期复习全部完成后，练习模式回退取这批词继续巩固，
+  /// 与百词斩"练习随时可做"的预期一致。
+  Future<List<WordReview>> getRecentLearned(String wordBookId) async {
+    return _localDataSource.getRecentLearned(wordBookId);
   }
 
   /// 统计已学会单词数
@@ -60,14 +68,14 @@ class ReviewRepository {
 
   /// 删除指定词库的全部复习记录。
   ///
-  /// 自建词库级联删除时调用（doc 15 / 61），避免残留孤儿 Review。
+  /// 自建词库级联删除时调用，避免残留孤儿 Review。
   Future<void> deleteReviewsByWordBookId(String wordBookId) async {
     await _localDataSource.deleteReviewsByWordBookId(wordBookId);
   }
 
   /// 删除单个单词的复习记录。
   ///
-  /// 删除自建单词时调用（doc 23），避免留下孤儿 Review。
+  /// 删除自建单词时调用，避免留下孤儿 Review。
   Future<void> deleteReview(String wordBookId, String wordId) async {
     await _localDataSource.deleteReview(wordBookId, wordId);
   }

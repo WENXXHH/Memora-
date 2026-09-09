@@ -4,6 +4,10 @@ import 'package:go_router/go_router.dart';
 
 import '../providers/auth_providers.dart';
 import '../state/auth_state.dart';
+import '../widgets/register_error_banner.dart';
+import '../widgets/register_header.dart';
+import '../widgets/register_login_link.dart';
+import '../widgets/register_submit_button.dart';
 
 /// 注册页。
 ///
@@ -12,7 +16,9 @@ import '../state/auth_state.dart';
 /// - email: 合法邮箱格式
 /// - password: 6-128 字符
 ///
-/// 注册成功后状态回到 unauthenticated，路由守卫自动重定向到 /login。
+/// 注册成功后弹出「注册成功，请登录」提示并主动跳转 /login
+/// （SnackBar 挂在根 ScaffoldMessenger，跨页面可见）；
+/// 失败则留在本页，由错误横幅展示原因。
 class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
 
@@ -39,7 +45,15 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     super.dispose();
   }
 
-  /// 提交注册表单
+  /// 提交注册表单。
+  ///
+  /// 成功（状态回到 unauthenticated）→ 弹出「注册成功，请登录」提示并
+  /// 立即跳转登录页；失败（error 态）→ 留在本页，由错误横幅展示原因。
+  ///
+  /// 成功后必须立即离开本页：否则按钮在 isLoading 复位后可再次点击，
+  /// 重复注册会触发「用户名已存在」错误，误导用户以为注册失败。
+  /// SnackBar 挂在 MaterialApp 的根 ScaffoldMessenger 上，
+  /// 路由切换后在登录页仍然可见。
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -48,6 +62,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
+    if (!mounted) return;
+
+    if (ref.read(authControllerProvider).status == AuthStatus.unauthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('注册成功，请登录')),
+      );
+      context.go('/login');
+    }
   }
 
   @override
@@ -66,19 +88,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 24),
-              Icon(
-                Icons.person_add_outlined,
-                size: 56,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '创建账号',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 24),
+              const RegisterHeader(),
 
               // 用户名
               TextFormField(
@@ -206,63 +216,20 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
               // 错误提示
               if (errorMessage != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.errorContainer.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        color: Theme.of(context).colorScheme.error,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          errorMessage,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                RegisterErrorBanner(message: errorMessage),
                 const SizedBox(height: 16),
               ],
 
               // 注册按钮
-              FilledButton(
-                onPressed: isLoading ? null : _submit,
-                child: isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text('注册'),
+              RegisterSubmitButton(
+                isLoading: isLoading,
+                onPressed: _submit,
               ),
               const SizedBox(height: 16),
 
               // 登录链接
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('已有账号？'),
-                  TextButton(
-                    onPressed: isLoading ? null : () => context.go('/login'),
-                    child: const Text('登录'),
-                  ),
-                ],
+              RegisterLoginLink(
+                onPressed: isLoading ? null : () => context.go('/login'),
               ),
             ],
           ),

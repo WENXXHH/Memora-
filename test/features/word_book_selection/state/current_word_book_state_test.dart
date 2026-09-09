@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:memora/core/utils/built_in_word_books.dart';
 import 'package:memora/features/word_book_selection/state/current_word_book_state.dart';
 
-/// CurrentWordBookState 单元测试（doc 45）。
+/// CurrentWordBookState 单元测试。
 ///
 /// 覆盖：
 /// 1. 默认 currentWordBookId = cet6
@@ -12,7 +12,7 @@ import 'package:memora/features/word_book_selection/state/current_word_book_stat
 /// 5. errorMessage 可设置 / 可清 null（sentinel）
 /// 6. copyWith 不传 nullable 参数时保留原值
 void main() {
-  group('默认值（doc 45）', () {
+  group('默认值', () {
     test('currentWordBookId 默认 CET-6（与 Catalog 一致）', () {
       const state = CurrentWordBookState();
       expect(state.currentWordBookId, BuiltInWordBooks.cet6.id);
@@ -29,7 +29,7 @@ void main() {
     });
   });
 
-  group('copyWith（doc 45）', () {
+  group('copyWith', () {
     test('普通字段更新', () {
       const state = CurrentWordBookState();
       final updated = state.copyWith(

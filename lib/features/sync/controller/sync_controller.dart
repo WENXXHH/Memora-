@@ -1,27 +1,26 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../domain/use_cases/sync_review_records_use_case.dart';
+import '../../../data/services/sync_review_records_service.dart';
 import '../state/sync_state.dart';
 
 /// 同步控制器。
 ///
 /// 职责：
 /// 1. 管理 [SyncState] 四态机（idle / syncing / success / error）
-/// 2. 防并发同步（doc 14：status == syncing 时直接返回）
+/// 2. 防并发同步（status == syncing 时直接返回）
 /// 3. 防重复自动同步：同一 App 会话内已有成功结果则 syncIfNeeded 跳过
-/// 4. 调用 [SyncReviewRecordsUseCase] 执行完整同步流程
+/// 4. 调用 [SyncReviewRecordsService] 执行完整同步流程
 ///
 /// 多设备场景下的鲁棒性（第三天多设备冲突日）：
 /// - syncIfNeeded 只在 idle+无成功记录时触发，保证"登录后自动一次、
-///   Profile 手动同步不限次数"的幂等策略（doc 18 第 8 条"第二次同步
-///   结果稳定"）。
-/// - 网络失败不清空 Hive、不退登（UseCase 保证，原则 13 / doc 16）。
+///   Profile 手动同步不限次数"的幂等策略。
+/// - 网络失败不清空 Hive、不退登。
 /// - 每次同步完成写入 lastSyncedAt，供 App 恢复后判断是否需要同步。
 class SyncController extends StateNotifier<SyncState> {
-  SyncController(this._useCase, {this.wordBookId = 'cet6'})
+  SyncController(this._service, {this.wordBookId = 'cet6'})
     : super(const SyncState(status: SyncStatus.idle));
 
-  final SyncReviewRecordsUseCase _useCase;
+  final SyncReviewRecordsService _service;
 
   /// 当前同步的词库标识。
   /// 第六周只处理内置 CET-6 词库，默认 "cet6"。
@@ -41,7 +40,7 @@ class SyncController extends StateNotifier<SyncState> {
 
     state = state.copyWith(status: SyncStatus.syncing, errorMessage: null);
 
-    final result = await _useCase.execute(wordBookId);
+    final result = await _service.execute(wordBookId);
 
     if (result.success) {
       state = SyncState(
@@ -66,7 +65,7 @@ class SyncController extends StateNotifier<SyncState> {
   /// 跳过条件（保证自动同步的幂等与稳定，防止反复请求）：
   /// 1. syncing 中：并发防御
   /// 2. 已经同步成功过，且仍处于 [autoSyncDedupeWindow] 窗口内
-  ///    → 视为无需重复同步（doc 18 第 8 条：相同输入再次同步结果稳定）
+  ///    → 视为无需重复同步（相同输入再次同步结果稳定）
   /// 3. unauthenticated 后重新 login（lastSyncedAt 会保留，这是有意行为；
   ///    同一账号短时间内重复 login 不重复同步，登出后不变更 lastSyncedAt，
   ///    但 Profile 手动 sync 不受限制）

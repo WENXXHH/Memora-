@@ -4,8 +4,6 @@
 /// 1. 封装 [AuthRemoteDataSource] 调用，面向业务层提供统一接口
 /// 2. 登录成功后保存 Token / 登出清除 Token / 启动恢复会话
 /// 3. 区分"Token 无效"（401）与"暂时无网络"——前者删 Token，后者保留
-///
-/// 原则 14：断网和 Token 失效不能混为一谈。
 library;
 
 import '../../core/network/network_exception.dart';
@@ -91,9 +89,19 @@ class AuthRepository {
     await _tokenStorage.deleteToken();
   }
 
+  /// 当前是否处于游客模式（杀进程重启后据此恢复游客态）。
+  bool get isGuestMode => _tokenStorage.isGuestMode;
+
+  /// 持久化游客模式标记。
+  ///
+  /// 进入游客模式写 true；登录 / 注册成功、登出写 false，
+  /// 保证下次启动 restoreSession 能落到正确的认证态。
+  Future<void> setGuestMode(bool enabled) =>
+      _tokenStorage.setGuestMode(enabled);
+
   /// 启动时恢复会话。
   ///
-  /// 流程（遵循 §2.4 启动恢复）：
+  /// 流程：
   /// ```
   /// 读 Token
   ///   ├─ 无 Token → noToken

@@ -1,10 +1,9 @@
-import '../../data/dto/word_review_model.dart';
+import '../../domain/models/word_review_model.dart';
 import '../../domain/enums/learning_enums.dart';
 
 /// SM-2 间隔重复算法实现
-///
-/// 所有方法均为纯函数风格，无副作用，不依赖外部状态。
 class SM2Algorithm {
+  // 根据反馈按钮返回quality
   static int _qualityFromFeedback(FeedbackType feedback) {
     switch (feedback) {
       case FeedbackType.known:
@@ -16,7 +15,7 @@ class SM2Algorithm {
     }
   }
 
-  // SM-2 核心计算：根据评分质量返回新的间隔、EF 和重复次数
+  // 根据评分质量返回新的间隔、EF 和重复次数
   static (int, double, int) _calculate(
     int quality,
     int currentRepetition,
@@ -38,7 +37,7 @@ class SM2Algorithm {
     int newInterval;
 
     if (newRepetition == 1) {
-      newInterval = 0; // 第一次学习后立即可复习，符合「学完即测」流程
+      newInterval = 0;
     } else if (newRepetition == 2) {
       newInterval = 6;
     } else {

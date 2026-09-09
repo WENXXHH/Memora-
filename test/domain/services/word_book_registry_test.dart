@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memora/core/utils/built_in_word_books.dart';
-import 'package:memora/data/dto/custom_word_book_model.dart';
+import 'package:memora/domain/models/custom_word_book_model.dart';
 import 'package:memora/data/repositories/custom_word_book_repository.dart';
 import 'package:memora/domain/services/word_book_registry.dart';
 import 'package:memora/domain/services/word_book_summary.dart';
 
-/// WordBookRegistry 单元测试（doc 31 / 32 / 67）。
+/// WordBookRegistry 单元测试。
 ///
 /// 覆盖：
 /// 1. getAll 组合内置（在前）+ 自建，kind 正确
@@ -20,7 +20,7 @@ void main() {
     registry = WordBookRegistry(customRepo);
   });
 
-  group('getAll（doc 32 / 37）', () {
+  group('getAll', () {
     test('内置在前 + 自建在后，kind 正确', () async {
       customRepo.books.add(_book('custom_abc', '考研重点'));
       customRepo.books.add(_book('custom_xyz', '高频错词'));
@@ -46,7 +46,7 @@ void main() {
     });
   });
 
-  group('findById（doc 32）', () {
+  group('findById', () {
     test('内置词库 → builtIn Summary', () async {
       final book = await registry.findById('cet4');
       expect(book, isNotNull);
@@ -67,7 +67,7 @@ void main() {
     });
   });
 
-  group('exists（doc 33 / 67）', () {
+  group('exists', () {
     test('内置词库存在', () async {
       expect(await registry.exists('cet6'), isTrue);
       expect(await registry.exists('cet4'), isTrue);

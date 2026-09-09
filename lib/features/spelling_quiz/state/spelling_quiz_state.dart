@@ -1,20 +1,20 @@
-import '../../../data/dto/word_model.dart';
+import '../../../domain/models/word_model.dart';
 
 /// 拼写复习状态类（不可变）。
 ///
-/// 字段说明（doc §9，按修订版补充 hasError / inputError）：
+/// 字段说明：
 /// - [isLoading]：题目加载中
 /// - [hasError] / [errorMessage]：加载失败
 /// - [words]：本次会话的全部待拼写单词
 /// - [currentIndex]：当前题号（0-based）
 /// - [currentWord]：当前单词（getter，越界返回 null，不单独存储）
-/// - [hasAnswered]：当前题是否已提交（Bug 3 防重复提交）
+/// - [hasAnswered]：当前题是否已提交
 /// - [isCorrect]：本次作答是否正确（未作答为 null）
 /// - [submittedAnswer]：用户提交的英文答案（答错时用于展示）
 /// - [correctCount] / [wrongCount]：累计统计
 /// - [isCompleted]：全部题目完成
-/// - [hasSaveError]：SM-2 保存是否失败（与答题对错无关，doc §19）
-/// - [inputError]：空输入校验提示（"请输入单词"，doc §8）
+/// - [hasSaveError]：SM-2 保存是否失败
+/// - [inputError]：空输入校验提示
 ///
 /// 状态不变量：
 /// ```
@@ -56,7 +56,7 @@ class SpellingQuizState {
   /// 当前单词。
   ///
   /// 作为 getter 而非独立字段，避免 words + currentIndex 之外的第二事实
-  /// 来源（doc §12）；越界时返回 null（防御，页面分支不要依赖它判断完成）。
+  /// 来源；越界时返回 null（防御，页面分支不要依赖它判断完成）。
   Word? get currentWord {
     if (currentIndex < 0 || currentIndex >= words.length) {
       return null;

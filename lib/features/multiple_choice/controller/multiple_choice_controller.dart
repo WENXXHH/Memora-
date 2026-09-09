@@ -3,7 +3,8 @@ import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/utils/question_generator.dart';
-import '../../../data/dto/multiple_choice_question.dart';
+import '../../../domain/models/multiple_choice_question.dart';
+import '../../../domain/models/word_model.dart';
 import '../../../data/repositories/review_repository.dart';
 import '../../../data/repositories/word_repository.dart';
 import '../../../domain/enums/learning_enums.dart';
@@ -14,8 +15,8 @@ import '../state/multiple_choice_state.dart';
 ///
 /// 职责：
 /// 1. 加载今日到期复习词 → 生成四选一题目
-/// 2. 处理用户选项点击（每题只提交一次，Bug 9/10 防御）
-/// 3. SM-2 映射：正确→fuzzy，错误→unknown（约束 16 / Bug 11）
+/// 2. 处理用户选项点击
+/// 3. SM-2 映射：正确→fuzzy，错误→unknown
 /// 4. 通过 [ApplyReviewFeedbackUseCase] 复用反馈保存逻辑（原则 16）
 ///
 /// 答题流程（§2.5 文档 17）：
@@ -60,7 +61,8 @@ class MultipleChoiceController extends StateNotifier<MultipleChoiceState> {
   /// 启动选择题会话。
   ///
   /// 流程：
-  /// 1. 获取今日到期复习词（题目来源）
+  /// 1. 获取今日到期复习词（题目来源）；到期队列为空时回退到
+  ///    "已学未到期"的词（最近复习优先）作为巩固练习
   /// 2. 获取词库全部单词（干扰项来源）
   /// 3. 为每个复习词生成一道题（过滤不足 4 个释义的词）
   /// 4. 最多取 [_maxQuestions] 道题
@@ -69,22 +71,29 @@ class MultipleChoiceController extends StateNotifier<MultipleChoiceState> {
     state = state.copyWith(isLoading: true, hasError: false);
 
     try {
-      // 题目来源：今日到期复习词
-      final dueReviews = await _reviewRepository.getDueReviews(wordBookId);
-      final dueWordIds = dueReviews.map((r) => r.wordId).toSet();
+      // 题目来源：优先今日到期复习词；到期队列为空时回退到已学未到期的
+      // 巩固练习词（按上次复习时间最近优先），保证复习做完后仍有词可练。
+      var practiceReviews = await _reviewRepository.getDueReviews(wordBookId);
+      if (practiceReviews.isEmpty) {
+        practiceReviews =
+            await _reviewRepository.getRecentLearned(wordBookId);
+      }
 
       // 干扰项来源：当前词库全部单词
       final allWords = await _wordRepository.getWords(wordBookId);
 
-      // 筛选待复习的单词（保持顺序）
-      final dueWords = allWords
-          .where((w) => dueWordIds.contains(w.id))
+      // 按复习记录顺序解析待练单词（到期顺序 / 巩固模式的最近复习顺序），
+      // 跳过词库中已不存在的孤儿记录，最多取 _maxQuestions 个。
+      final wordById = {for (final w in allWords) w.id: w};
+      final practiceWords = practiceReviews
+          .map((r) => wordById[r.wordId])
+          .whereType<Word>()
           .take(_maxQuestions)
           .toList();
 
       // 为每个待复习词生成题目
       final questions = <MultipleChoiceQuestion>[];
-      for (final word in dueWords) {
+      for (final word in practiceWords) {
         final question = _questionGenerator.build(
           correctWord: word,
           allWords: allWords,
@@ -95,7 +104,7 @@ class MultipleChoiceController extends StateNotifier<MultipleChoiceState> {
       }
 
       if (questions.isEmpty) {
-        // 无题可生成：区分"词库太小"与"暂无到期复习词"（doc 52）。
+        // 无题可生成：区分"词库太小"与"暂无到期复习词"。
         // 词库唯一释义 < 4 时无法生成四选一，给出明确提示而非静默完成。
         final enough =
             _questionGenerator.uniqueMeaningCount(allWords) >=
@@ -136,9 +145,9 @@ class MultipleChoiceController extends StateNotifier<MultipleChoiceState> {
 
   /// 用户选择某个选项。
   ///
-  /// 防重复提交（Bug 9/10）：已作答时直接返回。
-  /// SM-2 映射（约束 16）：正确→fuzzy，错误→unknown。
-  /// 保存失败（第五天）：设置 hasSaveError，不阻断答题流程。
+  /// 防重复提交：已作答时直接返回。
+  /// SM-2 映射：正确→fuzzy，错误→unknown。
+  /// 保存失败：设置 hasSaveError，不阻断答题流程。
   Future<void> selectOption(int index) async {
     // Bug 9：hasAnswered 立即检查，防止重复提交
     if (state.hasAnswered) return;
@@ -181,8 +190,7 @@ class MultipleChoiceController extends StateNotifier<MultipleChoiceState> {
 
   /// 跳到下一题。
   ///
-  /// 必须已作答才能跳转（约束 19：用"下一题"按钮，不自动跳转）。
-  /// Bug 10：下一题按钮不再保存 SM-2，只推进题目。
+  /// 必须已作答才能跳转。
   void nextQuestion() {
     if (!state.hasAnswered) return; // 未作答时不允许跳转
 

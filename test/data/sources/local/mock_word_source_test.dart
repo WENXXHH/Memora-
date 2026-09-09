@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:memora/data/dto/word_model.dart';
+import 'package:memora/domain/models/word_model.dart';
 import 'package:memora/data/sources/local/mock_word_source.dart';
 
-/// MockWordSource 内置词库 asset 解析测试（doc 32 / 33）。
+/// MockWordSource 内置词库 asset 解析测试。
 ///
 /// 使用真实 asset（pubspec 已注册 cet-4.json / cet-6.json）：
 /// 1. CET-4：可读取、非空、wordBookId 全为 cet4、wordId 唯一、英文非空
@@ -17,7 +17,7 @@ void main() {
     source = MockWordSource();
   });
 
-  group('CET-4 asset 解析（doc 32）', () {
+  group('CET-4 asset 解析', () {
     test('可以成功读取并解析为 Word', () async {
       final words = await source.getWords('cet4');
       expect(words, isNotEmpty);
@@ -57,7 +57,7 @@ void main() {
     });
   });
 
-  group('CET-6 回归（doc 33）', () {
+  group('CET-6 回归', () {
     test('getWords(cet6) 非空且全部属于 cet6', () async {
       final words = await source.getWords('cet6');
       expect(words, isNotEmpty);
@@ -66,7 +66,7 @@ void main() {
     });
   });
 
-  group('未知词库（doc 37 / Bug 3 防御）', () {
+  group('未知词库', () {
     test('unknown 明确失败，不回退 CET-6', () async {
       await expectLater(
         source.getWords('unknown'),

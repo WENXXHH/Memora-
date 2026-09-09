@@ -1,16 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memora/data/dto/review_record_dto.dart';
-import 'package:memora/data/dto/word_model.dart';
-import 'package:memora/domain/services/word_book_id_map.dart';
-import 'package:memora/domain/services/word_id_map.dart';
+import 'package:memora/domain/models/word_model.dart';
+import 'package:memora/data/services/word_book_id_map.dart';
+import 'package:memora/data/services/word_id_map.dart';
 
-/// CET-4 ID 映射测试（doc 40 / Bug 7 / Bug 8 防御）。
+/// CET-4 ID 映射测试。
 ///
-/// 验证现有映射算法无需为 CET-4 添加特判（doc 29）：
+/// 验证现有映射算法无需为 CET-4 添加特判：
 /// 1. WordBookIdMap 能解析 cet4 ↔ 后端 "CET-4"
 /// 2. WordIdMap 能按英文文本映射 CET-4 单词，不要求 Flutter ID == 后端 ID
 void main() {
-  group('WordBookIdMap 解析 CET-4（doc 29 / Bug 7）', () {
+  group('WordBookIdMap 解析 CET-4', () {
     test('后端 CET-4 → cet4 映射成功', () {
       final map = WordBookIdMap.fromBooks([
         const WordBookResponse(id: 1, name: 'CET-6'),
@@ -38,7 +38,7 @@ void main() {
     });
   });
 
-  group('WordIdMap 映射 CET-4 单词（doc 40 / Bug 8）', () {
+  group('WordIdMap 映射 CET-4 单词', () {
     test('按英文文本匹配，Flutter ID 与后端 ID 不同也能映射', () {
       final map = WordIdMap.fromWords(
         remoteWords: [

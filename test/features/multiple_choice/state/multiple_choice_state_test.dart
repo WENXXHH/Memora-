@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:memora/data/dto/multiple_choice_question.dart';
-import 'package:memora/data/dto/word_model.dart';
+import 'package:memora/domain/models/multiple_choice_question.dart';
+import 'package:memora/domain/models/word_model.dart';
 import 'package:memora/features/multiple_choice/state/multiple_choice_state.dart';
 
 /// MultipleChoiceState copyWith sentinel 模式测试。

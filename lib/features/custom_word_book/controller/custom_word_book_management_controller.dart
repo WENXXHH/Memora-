@@ -1,20 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/utils/built_in_word_books.dart';
-import '../../../data/dto/custom_word_book_model.dart';
+import '../../../domain/models/custom_word_book_model.dart';
 import '../../../data/repositories/custom_word_book_repository.dart';
 import '../../../domain/use_cases/delete_custom_word_book_use_case.dart';
 import '../state/custom_word_book_management_state.dart';
 
-/// 自建词库管理控制器（doc 63）。
+/// 自建词库管理控制器。
 ///
 /// 负责 load / create / rename / delete，不要把 CRUD 塞进
-/// CurrentWordBookController（doc 63），两者职责分离：
+/// CurrentWordBookController，两者职责分离：
 /// - 本控制器：管理自建词库数据
 /// - CurrentWordBookController：维护当前选择
 ///
 /// 删除成功后的当前词库回退由页面组合层调用
-/// CurrentWordBookController.resetToDefault()（doc 62 / 71）。
+/// CurrentWordBookController.resetToDefault()。
 class CustomWordBookManagementController
     extends StateNotifier<CustomWordBookManagementState> {
   CustomWordBookManagementController(this._repository, this._deleteUseCase)
@@ -36,7 +36,7 @@ class CustomWordBookManagementController
 
   /// 创建自建词库，成功返回新词库，失败返回 null 并写入 errorMessage。
   ///
-  /// 校验基于最新数据（doc 13 / 14）：trim 非空、长度 1~30、
+  /// 校验基于最新数据：trim 非空、长度 1~30、
   /// 不与内置词库重名、同设备自建词库名称唯一。
   Future<CustomWordBook?> create(String name) async {
     List<CustomWordBook> existing;
@@ -66,7 +66,7 @@ class CustomWordBookManagementController
 
   /// 重命名词库，成功返回更新后的词库，失败返回 null。
   ///
-  /// 重命名时排除自身 ID（doc 13），ID 不随名称变化（doc 5）。
+  /// 重命名时排除自身 ID，ID 不随名称变化。
   Future<CustomWordBook?> rename(String id, String newName) async {
     List<CustomWordBook> existing;
     try {
@@ -95,7 +95,7 @@ class CustomWordBookManagementController
 
   /// 删除自建词库（级联删除由 [DeleteCustomWordBookUseCase] 编排）。
   ///
-  /// 成功返回 true；若删除的是当前词库，页面组合层负责回退（doc 71）。
+  /// 成功返回 true；若删除的是当前词库，页面组合层负责回退。
   Future<bool> delete(String id) async {
     try {
       await _deleteUseCase.execute(id);
@@ -112,7 +112,7 @@ class CustomWordBookManagementController
   String? validateName(String name, {String? excludeId}) =>
       _validate(name, state.wordBooks, excludeId: excludeId);
 
-  /// 名称校验核心逻辑（doc 13 / 14）。
+  /// 名称校验核心逻辑。
   ///
   /// [existing] 必须是调用时最新的自建词库列表；
   /// [excludeId] 为重命名时排除自身的 ID。
@@ -138,6 +138,6 @@ class CustomWordBookManagementController
     return null;
   }
 
-  /// 规范化：去首尾空格 + 统一小写，用于名称比较（doc 14）。
+  /// 规范化：去首尾空格 + 统一小写，用于名称比较。
   String _normalize(String name) => name.trim().toLowerCase();
 }

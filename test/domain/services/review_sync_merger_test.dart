@@ -1,4 +1,4 @@
-import 'package:memora/data/dto/word_review_model.dart';
+import 'package:memora/domain/models/word_review_model.dart';
 import 'package:memora/domain/services/review_sync_merger.dart';
 import 'package:flutter_test/flutter_test.dart';
 

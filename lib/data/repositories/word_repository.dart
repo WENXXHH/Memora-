@@ -2,22 +2,22 @@ import 'package:injectable/injectable.dart';
 
 import '../../core/utils/built_in_word_books.dart';
 import '../sources/word_data_source.dart';
-import '../dto/custom_word_record_model.dart';
-import '../dto/word_model.dart';
+import '../../domain/models/custom_word_record_model.dart';
+import '../../domain/models/word_model.dart';
 import 'custom_word_book_repository.dart';
 import 'custom_word_repository.dart';
 
-/// 单词仓库（doc 46 / 48 / 49 / 30）。
+/// 单词仓库。
 ///
 /// 职责：
 /// 1. 按 wordBookId 路由数据源：内置 → Asset，自建 → Hive，
-///    未知 → 明确失败（doc 30 / 46），对外统一返回 [Word]
-/// 2. 内置词库保持缓存；自建词库不缓存（doc 48 / 49），
+///    未知 → 明确失败，对外统一返回 [Word]
+/// 2. 内置词库保持缓存；自建词库不缓存，
 ///    保证新增 / 编辑 / 删除单词后学习页读到最新数据
 ///
-/// 缓存（doc 19 / 20 / 21）：
+/// 缓存：
 /// - 仅作用于内置词库，按 wordBookId 隔离（`Map<String, List<Word>>`），
-///   CET-6 与 CET-4 互不污染（Bug 2 防御）
+///   CET-6 与 CET-4 互不污染
 /// - 内置 JSON 是静态资源，缓存后只解析一次，命中直接返回
 ///
 /// 复习状态管理已拆分至 ReviewRepository
@@ -38,11 +38,11 @@ class WordRepository {
   /// 按 wordBookId 隔离的内置词库单词缓存。
   final Map<String, List<Word>> _cache = {};
 
-  /// 获取指定词库的单词列表（doc 46 / 49）。
+  /// 获取指定词库的单词列表。
   ///
   /// - 内置词库：读 Asset，命中缓存直接返回
-  /// - 自建词库：读 Hive（不缓存，doc 49）
-  /// - 未知词库：抛 [ArgumentError]，不静默 fallback（doc 30）
+  /// - 自建词库：读 Hive
+  /// - 未知词库：抛 [ArgumentError]，不静默 fallback
   Future<List<Word>> getWords(String wordBookId) async {
     if (BuiltInWordBooks.contains(wordBookId)) {
       final cached = _cache[wordBookId];
@@ -54,7 +54,7 @@ class WordRepository {
       return words;
     }
 
-    // 自建词库：Hive 动态数据，每次读取保证最新（doc 48 / 49）
+    // 自建词库：Hive 动态数据，每次读取保证最新
     if (await _customWordBookRepository.exists(wordBookId)) {
       return _customWordRepository.toWords(wordBookId);
     }

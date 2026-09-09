@@ -10,7 +10,7 @@ import '../state/custom_word_management_state.dart';
 
 /// 自建词库管理控制器 Provider。
 ///
-/// 非 autoDispose：管理页与表单页共享同一实例（doc 65），
+/// 非 autoDispose：管理页与表单页共享同一实例，
 /// 表单页 create/rename/delete 后管理页 watch 的 State 自动刷新，
 /// 避免"返回后仍是旧列表"。
 final customWordBookManagementControllerProvider =
@@ -24,7 +24,7 @@ final customWordBookManagementControllerProvider =
       );
     });
 
-/// 自建单词管理控制器 Provider（doc 64）。
+/// 自建单词管理控制器 Provider。
 ///
 /// autoDispose.family(wordBookId)：按词库隔离，离开详情页自动销毁，
 /// 避免跨词库状态串扰（与词库管理控制器全局共享不同）。

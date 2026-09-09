@@ -5,7 +5,11 @@ import '../../../components/loading_view.dart';
 import '../../../components/error_view.dart';
 import '../providers/multiple_choice_providers.dart';
 import '../state/multiple_choice_state.dart';
-import '../widgets/option_button.dart';
+import '../widgets/multiple_choice_complete_view.dart';
+import '../widgets/multiple_choice_empty_view.dart';
+import '../widgets/multiple_choice_option_list.dart';
+import '../widgets/multiple_choice_progress_header.dart';
+import '../widgets/multiple_choice_question_card.dart';
 import '../../home/providers/home_providers.dart';
 import '../../word_book_selection/providers/current_word_book_providers.dart';
 
@@ -41,223 +45,6 @@ class _MultipleChoicePageState extends ConsumerState<MultipleChoicePage> {
         )
         .loadData();
     Navigator.of(context).pop();
-  }
-
-  /// 构建空状态。
-  ///
-  /// [message] 非空表示词库太小无法生成四选一（doc 52），
-  /// 直接给出明确提示，不显示"暂无复习词"误导用户。
-  Widget _buildEmpty({String? message}) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            message == null ? Icons.check_circle_outline : Icons.info_outline,
-            size: 64,
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            message ?? '暂无需要复习的单词',
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 18, color: Colors.grey),
-          ),
-          const SizedBox(height: 8),
-          if (message == null)
-            const Text(
-              '完成日常学习后再来测试吧',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-          const SizedBox(height: 24),
-          ElevatedButton(onPressed: _onPop, child: const Text('返回首页')),
-        ],
-      ),
-    );
-  }
-
-  /// 构建完成视图
-  Widget _buildComplete(MultipleChoiceState state) {
-    final total = state.correctCount + state.wrongCount;
-    final accuracy = total > 0 ? (state.correctCount / total * 100).round() : 0;
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.check_circle, size: 64, color: Colors.green),
-          const SizedBox(height: 16),
-          const Text(
-            '答题完成！',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 24),
-          // 统计
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildStat('正确', state.correctCount, Colors.green),
-              const SizedBox(width: 24),
-              _buildStat('错误', state.wrongCount, Colors.red),
-              const SizedBox(width: 24),
-              _buildStat('正确率', accuracy, Colors.blue, suffix: '%'),
-            ],
-          ),
-          const SizedBox(height: 32),
-          ElevatedButton(onPressed: _onPop, child: const Text('返回首页')),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStat(String label, int value, Color color, {String? suffix}) {
-    return Column(
-      children: [
-        Text(
-          '$value${suffix ?? ''}',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(label, style: const TextStyle(fontSize: 14, color: Colors.grey)),
-      ],
-    );
-  }
-
-  /// 构建进度条
-  Widget _buildProgress(MultipleChoiceState state) {
-    final total = state.questions.length;
-    final current = state.currentIndex + 1;
-    final progress = total > 0 ? state.currentIndex / total : 0.0;
-
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '$current / $total',
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-            Row(
-              children: [
-                Icon(Icons.check, size: 16, color: Colors.green.shade600),
-                const SizedBox(width: 4),
-                Text(
-                  '${state.correctCount}',
-                  style: TextStyle(color: Colors.green.shade600),
-                ),
-                const SizedBox(width: 12),
-                Icon(Icons.close, size: 16, color: Colors.red.shade600),
-                const SizedBox(width: 4),
-                Text(
-                  '${state.wrongCount}',
-                  style: TextStyle(color: Colors.red.shade600),
-                ),
-              ],
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Container(
-          height: 6,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(3),
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          ),
-          child: TweenAnimationBuilder<double>(
-            tween: Tween<double>(
-              begin: progress,
-              end: total > 0 ? current / total : 0,
-            ),
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-            builder: (context, value, child) {
-              return FractionallySizedBox(
-                widthFactor: value,
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(3),
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// 构建题目卡片（英文单词 + 音标，不显示释义）
-  Widget _buildQuestionCard(MultipleChoiceState state) {
-    final word = state.currentQuestion!.correctWord;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            const Text(
-              '选择正确的释义',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              word.word,
-              style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              word.phonetic,
-              style: TextStyle(
-                fontSize: 18,
-                fontStyle: FontStyle.italic,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// 构建选项列表
-  Widget _buildOptions(MultipleChoiceState state) {
-    final question = state.currentQuestion!;
-
-    return Column(
-      children: question.options.asMap().entries.map((entry) {
-        final index = entry.key;
-        final optionText = entry.value;
-        final isCorrect = index == question.correctIndex;
-        final isSelected = state.selectedIndex == index;
-
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: OptionButton(
-            text: optionText,
-            index: index,
-            isCorrect: isCorrect,
-            isSelected: isSelected,
-            hasAnswered: state.hasAnswered,
-            onTap: () => ref
-                .read(
-                  multipleChoiceControllerProvider(widget.wordBookId).notifier,
-                )
-                .selectOption(index),
-          ),
-        );
-      }).toList(),
-    );
   }
 
   @override
@@ -318,24 +105,48 @@ class _MultipleChoicePageState extends ConsumerState<MultipleChoicePage> {
                     .startQuiz(widget.wordBookId),
               )
             : state.questions.isEmpty
-            ? _buildEmpty(message: state.errorMessage)
+            ? MultipleChoiceEmptyView(
+                message: state.errorMessage,
+                onBack: _onPop,
+              )
             : state.isCompleted
-            ? _buildComplete(state)
+            ? MultipleChoiceCompleteView(
+                correctCount: state.correctCount,
+                wrongCount: state.wrongCount,
+                onBack: _onPop,
+              )
             : _buildContent(state),
       ),
     );
   }
 
   Widget _buildContent(MultipleChoiceState state) {
+    final question = state.currentQuestion!;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          _buildProgress(state),
+          MultipleChoiceProgressHeader(
+            currentIndex: state.currentIndex,
+            total: state.questions.length,
+            correctCount: state.correctCount,
+            wrongCount: state.wrongCount,
+          ),
           const SizedBox(height: 24),
-          _buildQuestionCard(state),
+          MultipleChoiceQuestionCard(word: question.correctWord),
           const SizedBox(height: 24),
-          _buildOptions(state),
+          MultipleChoiceOptionList(
+            options: question.options,
+            correctIndex: question.correctIndex,
+            selectedIndex: state.selectedIndex,
+            hasAnswered: state.hasAnswered,
+            onSelect: (index) => ref
+                .read(
+                  multipleChoiceControllerProvider(widget.wordBookId).notifier,
+                )
+                .selectOption(index),
+          ),
           const SizedBox(height: 16),
           // "下一题"按钮（约束 19：不自动跳转）
           if (state.hasAnswered)

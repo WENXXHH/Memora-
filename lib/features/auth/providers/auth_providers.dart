@@ -1,7 +1,7 @@
 /// 认证相关 Riverpod Provider。
 ///
-/// 由于 AuthRemoteDataSource / AuthRepository 依赖 Dio（来自 Riverpod dioProvider，
-/// 而非 getIt），不使用 @injectable，改由本文件手动组装依赖链。
+/// 由于 AuthRemoteDataSource / AuthRepository 依赖 Dio（来自 Riverpod dioProvider，而非 getIt），
+/// 不使用 @injectable，改由本文件手动组装依赖链。
 library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +10,7 @@ import 'package:hive_ce/hive_ce.dart';
 import '../../../core/storage/hive_initializer.dart';
 import '../../../core/storage/token_storage.dart';
 import '../../../data/repositories/auth_repository.dart';
+import '../../../data/services/user_data_space_service.dart';
 import '../../../data/sources/auth_remote_data_source.dart';
 import '../../../providers/network_providers.dart';
 import '../../../providers/repository_providers.dart';
@@ -51,9 +52,11 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 /// 在构造时向 [UnauthorizedController] 注册监听，接收 401 事件。
 final authControllerProvider =
     StateNotifierProvider<AuthController, AuthState>((ref) {
+      final getIt = ref.read(getItProvider);
       final authRepository = ref.read(authRepositoryProvider);
+      final userDataSpace = getIt.get<UserDataSpaceService>();
       final unauthorizedController = ref.read(unauthorizedControllerProvider);
-      final controller = AuthController(authRepository);
+      final controller = AuthController(authRepository, userDataSpace);
 
       // 注册 401 事件监听：AuthInterceptor → UnauthorizedController → AuthController
       unauthorizedController.addListener(controller.handleUnauthorized);

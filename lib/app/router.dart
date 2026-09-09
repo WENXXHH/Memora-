@@ -23,13 +23,13 @@ import '../features/custom_word_book/pages/custom_word_book_detail_page.dart';
 import '../features/custom_word_book/pages/custom_word_form_page.dart';
 import '../components/bottom_navigation_shell.dart';
 import '../domain/enums/learning_enums.dart';
-import '../data/dto/word_model.dart';
+import '../domain/models/word_model.dart';
 
 /// 路由配置 Provider。
 ///
 /// 使用 StatefulShellRoute 实现底部 Tab 导航，支持页面状态保持。
-/// 集成路由守卫（§3.5 splash + redirect 模式）：
-/// - unknown/checking → /splash（避免未登录用户看到首页一瞬）
+/// 集成路由守卫：
+/// - unknown/checking → /splash
 /// - unauthenticated → /login
 /// - authenticated + 在登录页 → /home
 ///
@@ -69,6 +69,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           // 注册成功后状态回到 unauthenticated，自动跳到登录页
           return '/login';
 
+        case AuthStatus.guest:
+          // 游客：放行所有业务路由（离线使用核心功能）
+          // 同时允许进入登录/注册页，方便升级为正式账号
+          // splash 是会话恢复页，游客无需经过，直接回首页
+          if (matchedLocation == isSplashRoute) return '/home';
+          return null;
+
         case AuthStatus.authenticated:
           // 已认证：在登录/注册/splash 页则跳回首页
           if (isAuthRoute || matchedLocation == '/splash') {
@@ -107,7 +114,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const RegisterPage(),
       ),
 
-      /// 单词详情页（全屏覆盖，无底部导航）
+      /// 单词详情页
       GoRoute(
         path: '/detail',
         name: 'detail',
@@ -117,7 +124,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      /// 学习页（全屏覆盖，无底部导航）
+      /// 学习页
       GoRoute(
         path: '/learning',
         name: 'learning',
@@ -130,8 +137,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      /// 选择题复习页（全屏覆盖，无底部导航）
-      /// §5.3：独立 GoRoute，不混入底部 Tab
+      /// 选择题复习页
       GoRoute(
         path: '/choice',
         name: 'choice',
@@ -141,8 +147,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      /// 听音辨词复习页（全屏覆盖，无底部导航）
-      /// 独立 GoRoute，与选择题同级；复用同一套 SM-2 + Hive
+      /// 听音辨词复习页
       GoRoute(
         path: '/listening-quiz',
         name: 'listening-quiz',
@@ -152,8 +157,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      /// 拼写复习页（全屏覆盖，无底部导航）
-      /// 独立 GoRoute，与选择题 / 听音辨词同级；复用同一套 SM-2 + Hive
+      /// 拼写复习页
       GoRoute(
         path: '/spelling-quiz',
         name: 'spelling-quiz',
@@ -163,16 +167,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      /// 词库选择页（全屏覆盖，无底部导航）
-      /// 列表从内置词库 Catalog 渲染，切换后 SnackBar + 返回
+      /// 词库选择页
       GoRoute(
         path: '/word-books',
         name: 'word-books',
         builder: (context, state) => const WordBookSelectionPage(),
       ),
 
-      /// 自建词库管理页（全屏覆盖，无底部导航）
-      /// 从词库选择页右上角进入，负责自建词库的创建/重命名/删除
+      /// 自建词库管理页
       GoRoute(
         path: '/word-books/manage',
         name: 'word-books-manage',
@@ -180,7 +182,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
 
       /// 自建词库创建 / 重命名表单页
-      /// 无 id 参数 → 新建；带 id → 重命名（doc 39）
       GoRoute(
         path: '/word-books/form',
         name: 'word-books-form',
@@ -190,7 +191,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      /// 自建词库详情页（单词管理，doc 39 / 64）
+      /// 自建词库详情页
       GoRoute(
         path: '/word-books/detail',
         name: 'word-books-detail',
@@ -200,7 +201,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      /// 自建单词新增 / 编辑表单页（doc 42 / 43）
+      /// 自建单词新增 / 编辑表单页
       /// wordId 为空 → 新增；否则 → 编辑
       GoRoute(
         path: '/word-books/word-form',
@@ -212,7 +213,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      /// 词库页（全屏覆盖，无底部导航）
+      /// 词库页
       GoRoute(
         path: '/vocabulary',
         name: 'vocabulary',

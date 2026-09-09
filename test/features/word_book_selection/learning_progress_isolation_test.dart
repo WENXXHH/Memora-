@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memora/core/utils/question_generator.dart';
-import 'package:memora/data/dto/word_model.dart';
-import 'package:memora/data/dto/word_review_model.dart';
+import 'package:memora/domain/models/word_model.dart';
+import 'package:memora/domain/models/word_review_model.dart';
 import 'package:memora/data/repositories/review_repository.dart';
 import 'package:memora/data/repositories/word_repository.dart';
 import 'package:memora/domain/enums/learning_enums.dart';
@@ -11,14 +11,14 @@ import 'package:memora/domain/use_cases/apply_review_feedback_use_case.dart';
 import 'package:memora/features/multiple_choice/controller/multiple_choice_controller.dart';
 import 'package:memora/features/spelling_quiz/controller/spelling_quiz_controller.dart';
 
-/// 多词库学习进度隔离测试（doc 49 / 50 / 51 / 62 学习进度）。
+/// 多词库学习进度隔离测试。
 ///
-/// 1. Review 隔离（doc 50）：相同 wordId 在不同词库下是两条独立记录，
+/// 1. Review 隔离：相同 wordId 在不同词库下是两条独立记录，
 ///    真实 [ApplyReviewFeedbackUseCase] 更新 CET-4 不影响 CET-6。
-/// 2. Quiz 词库传递（doc 51）：拼写 / 选择题控制器向 UseCase 传递的
+/// 2. Quiz 词库传递：拼写 / 选择题控制器向 UseCase 传递的
 ///    wordBookId 与当前词库一致，不存在串库。
 void main() {
-  group('Review 按 wordBookId 隔离（doc 49 / 50）', () {
+  group('Review 按 wordBookId 隔离', () {
     test('cet6:1 与 cet4:1 是两条独立记录，反馈不同互不影响', () async {
       final reviewRepo = _IsolatedReviewRepository();
       final useCase = ApplyReviewFeedbackUseCase(reviewRepo);
@@ -78,7 +78,7 @@ void main() {
       expect(cet6After.repetitionCount, cet6Before.repetitionCount);
     });
 
-    test('custom_a:1 与 custom_b:1 独立演进（doc 75）', () async {
+    test('custom_a:1 与 custom_b:1 独立演进', () async {
       final reviewRepo = _IsolatedReviewRepository();
       final useCase = ApplyReviewFeedbackUseCase(reviewRepo);
 
@@ -104,7 +104,7 @@ void main() {
       expect(a.mastery, isNot(b.mastery));
     });
 
-    test('更新 custom_b:1 不改变 custom_a:1（doc 75）', () async {
+    test('更新 custom_b:1 不改变 custom_a:1', () async {
       final reviewRepo = _IsolatedReviewRepository();
       final useCase = ApplyReviewFeedbackUseCase(reviewRepo);
 
@@ -137,7 +137,7 @@ void main() {
     });
   });
 
-  group('Quiz 提交传递当前词库（doc 51）', () {
+  group('Quiz 提交传递当前词库', () {
     test('拼写复习 cet4 提交 → UseCase 收到 cet4', () async {
       final words = _makeWords('cet4');
       final reviewRepo = _IsolatedReviewRepository()
@@ -238,6 +238,9 @@ class _IsolatedReviewRepository implements ReviewRepository {
           );
     }).toList();
   }
+
+  @override
+  Future<List<WordReview>> getRecentLearned(String wordBookId) async => [];
 
   @override
   Future<int> getLearnedCount(String wordBookId) async => 0;

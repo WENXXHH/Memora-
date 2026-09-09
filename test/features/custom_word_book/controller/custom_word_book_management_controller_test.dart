@@ -1,22 +1,22 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:memora/data/dto/custom_word_book_model.dart';
-import 'package:memora/data/dto/custom_word_record_model.dart';
-import 'package:memora/data/dto/word_model.dart';
-import 'package:memora/data/dto/word_review_model.dart';
+import 'package:memora/domain/models/custom_word_book_model.dart';
+import 'package:memora/domain/models/custom_word_record_model.dart';
+import 'package:memora/domain/models/word_model.dart';
+import 'package:memora/domain/models/word_review_model.dart';
 import 'package:memora/data/repositories/custom_word_book_repository.dart';
 import 'package:memora/data/repositories/custom_word_repository.dart';
 import 'package:memora/data/repositories/review_repository.dart';
 import 'package:memora/domain/use_cases/delete_custom_word_book_use_case.dart';
 import 'package:memora/features/custom_word_book/controller/custom_word_book_management_controller.dart';
 
-/// CustomWordBookManagementController 单元测试（doc 63 / 13 / 14）。
+/// CustomWordBookManagementController 单元测试。
 ///
 /// 覆盖：
 /// 1. load → state.wordBooks
 /// 2. create 成功（trim 后存储）/ 空名 / 超长 / 与内置重名 / 自建重名
 /// 3. rename 成功（排除自身）/ 校验
-/// 4. delete → 级联调用 UseCase（Book + Words + Reviews，doc 61）
-/// 5. 内置词库禁止删除 → false + errorMessage（doc 18）
+/// 4. delete → 级联调用 UseCase
+/// 5. 内置词库禁止删除 → false + errorMessage
 void main() {
   late _FakeCustomWordBookRepository bookRepo;
   late _FakeCustomWordRepository wordRepo;
@@ -32,7 +32,7 @@ void main() {
     controller = CustomWordBookManagementController(bookRepo, deleteUseCase);
   });
 
-  group('load（doc 63）', () {
+  group('load', () {
     test('加载全部自建词库', () async {
       bookRepo.books.add(_book('custom_a', '考研词库'));
       bookRepo.books.add(_book('custom_b', '高频错词'));
@@ -45,7 +45,7 @@ void main() {
     });
   });
 
-  group('create（doc 13 / 14）', () {
+  group('create', () {
     test('成功 → 返回新词库并刷新列表', () async {
       final book = await controller.create(' 考研词库 ');
 
@@ -70,7 +70,7 @@ void main() {
       expect(controller.state.errorMessage, '词库名称不能超过 30 个字符');
     });
 
-    test('与内置词库重名 → null + errorMessage（doc 14）', () async {
+    test('与内置词库重名 → null + errorMessage', () async {
       final book = await controller.create('CET-6');
 
       expect(book, isNull);
@@ -87,18 +87,18 @@ void main() {
     });
   });
 
-  group('rename（doc 13 / 79）', () {
+  group('rename', () {
     test('成功 → 返回更新后词库，id 不变', () async {
       final created = await controller.create('考研词库');
 
       final renamed = await controller.rename(created!.id, '高频错词');
 
       expect(renamed, isNotNull);
-      expect(renamed!.id, created.id, reason: '词库 ID 不随重命名变化（doc 5）');
+      expect(renamed!.id, created.id, reason: '词库 ID 不随重命名变化');
       expect(renamed.name, '高频错词');
     });
 
-    test('重命名为自身当前名称 → 成功（排除自身，doc 13）', () async {
+    test('重命名为自身当前名称 → 成功', () async {
       final created = await controller.create('考研词库');
 
       final renamed = await controller.rename(created!.id, '考研词库');
@@ -108,7 +108,7 @@ void main() {
     });
   });
 
-  group('delete（doc 61 / 18）', () {
+  group('delete', () {
     test('删除自建词库 → 级联删除 Words + Reviews + Book', () async {
       final created = await controller.create('考研词库');
 
@@ -121,7 +121,7 @@ void main() {
       expect(controller.state.errorMessage, isNull);
     });
 
-    test('内置词库禁止删除 → false + errorMessage（doc 18）', () async {
+    test('内置词库禁止删除 → false + errorMessage', () async {
       final ok = await controller.delete('cet6');
 
       expect(ok, isFalse);
@@ -259,6 +259,9 @@ class _FakeReviewRepository implements ReviewRepository {
 
   @override
   Future<List<WordReview>> getDueReviews(String wordBookId) async => [];
+
+  @override
+  Future<List<WordReview>> getRecentLearned(String wordBookId) async => [];
 
   @override
   Future<int> getLearnedCount(String wordBookId) async => 0;

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:memora/data/dto/multiple_choice_question.dart';
-import 'package:memora/data/dto/word_model.dart';
+import 'package:memora/domain/models/multiple_choice_question.dart';
+import 'package:memora/domain/models/word_model.dart';
 import 'package:memora/features/listening_quiz/state/listening_quiz_state.dart';
 
 /// ListeningQuizState copyWith sentinel 模式测试。
@@ -201,7 +201,7 @@ void main() {
     });
   });
 
-  group('ListeningQuizState — 音频错误不变量（doc 30）', () {
+  group('ListeningQuizState — 音频错误不变量', () {
     test('音频错误：hasAudioError == true && audioErrorMessage != null', () {
       final errored = baseState.copyWith(
         hasAudioError: true,

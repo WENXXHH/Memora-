@@ -3,15 +3,15 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memora/core/services/listening_audio/fake_listening_audio_service.dart';
 import 'package:memora/core/utils/question_generator.dart';
-import 'package:memora/data/dto/word_model.dart';
-import 'package:memora/data/dto/word_review_model.dart';
+import 'package:memora/domain/models/word_model.dart';
+import 'package:memora/domain/models/word_review_model.dart';
 import 'package:memora/data/repositories/review_repository.dart';
 import 'package:memora/data/repositories/word_repository.dart';
 import 'package:memora/domain/enums/learning_enums.dart';
 import 'package:memora/domain/use_cases/apply_review_feedback_use_case.dart';
 import 'package:memora/features/listening_quiz/controller/listening_quiz_controller.dart';
 
-/// ListeningQuizController 单元测试（doc 32 全部 12 项）。
+/// ListeningQuizController 单元测试。
 ///
 /// 测试覆盖：
 /// 1. startQuiz 能产生第一题
@@ -74,7 +74,7 @@ void main() {
     );
   });
 
-  group('startQuiz — 加载题目 + 播放（doc 32 #1, #2）', () {
+  group('startQuiz — 加载题目 + 播放', () {
     test('#1 startQuiz 能产生第一题', () async {
       for (final w in testWords) {
         reviewRepo.addDueReview(w.id);
@@ -113,9 +113,51 @@ void main() {
       expect(audioService.playCalls, isEmpty);
       expect(controller.state.errorMessage, isNull);
     });
+
+    test('到期空但有已学词 → 回退巩固练习，生成题目并播放第一题', () async {
+      reviewRepo.addRecentLearned('w1');
+      reviewRepo.addRecentLearned('w2');
+      reviewRepo.addRecentLearned('w3');
+      reviewRepo.addRecentLearned('w4');
+
+      await controller.startQuiz('test');
+
+      expect(controller.state.questions, isNotEmpty);
+      expect(controller.state.isCompleted, false);
+      expect(controller.state.errorMessage, isNull);
+      // 巩固练习同样自动播放第一题
+      final firstWord = controller.state.currentQuestion!.correctWord.word;
+      expect(audioService.playCalls, [firstWord]);
+    });
+
+    test('巩固练习按上次复习时间倒序（第一题播最近复习的词）', () async {
+      final base = DateTime(2026, 9, 1);
+      reviewRepo.addRecentLearned('w1', lastReviewed: base);
+      reviewRepo.addRecentLearned(
+        'w2',
+        lastReviewed: base.add(const Duration(days: 1)),
+      );
+      reviewRepo.addRecentLearned(
+        'w3',
+        lastReviewed: base.add(const Duration(days: 2)),
+      );
+      reviewRepo.addRecentLearned(
+        'w4',
+        lastReviewed: base.add(const Duration(days: 3)),
+      );
+      reviewRepo.addRecentLearned(
+        'w5',
+        lastReviewed: base.add(const Duration(days: 4)),
+      );
+
+      await controller.startQuiz('test');
+
+      expect(controller.state.questions.first.correctWord.id, 'w5');
+      expect(audioService.lastPlayedWord, 'eager');
+    });
   });
 
-  group('词库太小边界（doc 53）', () {
+  group('词库太小边界', () {
     test('唯一释义 < 4 → 空队列 + 明确提示 + 不播放', () async {
       // 3 个不同释义：无法生成"1 正确 + 3 干扰"
       final smallWords = [
@@ -167,7 +209,7 @@ void main() {
     });
   });
 
-  group('replay — 重播（doc 32 #3, #4）', () {
+  group('replay — 重播', () {
     setUp(() async {
       for (final w in testWords) {
         reviewRepo.addDueReview(w.id);
@@ -208,7 +250,7 @@ void main() {
     });
   });
 
-  group('selectOption — 作答 + SM-2 映射（doc 32 #5, #6, #7, #8）', () {
+  group('selectOption — 作答 + SM-2 映射', () {
     setUp(() async {
       for (final w in testWords) {
         reviewRepo.addDueReview(w.id);
@@ -261,7 +303,7 @@ void main() {
     });
   });
 
-  group('nextQuestion — 推进 + 自动播放（doc 32 #9, #10）', () {
+  group('nextQuestion — 推进 + 自动播放', () {
     setUp(() async {
       for (final w in testWords) {
         reviewRepo.addDueReview(w.id);
@@ -315,11 +357,11 @@ void main() {
 
       expect(controller.state.isCompleted, true);
       expect(controller.state.currentQuestion, isNull);
-      // 完成时也调用 stop（doc 31 末态停止音频）
+      // 完成时也调用 stop
       expect(audioService.stopCalls, greaterThanOrEqualTo(1));
     });
 
-    test('nextQuestion 不调用 UseCase（与选择题 Bug 10 一致）', () async {
+    test('nextQuestion 不调用 UseCase', () async {
       final correctIndex = controller.state.currentQuestion!.correctIndex;
       await controller.selectOption(correctIndex);
       useCase.callCount = 0;
@@ -330,7 +372,7 @@ void main() {
     });
   });
 
-  group('音频错误隔离（doc 32 #11 / doc 30 / Bug 11）', () {
+  group('音频错误隔离', () {
     setUp(() async {
       for (final w in testWords) {
         reviewRepo.addDueReview(w.id);
@@ -371,7 +413,7 @@ void main() {
     });
   });
 
-  group('dispose — 停止音频（doc 32 #12 / doc 31）', () {
+  group('dispose — 停止音频', () {
     test('#12 dispose 停止音频', () async {
       for (final w in testWords) {
         reviewRepo.addDueReview(w.id);
@@ -413,9 +455,28 @@ class FakeWordRepository implements WordRepository {
 class FakeReviewRepository implements ReviewRepository {
   final Set<String> _dueWordIds = {};
   final Map<String, WordReview> _store = {};
+  final List<WordReview> _recentLearned = [];
 
   void addDueReview(String wordId) {
     _dueWordIds.add(wordId);
+  }
+
+  /// 添加一条"已学未到期"的巩固练习记录。
+  /// [lastReviewed] 可指定，用于验证"最近复习优先"的排序。
+  void addRecentLearned(String wordId, {DateTime? lastReviewed}) {
+    _recentLearned.add(
+      WordReview(
+        wordId: wordId,
+        wordBookId: 'test',
+        repetitionCount: 2,
+        easinessFactor: 2.5,
+        interval: 10,
+        nextReviewDate: DateTime.now().add(const Duration(days: 10)),
+        lastReviewDate: lastReviewed ?? DateTime.now(),
+        learned: true,
+        mastery: 0.5,
+      ),
+    );
   }
 
   @override
@@ -445,6 +506,13 @@ class FakeReviewRepository implements ReviewRepository {
             mastery: 0.0,
           );
     }).toList();
+  }
+
+  @override
+  Future<List<WordReview>> getRecentLearned(String wordBookId) async {
+    final list = [..._recentLearned]
+      ..sort((a, b) => b.lastReviewDate!.compareTo(a.lastReviewDate!));
+    return list;
   }
 
   @override
