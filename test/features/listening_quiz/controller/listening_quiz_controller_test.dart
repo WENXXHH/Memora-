@@ -113,6 +113,48 @@ void main() {
       expect(audioService.playCalls, isEmpty);
       expect(controller.state.errorMessage, isNull);
     });
+
+    test('到期空但有已学词 → 回退巩固练习，生成题目并播放第一题', () async {
+      reviewRepo.addRecentLearned('w1');
+      reviewRepo.addRecentLearned('w2');
+      reviewRepo.addRecentLearned('w3');
+      reviewRepo.addRecentLearned('w4');
+
+      await controller.startQuiz('test');
+
+      expect(controller.state.questions, isNotEmpty);
+      expect(controller.state.isCompleted, false);
+      expect(controller.state.errorMessage, isNull);
+      // 巩固练习同样自动播放第一题
+      final firstWord = controller.state.currentQuestion!.correctWord.word;
+      expect(audioService.playCalls, [firstWord]);
+    });
+
+    test('巩固练习按上次复习时间倒序（第一题播最近复习的词）', () async {
+      final base = DateTime(2026, 9, 1);
+      reviewRepo.addRecentLearned('w1', lastReviewed: base);
+      reviewRepo.addRecentLearned(
+        'w2',
+        lastReviewed: base.add(const Duration(days: 1)),
+      );
+      reviewRepo.addRecentLearned(
+        'w3',
+        lastReviewed: base.add(const Duration(days: 2)),
+      );
+      reviewRepo.addRecentLearned(
+        'w4',
+        lastReviewed: base.add(const Duration(days: 3)),
+      );
+      reviewRepo.addRecentLearned(
+        'w5',
+        lastReviewed: base.add(const Duration(days: 4)),
+      );
+
+      await controller.startQuiz('test');
+
+      expect(controller.state.questions.first.correctWord.id, 'w5');
+      expect(audioService.lastPlayedWord, 'eager');
+    });
   });
 
   group('词库太小边界', () {
@@ -413,9 +455,28 @@ class FakeWordRepository implements WordRepository {
 class FakeReviewRepository implements ReviewRepository {
   final Set<String> _dueWordIds = {};
   final Map<String, WordReview> _store = {};
+  final List<WordReview> _recentLearned = [];
 
   void addDueReview(String wordId) {
     _dueWordIds.add(wordId);
+  }
+
+  /// 添加一条"已学未到期"的巩固练习记录。
+  /// [lastReviewed] 可指定，用于验证"最近复习优先"的排序。
+  void addRecentLearned(String wordId, {DateTime? lastReviewed}) {
+    _recentLearned.add(
+      WordReview(
+        wordId: wordId,
+        wordBookId: 'test',
+        repetitionCount: 2,
+        easinessFactor: 2.5,
+        interval: 10,
+        nextReviewDate: DateTime.now().add(const Duration(days: 10)),
+        lastReviewDate: lastReviewed ?? DateTime.now(),
+        learned: true,
+        mastery: 0.5,
+      ),
+    );
   }
 
   @override
@@ -445,6 +506,13 @@ class FakeReviewRepository implements ReviewRepository {
             mastery: 0.0,
           );
     }).toList();
+  }
+
+  @override
+  Future<List<WordReview>> getRecentLearned(String wordBookId) async {
+    final list = [..._recentLearned]
+      ..sort((a, b) => b.lastReviewDate!.compareTo(a.lastReviewDate!));
+    return list;
   }
 
   @override

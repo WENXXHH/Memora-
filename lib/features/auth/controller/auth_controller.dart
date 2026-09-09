@@ -2,18 +2,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/network_exception.dart';
 import '../../../data/repositories/auth_repository.dart';
+import '../../../data/services/user_data_space_service.dart';
 import '../state/auth_state.dart';
 
 /// 认证状态控制器。
 ///
 /// 职责：
-/// 1. 管理 [AuthState] 6 态机
+/// 1. 管理 [AuthState] 7 态机
 /// 2. 调用 [AuthRepository] 执行登录/注册/登出/恢复会话
 /// 3. 区分"密码错误"与"网络错误"——前者设为 error 态，后者保留 Token
+/// 4. 认证态变化时同步切换本地数据所有者空间（见 [UserDataSpaceService]），
+///    保证游客 / 各账号的复习数据互不可见
 class AuthController extends StateNotifier<AuthState> {
-  AuthController(this._authRepository) : super(const AuthState.unknown());
+  AuthController(this._authRepository, this._userDataSpace)
+    : super(const AuthState.unknown());
 
   final AuthRepository _authRepository;
+  final UserDataSpaceService _userDataSpace;
 
   /// 启动时恢复会话。
   ///
@@ -29,6 +34,8 @@ class AuthController extends StateNotifier<AuthState> {
       final result = await _authRepository.restoreSession();
 
       if (result.isValid && result.user != null) {
+        // 恢复成功：对齐数据所有者空间（幂等，guest 空间为空时是 no-op）
+        await _userDataSpace.switchToUser(result.user!.id.toString());
         state = AuthState.authenticated(result.user!);
       } else {
         // noToken 或 invalidToken → 都需要登录
@@ -42,8 +49,6 @@ class AuthController extends StateNotifier<AuthState> {
   }
 
   /// 登录。
-  ///
-  /// 成功 → authenticated；密码错误 → error。
   Future<void> login({
     required String username,
     required String password,
@@ -58,6 +63,10 @@ class AuthController extends StateNotifier<AuthState> {
         username: username,
         password: password,
       );
+      // 先把 guest 空间学习成果迁入该用户空间并切换 owner，
+      // 再置 authenticated（AppBootstrap 会在 authenticated 边沿触发同步，
+      // 此时必须已读到切换后的空间）
+      await _userDataSpace.switchToUser(user.id.toString());
       state = AuthState.authenticated(user);
     } on NetworkException catch (e) {
       // 登录接口的 401 是「密码错误」，不是「Token 过期」
@@ -96,10 +105,12 @@ class AuthController extends StateNotifier<AuthState> {
 
   /// 登出。
   ///
-  /// 清除本地 Token，状态回到 unauthenticated。
+  /// 清除本地 Token，数据所有者空间切回 guest（该账号数据保留在
+  /// 自己的命名空间里，重新登录自动恢复），状态回到 unauthenticated。
   /// 路由守卫自动重定向到 /login。
   Future<void> logout() async {
     await _authRepository.logout();
+    await _userDataSpace.switchToGuest();
     state = const AuthState.unauthenticated();
   }
 
@@ -124,7 +135,9 @@ class AuthController extends StateNotifier<AuthState> {
   /// 由登录页「游客模式」入口调用：跳过登录，直接进入主界面。
   /// 游客可使用全部离线学习功能（本地 Hive 持久化），
   /// 但登录 / 云同步仍需要正式账号。
-  void enterGuestMode() {
+  /// 数据所有者空间切回 guest（幂等）。
+  Future<void> enterGuestMode() async {
+    await _userDataSpace.switchToGuest();
     state = const AuthState.guest();
   }
 }

@@ -322,6 +322,9 @@ class _FakeReviewRepository implements ReviewRepository {
   Future<List<WordReview>> getDueReviews(String wordBookId) async => [];
 
   @override
+  Future<List<WordReview>> getRecentLearned(String wordBookId) async => [];
+
+  @override
   Future<int> getLearnedCount(String wordBookId) async => 0;
 
   @override

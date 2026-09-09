@@ -240,6 +240,9 @@ class _IsolatedReviewRepository implements ReviewRepository {
   }
 
   @override
+  Future<List<WordReview>> getRecentLearned(String wordBookId) async => [];
+
+  @override
   Future<int> getLearnedCount(String wordBookId) async => 0;
 
   @override

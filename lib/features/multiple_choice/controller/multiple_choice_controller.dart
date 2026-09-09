@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/utils/question_generator.dart';
 import '../../../domain/models/multiple_choice_question.dart';
+import '../../../domain/models/word_model.dart';
 import '../../../data/repositories/review_repository.dart';
 import '../../../data/repositories/word_repository.dart';
 import '../../../domain/enums/learning_enums.dart';
@@ -60,7 +61,8 @@ class MultipleChoiceController extends StateNotifier<MultipleChoiceState> {
   /// 启动选择题会话。
   ///
   /// 流程：
-  /// 1. 获取今日到期复习词（题目来源）
+  /// 1. 获取今日到期复习词（题目来源）；到期队列为空时回退到
+  ///    "已学未到期"的词（最近复习优先）作为巩固练习
   /// 2. 获取词库全部单词（干扰项来源）
   /// 3. 为每个复习词生成一道题（过滤不足 4 个释义的词）
   /// 4. 最多取 [_maxQuestions] 道题
@@ -69,22 +71,29 @@ class MultipleChoiceController extends StateNotifier<MultipleChoiceState> {
     state = state.copyWith(isLoading: true, hasError: false);
 
     try {
-      // 题目来源：今日到期复习词
-      final dueReviews = await _reviewRepository.getDueReviews(wordBookId);
-      final dueWordIds = dueReviews.map((r) => r.wordId).toSet();
+      // 题目来源：优先今日到期复习词；到期队列为空时回退到已学未到期的
+      // 巩固练习词（按上次复习时间最近优先），保证复习做完后仍有词可练。
+      var practiceReviews = await _reviewRepository.getDueReviews(wordBookId);
+      if (practiceReviews.isEmpty) {
+        practiceReviews =
+            await _reviewRepository.getRecentLearned(wordBookId);
+      }
 
       // 干扰项来源：当前词库全部单词
       final allWords = await _wordRepository.getWords(wordBookId);
 
-      // 筛选待复习的单词（保持顺序）
-      final dueWords = allWords
-          .where((w) => dueWordIds.contains(w.id))
+      // 按复习记录顺序解析待练单词（到期顺序 / 巩固模式的最近复习顺序），
+      // 跳过词库中已不存在的孤儿记录，最多取 _maxQuestions 个。
+      final wordById = {for (final w in allWords) w.id: w};
+      final practiceWords = practiceReviews
+          .map((r) => wordById[r.wordId])
+          .whereType<Word>()
           .take(_maxQuestions)
           .toList();
 
       // 为每个待复习词生成题目
       final questions = <MultipleChoiceQuestion>[];
-      for (final word in dueWords) {
+      for (final word in practiceWords) {
         final question = _questionGenerator.build(
           correctWord: word,
           allWords: allWords,

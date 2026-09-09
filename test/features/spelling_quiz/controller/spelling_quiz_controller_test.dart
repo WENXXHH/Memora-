@@ -121,6 +121,37 @@ void main() {
       expect(controller.state.hasError, true);
       expect(controller.state.errorMessage, isNotNull);
     });
+
+    test('到期空但有已学词 → 回退巩固练习，正常加载单词', () async {
+      reviewRepo.addRecentLearned('w1');
+      reviewRepo.addRecentLearned('w2');
+      reviewRepo.addRecentLearned('w3');
+
+      await controller.startQuiz('test');
+
+      expect(controller.state.isLoading, false);
+      expect(controller.state.words, isNotEmpty);
+      expect(controller.state.isCompleted, false);
+      expect(controller.state.currentWord, isNotNull);
+    });
+
+    test('巩固练习按上次复习时间倒序（最近复习的排第一）', () async {
+      final base = DateTime(2026, 9, 1);
+      reviewRepo.addRecentLearned('w1', lastReviewed: base);
+      reviewRepo.addRecentLearned(
+        'w2',
+        lastReviewed: base.add(const Duration(days: 1)),
+      );
+      reviewRepo.addRecentLearned(
+        'w3',
+        lastReviewed: base.add(const Duration(days: 2)),
+      );
+
+      await controller.startQuiz('test');
+
+      expect(controller.state.words.first.id, 'w3');
+      expect(controller.state.currentWord?.id, 'w3');
+    });
   });
 
   group('submitAnswer — 正确 / 错误', () {
@@ -367,10 +398,33 @@ class FakeWordRepository implements WordRepository {
 /// Fake ReviewRepository — 按词库记录到期队列，可控制到期复习词。
 class FakeReviewRepository implements ReviewRepository {
   final Map<String, Set<String>> _dueByBook = {};
+  final Map<String, List<WordReview>> _recentByBook = {};
   final Map<String, WordReview> _store = {};
 
   void addDueReview(String wordId, {String wordBookId = 'test'}) {
     _dueByBook.putIfAbsent(wordBookId, () => {}).add(wordId);
+  }
+
+  /// 添加一条"已学未到期"的巩固练习记录。
+  /// [lastReviewed] 可指定，用于验证"最近复习优先"的排序。
+  void addRecentLearned(
+    String wordId, {
+    String wordBookId = 'test',
+    DateTime? lastReviewed,
+  }) {
+    _recentByBook.putIfAbsent(wordBookId, () => []).add(
+      WordReview(
+        wordId: wordId,
+        wordBookId: wordBookId,
+        repetitionCount: 2,
+        easinessFactor: 2.5,
+        interval: 10,
+        nextReviewDate: DateTime.now().add(const Duration(days: 10)),
+        lastReviewDate: lastReviewed ?? DateTime.now(),
+        learned: true,
+        mastery: 0.5,
+      ),
+    );
   }
 
   @override
@@ -401,6 +455,13 @@ class FakeReviewRepository implements ReviewRepository {
             mastery: 0.0,
           );
     }).toList();
+  }
+
+  @override
+  Future<List<WordReview>> getRecentLearned(String wordBookId) async {
+    final list = [...?_recentByBook[wordBookId]]
+      ..sort((a, b) => b.lastReviewDate!.compareTo(a.lastReviewDate!));
+    return list;
   }
 
   @override

@@ -27,6 +27,14 @@ class ReviewRepository {
     return _localDataSource.getDueReviews(wordBookId);
   }
 
+  /// 获取"已学未到期"的巩固练习队列（按上次复习时间倒序）。
+  ///
+  /// 今日到期复习全部完成后，练习模式回退取这批词继续巩固，
+  /// 与百词斩"练习随时可做"的预期一致。
+  Future<List<WordReview>> getRecentLearned(String wordBookId) async {
+    return _localDataSource.getRecentLearned(wordBookId);
+  }
+
   /// 统计已学会单词数
   Future<int> getLearnedCount(String wordBookId) async {
     return _localDataSource.getLearnedCount(wordBookId);

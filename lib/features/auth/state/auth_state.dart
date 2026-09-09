@@ -1,6 +1,6 @@
 import '../../../data/dto/auth_models.dart';
 
-/// 认证状态机（6 态）。
+/// 认证状态机（7 态）。
 ///
 /// 状态流转：
 /// ```
@@ -13,6 +13,8 @@ import '../../../data/dto/auth_models.dart';
 /// 登录/注册 → authenticating
 ///    ├─ authenticated（成功）
 ///    └─ error（失败，如密码错）
+///
+/// 登录页「游客模式」 → guest（未登录，可离线使用核心功能）
 /// ```
 class AuthState {
   /// 当前认证状态。
@@ -41,6 +43,10 @@ class AuthState {
   /// 工厂构造：未认证。
   const AuthState.unauthenticated()
     : this(status: AuthStatus.unauthenticated);
+
+  /// 工厂构造：游客模式。
+  const AuthState.guest()
+    : this(status: AuthStatus.guest);
 
   /// 创建一个副本，更新指定字段。
   AuthState copyWith({

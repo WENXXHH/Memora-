@@ -116,6 +116,9 @@ class _FakeReviewRepository implements ReviewRepository {
   }
 
   @override
+  Future<List<WordReview>> getRecentLearned(String wordBookId) async => [];
+
+  @override
   Future<int> getReviewedCount(String wordBookId) async =>
       _reviewedCount[wordBookId] ?? 0;
 
@@ -154,6 +157,10 @@ class _ThrowingReviewRepository implements ReviewRepository {
   @override
   Future<List<WordReview>> getDueReviews(String wordBookId) async =>
       throw Exception('simulated failure');
+
+  @override
+  Future<List<WordReview>> getRecentLearned(String wordBookId) async =>
+      throw UnimplementedError();
 
   @override
   Future<WordReview?> getWordReview(String wordId, String wordBookId) async =>

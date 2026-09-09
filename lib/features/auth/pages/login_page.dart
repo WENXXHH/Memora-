@@ -49,6 +49,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final authState = ref.watch(authControllerProvider);
     final isLoading = authState.status == AuthStatus.authenticating;
 
+    // 从登录页主动进入游客模式后跳转首页。
+    //
+    // 路由守卫对「guest 停留在 /login」是放行的（游客需要能从「我的」
+    // 进登录页升级账号，守卫无法区分这两种方向），因此这里监听状态变化：
+    // 只有在本页由非游客态「变为」guest 时才主动导航到 /home。
+    ref.listen(authControllerProvider, (previous, next) {
+      if (next.status == AuthStatus.guest) {
+        context.go('/home');
+      }
+    });
+
     // 登录成功后会自动跳转，这里只在 error 态显示错误
     final errorMessage =
         authState.status == AuthStatus.error ? authState.errorMessage : null;
@@ -137,9 +148,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               TextButton(
                 onPressed: isLoading
                     ? null
-                    : () => ref
-                          .read(authControllerProvider.notifier)
-                          .enterGuestMode(),
+                    : () async {
+                        final wasGuest =
+                            ref.read(authControllerProvider).status ==
+                            AuthStatus.guest;
+                        await ref
+                            .read(authControllerProvider.notifier)
+                            .enterGuestMode();
+                        // 已是游客时 state 是同一个 const 实例（无变化），
+                        // build 里的 ref.listen 不会触发，需在此显式导航
+                        if (wasGuest && context.mounted) {
+                          context.go('/home');
+                        }
+                      },
                 child: const Text('游客模式，先逛逛'),
               ),
             ],

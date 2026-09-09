@@ -6,6 +6,7 @@ import 'app/my_app.dart';
 import 'app/dependency_injection.dart';
 import 'core/storage/hive_initializer.dart';
 import 'core/services/tts/tts_service.dart';
+import 'data/services/user_data_space_service.dart';
 
 /// 应用入口函数
 Future<void> main() async {
@@ -42,6 +43,10 @@ Future<void> main() async {
 
     // 初始化依赖注入
     configureDependencies();
+
+    // 一次性迁移：把旧格式复习记录（无账号命名空间前缀）归入 guest 空间，
+    // 之后登录账号时由 UserDataSpaceService 把游客成果迁入对应账号空间
+    await getIt.get<UserDataSpaceService>().migrateLegacyKeysToGuest();
 
     // 预初始化 TTS 引擎
     getIt.get<TtsService>().initialize();

@@ -67,9 +67,10 @@ class Env {
 
     switch (env) {
       case Environment.development:
-        // 真机测试：使用电脑局域网 IP（同 WiFi 下）  http://192.168.2.43:8000/api
+        // 真机测试：使用电脑局域网 IP（手机热点 / 同 WiFi 下），换网络后用 ipconfig 查 WLAN 的 IPv4 更新
+        // 当前热点 IP：http://10.244.136.69:8000/api
         // 模拟器：10.0.2.2 映射到宿主机 localhost  http://10.0.2.2:8000/api
-        return 'http://192.168.2.43:8000/api';
+        return 'http://10.244.136.69:8000/api';
       case Environment.staging:
         throw StateError(
           'API_BASE_URL must be provided for staging environment. '

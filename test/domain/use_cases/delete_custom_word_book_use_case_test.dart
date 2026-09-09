@@ -144,6 +144,10 @@ class _FakeReviewRepository implements ReviewRepository {
       throw UnimplementedError('测试不需要');
 
   @override
+  Future<List<WordReview>> getRecentLearned(String wordBookId) async =>
+      throw UnimplementedError('测试不需要');
+
+  @override
   Future<int> getLearnedCount(String wordBookId) async =>
       throw UnimplementedError('测试不需要');
 

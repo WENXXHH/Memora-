@@ -4,6 +4,7 @@ import '../../../core/utils/spelling_answer_matcher.dart';
 import '../../../data/repositories/review_repository.dart';
 import '../../../data/repositories/word_repository.dart';
 import '../../../domain/enums/learning_enums.dart';
+import '../../../domain/models/word_model.dart';
 import '../../../domain/use_cases/apply_review_feedback_use_case.dart';
 import '../state/spelling_quiz_state.dart';
 
@@ -52,8 +53,9 @@ class SpellingQuizController extends StateNotifier<SpellingQuizState> {
   /// 启动拼写复习会话。
   ///
   /// 取题口径与 [MultipleChoiceController.startQuiz] 完全一致：
-  /// 今日到期复习词 → 过滤出词库中的单词 → 最多 [_maxQuestions] 个。
-  /// 队列为空时置空队列 + isCompleted。
+  /// 优先今日到期复习词；到期队列为空时回退到"已学未到期"的巩固练习词
+  /// （按上次复习时间最近优先）→ 解析出词库中的单词 → 最多 [_maxQuestions] 个。
+  /// 两者都为空时置空队列 + isCompleted。
   Future<void> startQuiz(String wordBookId) async {
     _wordBookId = wordBookId;
     state = state.copyWith(
@@ -63,18 +65,27 @@ class SpellingQuizController extends StateNotifier<SpellingQuizState> {
     );
 
     try {
-      final dueReviews = await _reviewRepository.getDueReviews(wordBookId);
-      final dueWordIds = dueReviews.map((r) => r.wordId).toSet();
+      // 题目来源：优先今日到期复习词；到期队列为空时回退到已学未到期的
+      // 巩固练习词（按上次复习时间最近优先），保证复习做完后仍有词可练。
+      var practiceReviews = await _reviewRepository.getDueReviews(wordBookId);
+      if (practiceReviews.isEmpty) {
+        practiceReviews =
+            await _reviewRepository.getRecentLearned(wordBookId);
+      }
 
       final allWords = await _wordRepository.getWords(wordBookId);
 
-      final words = allWords
-          .where((w) => dueWordIds.contains(w.id))
+      // 按复习记录顺序解析待练单词（到期顺序 / 巩固模式的最近复习顺序），
+      // 跳过词库中已不存在的孤儿记录，最多取 _maxQuestions 个。
+      final wordById = {for (final w in allWords) w.id: w};
+      final words = practiceReviews
+          .map((r) => wordById[r.wordId])
+          .whereType<Word>()
           .take(_maxQuestions)
           .toList();
 
       if (words.isEmpty) {
-        // 无到期复习词：空队列 + 完成态（页面显示"暂无需要拼写复习的单词"）
+        // 无到期 / 无已学词：空队列 + 完成态（页面显示"暂无需要拼写复习的单词"）
         state = state.copyWith(
           isLoading: false,
           hasError: false,
